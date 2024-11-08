@@ -153,25 +153,18 @@ namespace BusinessSearch.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
                 _logger.LogInformation($"Deleting entry {id}");
-                var entry = await _crmService.GetEntryById(id);
-                if (entry != null)
-                {
-                    await _crmService.DeleteEntry(id);
-                    TempData["Success"] = "Entry deleted successfully";
-                }
-                return RedirectToAction(nameof(Index));
+                await _crmService.DeleteEntry(id);
+                return Json(new { success = true, message = "Entry deleted successfully" });
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error deleting entry: {ex.Message}");
-                TempData["Error"] = $"Error deleting entry: {ex.Message}";
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }
