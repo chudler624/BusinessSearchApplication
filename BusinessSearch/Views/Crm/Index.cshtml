@@ -1,0 +1,138 @@
+﻿@model IEnumerable<BusinessSearch.Models.CrmEntry>
+
+<h2>CRM Entries</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </div>
+    <div class="col-md-6">
+        <select id="dispositionFilter" class="form-select" onchange="filterTable()">
+            <option value="">All Dispositions</option>
+            <option value="New">New</option>
+            <option value="Called Once">Called Once</option>
+            <option value="Called Twice">Called Twice</option>
+            <option value="Call Back">Call Back</option>
+            <option value="Do Not Call">Do Not Call</option>
+            <option value="Wants Demo">Wants Demo</option>
+            <option value="Sale Closed">Sale Closed</option>
+        </select>
+    </div>
+</div>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.BusinessName)</th>
+            <th>@Html.DisplayNameFor(model => model.Phone)</th>
+            <th>@Html.DisplayNameFor(model => model.Website)</th>
+            <th>@Html.DisplayNameFor(model => model.Disposition)</th>
+            <th>@Html.DisplayNameFor(model => model.Notes)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-disposition="@item.Disposition">
+                <td>@Html.DisplayFor(modelItem => item.BusinessName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Website))
+                    {
+                        <a href="@item.Website" target="_blank">@item.Website</a>
+                    }
+                </td>
+                <td>
+                    @{
+                        var dispositions = new[]
+                        {
+                            "New",
+                            "Called Once",
+                            "Called Twice",
+                            "Call Back",
+                            "Do Not Call",
+                            "Wants Demo",
+                            "Sale Closed"
+                        };
+                    }
+                    <select class="form-select form-select-sm disposition-select" data-id="@item.Id" onchange="updateDisposition(this)">
+                        @foreach (var disposition in dispositions)
+                        {
+                            <option value="@disposition" selected="@(item.Disposition == disposition)">@disposition</option>
+                        }
+                    </select>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.Notes)</td>
+                <td>
+                    <div class="btn-group">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function updateDisposition(select) {
+            const id = select.dataset.id;
+            const newDisposition = select.value;
+            
+            fetch('/Crm/UpdateDisposition', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: parseInt(id), disposition: newDisposition })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = select.closest('tr');
+                    row.dataset.disposition = newDisposition;
+                    // Show success message
+                    showMessage('Disposition updated successfully', 'success');
+                } else {
+                    showMessage('Failed to update disposition', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to update disposition', 'error');
+            });
+        }
+
+        function filterTable() {
+            const filter = document.getElementById('dispositionFilter').value;
+            const rows = document.querySelectorAll('table tbody tr');
+            
+            rows.forEach(row => {
+                if (!filter || row.dataset.disposition === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function showMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', type === 'success' ? 'alert-success' : 'alert-danger', 'alert-dismissible', 'fade', 'show');
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    </script>
+}

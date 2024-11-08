@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Website Opportunities";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-6">
+        <form id="websiteForm">
+            <div class="form-group">
+                <label for="websiteUrl">Website URL:</label>
+                <input type="url" class="form-control" id="websiteUrl" name="url" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze Website</button>
+        </form>
+    </div>
+</div>
+<div id="results" class="mt-4"></div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#websiteForm').submit(function (e) {
+                e.preventDefault();
+                var url = $('#websiteUrl').val();
+                $.post('/WebsiteOpportunities/AnalyzeWebsite', { url: url }, function (data) {
+                    var resultHtml = '<h3>Analysis Results:</h3>';
+
+                    // Responsiveness Results
+                    var responsivenessIcon = data.responsivenessResult.isResponsive ? 
+                        '<i class="fas fa-check-circle text-success"></i>' : 
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    resultHtml += `
+                        <div class="card mb-3">
+                            <div class="card-header" id="responsivenessHeader">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#responsivenessCollapse" aria-expanded="true" aria-controls="responsivenessCollapse">
+                                        Mobile Responsiveness ${responsivenessIcon}
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="responsivenessCollapse" class="collapse show" aria-labelledby="responsivenessHeader">
+                                <div class="card-body">
+                                    <p>Score: ${data.responsivenessResult.score}/100</p>
+                                    <h6>Details:</h6>
+                                    <ul>
+                    `;
+                    data.responsivenessResult.details.forEach(function (detail) {
+                        resultHtml += `<li>${detail}</li>`;
+                    });
+                    resultHtml += `
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // GDPR Compliance Results
+                    var gdprIcon = (data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy) ? 
+                        '<i class="fas fa-check-circle text-success"></i>' : 
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    resultHtml += `
+                        <div class="card mb-3">
+                            <div class="card-header" id="gdprHeader">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#gdprCollapse" aria-expanded="true" aria-controls="gdprCollapse">
+                                        GDPR Compliance ${gdprIcon}
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="gdprCollapse" class="collapse show" aria-labelledby="gdprHeader">
+                                <div class="card-body">
+                                    <p>Cookie Consent: ${data.gdprComplianceResult.hasCookieConsent ? 'Yes' : 'No'}</p>
+                                    <p>Privacy Policy: ${data.gdprComplianceResult.hasPrivacyPolicy ? 'Yes' : 'No'}</p>
+                                    <h6>Other Compliance Indicators:</h6>
+                                    <ul>
+                    `;
+                    data.gdprComplianceResult.otherComplianceIndicators.forEach(function (indicator) {
+                        resultHtml += `<li>${indicator}</li>`;
+                    });
+                    resultHtml += `
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    $('#results').html(resultHtml);
+                });
+            });
+        });
+    </script>
+}

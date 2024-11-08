@@ -1,0 +1,103 @@
+﻿@model BusinessSearch.Models.CrmEntry
+
+<div class="container">
+    <h2>Add New CRM Entry</h2>
+
+    <form asp-action="Create" method="post">
+        <div id="formDebug" style="display:none;">
+            <pre>@Html.Raw(Json.Serialize(Model))</pre>
+        </div>
+        @Html.AntiForgeryToken()
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="BusinessName" class="control-label"></label>
+                    <input asp-for="BusinessName" class="form-control" />
+                    <span asp-validation-for="BusinessName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Phone" class="control-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Website" class="control-label"></label>
+                    <input asp-for="Website" class="form-control" />
+                    <span asp-validation-for="Website" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Industry" class="control-label"></label>
+                    <input asp-for="Industry" class="form-control" />
+                    <span asp-validation-for="Industry" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Disposition" class="control-label"></label>
+                    <select asp-for="Disposition" class="form-select">
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                    <span asp-validation-for="Disposition" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="GoogleRating" class="control-label"></label>
+                    <input asp-for="GoogleRating" class="form-control" />
+                    <span asp-validation-for="GoogleRating" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Notes" class="control-label"></label>
+                    <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </form>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var modelState in ViewData.ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function(e) {
+                console.log('Form submitting...');
+                let formData = {};
+                $(this).serializeArray().forEach(item => {
+                    formData[item.name] = item.value;
+                });
+                console.log('Form data:', formData);
+            });
+        });
+    </script>
+}
