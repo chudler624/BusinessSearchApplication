@@ -3,23 +3,30 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Diagnostics;
+using BusinessSearch.Services.WebsiteOpportunitiesServices;
 
 namespace BusinessSearch.Services
 {
     public class WebsiteAnalysisService : IWebsiteAnalysisService
     {
         private readonly IHttpClientFactory _clientFactory;
+        private readonly IPageSpeedService _pageSpeedService;
 
-        public WebsiteAnalysisService(IHttpClientFactory clientFactory)
+        public WebsiteAnalysisService(IHttpClientFactory clientFactory, IPageSpeedService pageSpeedService)
         {
             _clientFactory = clientFactory;
+            _pageSpeedService = pageSpeedService;
         }
 
         public async Task<WebsiteAnalysisResult> AnalyzeWebsite(string url)
         {
             var client = _clientFactory.CreateClient();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+
+            var stopwatch = Stopwatch.StartNew();
             var response = await client.GetAsync(url);
+            var ttfb = stopwatch.ElapsedMilliseconds;
 
             if (!response.IsSuccessStatusCode)
             {
@@ -27,14 +34,17 @@ namespace BusinessSearch.Services
             }
 
             var content = await response.Content.ReadAsStringAsync();
+            stopwatch.Stop();
 
             var responsivenessResult = AnalyzeResponsiveness(content);
             var gdprResult = AnalyzeGdprCompliance(content);
+            var pageSpeedResult = await _pageSpeedService.AnalyzePageSpeed(content, ttfb, stopwatch.ElapsedMilliseconds);
 
             return new WebsiteAnalysisResult
             {
                 ResponsivenessResult = responsivenessResult,
-                GdprComplianceResult = gdprResult
+                GdprComplianceResult = gdprResult,
+                PageSpeedResult = pageSpeedResult
             };
         }
 
@@ -57,9 +67,6 @@ namespace BusinessSearch.Services
             {
                 result.Details.Add("No viewport meta tag found");
             }
-
-            // Add other responsiveness checks here (media queries, responsive frameworks, etc.)
-            // ...
 
             // Set final responsiveness status
             result.IsResponsive = result.Score >= 50;

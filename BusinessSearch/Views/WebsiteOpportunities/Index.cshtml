@@ -14,7 +14,9 @@
         </form>
     </div>
 </div>
-<div id="results" class="mt-4"></div>
+<div id="results" class="mt-4">
+    <div class="accordion" id="analysisAccordion"></div>
+</div>
 
 @section Scripts {
     <script>
@@ -23,68 +25,111 @@
                 e.preventDefault();
                 var url = $('#websiteUrl').val();
                 $.post('/WebsiteOpportunities/AnalyzeWebsite', { url: url }, function (data) {
-                    var resultHtml = '<h3>Analysis Results:</h3>';
+                    var accordionHtml = '<h3>Analysis Results:</h3>';
 
-                    // Responsiveness Results
+                    // Responsiveness Section
                     var responsivenessIcon = data.responsivenessResult.isResponsive ? 
                         '<i class="fas fa-check-circle text-success"></i>' : 
                         '<i class="fas fa-times-circle text-danger"></i>';
-                    resultHtml += `
-                        <div class="card mb-3">
-                            <div class="card-header" id="responsivenessHeader">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#responsivenessCollapse" aria-expanded="true" aria-controls="responsivenessCollapse">
-                                        Mobile Responsiveness ${responsivenessIcon}
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="responsivenessCollapse" class="collapse show" aria-labelledby="responsivenessHeader">
-                                <div class="card-body">
+                    accordionHtml += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="responsivenessHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#responsivenessCollapse" aria-expanded="false" 
+                                        aria-controls="responsivenessCollapse">
+                                    Mobile Responsiveness ${responsivenessIcon}
+                                </button>
+                            </h2>
+                            <div id="responsivenessCollapse" class="accordion-collapse collapse" 
+                                 aria-labelledby="responsivenessHeading" data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
                                     <p>Score: ${data.responsivenessResult.score}/100</p>
                                     <h6>Details:</h6>
-                                    <ul>
-                    `;
+                                    <ul>`;
                     data.responsivenessResult.details.forEach(function (detail) {
-                        resultHtml += `<li>${detail}</li>`;
+                        accordionHtml += `<li>${detail}</li>`;
                     });
-                    resultHtml += `
+                    accordionHtml += `
                                     </ul>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
 
-                    // GDPR Compliance Results
+                    // GDPR Compliance Section
                     var gdprIcon = (data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy) ? 
                         '<i class="fas fa-check-circle text-success"></i>' : 
                         '<i class="fas fa-times-circle text-danger"></i>';
-                    resultHtml += `
-                        <div class="card mb-3">
-                            <div class="card-header" id="gdprHeader">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#gdprCollapse" aria-expanded="true" aria-controls="gdprCollapse">
-                                        GDPR Compliance ${gdprIcon}
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="gdprCollapse" class="collapse show" aria-labelledby="gdprHeader">
-                                <div class="card-body">
+                    accordionHtml += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="gdprHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#gdprCollapse" aria-expanded="false" 
+                                        aria-controls="gdprCollapse">
+                                    GDPR Compliance ${gdprIcon}
+                                </button>
+                            </h2>
+                            <div id="gdprCollapse" class="accordion-collapse collapse" 
+                                 aria-labelledby="gdprHeading" data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
                                     <p>Cookie Consent: ${data.gdprComplianceResult.hasCookieConsent ? 'Yes' : 'No'}</p>
                                     <p>Privacy Policy: ${data.gdprComplianceResult.hasPrivacyPolicy ? 'Yes' : 'No'}</p>
                                     <h6>Other Compliance Indicators:</h6>
-                                    <ul>
-                    `;
+                                    <ul>`;
                     data.gdprComplianceResult.otherComplianceIndicators.forEach(function (indicator) {
-                        resultHtml += `<li>${indicator}</li>`;
+                        accordionHtml += `<li>${indicator}</li>`;
                     });
-                    resultHtml += `
+                    accordionHtml += `
                                     </ul>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
 
-                    $('#results').html(resultHtml);
+                    // Page Speed Section
+                    var pageSpeedIcon = data.pageSpeedResult.isFast ? 
+                        '<i class="fas fa-check-circle text-success"></i>' : 
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="pageSpeedHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#pageSpeedCollapse" aria-expanded="false" 
+                                        aria-controls="pageSpeedCollapse">
+                                    Page Speed ${pageSpeedIcon}
+                                </button>
+                            </h2>
+                            <div id="pageSpeedCollapse" class="accordion-collapse collapse" 
+                                 aria-labelledby="pageSpeedHeading" data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
+                                    <p>Score: ${data.pageSpeedResult.score.toFixed(1)}/100</p>
+                                    
+                                    <h6>Core Web Vitals:</h6>
+                                    <ul>
+                                        <li>Time to First Byte: ${data.pageSpeedResult.webVitals.timeToFirstByte.toFixed(0)}ms</li>
+                                        <li>Largest Contentful Paint: ${data.pageSpeedResult.webVitals.largestContentfulPaint.toFixed(1)}s</li>
+                                        <li>Cumulative Layout Shift: ${data.pageSpeedResult.webVitals.cumulativeLayoutShift.toFixed(2)}</li>
+                                    </ul>
+                                    
+                                    <h6>Resource Usage:</h6>
+                                    <ul>
+                                        <li>Total Requests: ${data.pageSpeedResult.resourceMetrics.totalRequests}</li>
+                                        <li>Page Size: ${(data.pageSpeedResult.resourceMetrics.totalPageSize / (1024 * 1024)).toFixed(2)}MB</li>
+                                        <li>Scripts: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Scripts}</li>
+                                        <li>Stylesheets: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Stylesheets}</li>
+                                        <li>Images: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Images}</li>
+                                    </ul>
+
+                                    <h6>Performance Insights:</h6>
+                                    <ul>`;
+                    data.pageSpeedResult.details.forEach(function(detail) {
+                        accordionHtml += `<li>${detail}</li>`;
+                    });
+                    accordionHtml += `
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>`;
+
+                    $('#analysisAccordion').html(accordionHtml);
                 });
             });
         });

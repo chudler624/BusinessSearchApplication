@@ -11,6 +11,7 @@
                     <h5 class="card-title">@business.Name</h5>
                     <p class="card-text">
                         <strong>Phone:</strong> @business.PhoneNumber<br />
+                        <strong>Email:</strong> <a href="mailto:@business.Email">@business.Email</a><br />
                         <strong>Address:</strong> @business.FullAddress<br />
                         <strong>Type:</strong> @business.Type<br />
                         <strong>Website:</strong> @business.Website
@@ -19,6 +20,7 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="Name" value="@business.Name" />
                         <input type="hidden" name="PhoneNumber" value="@business.PhoneNumber" />
+                        <input type="hidden" name="Email" value="@business.Email" />
                         <input type="hidden" name="Website" value="@business.Website" />
                         <input type="hidden" name="Type" value="@business.Type" />
                         <input type="hidden" name="FullAddress" value="@business.FullAddress" />

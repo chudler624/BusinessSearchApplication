@@ -1,13 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace BusinessSearch.Services
+namespace BusinessSearch.Models.WebsiteAnalysis
 {
-    public interface IWebsiteAnalysisService
-    {
-        Task<WebsiteAnalysisResult> AnalyzeWebsite(string url);
-    }
-
     public class WebsiteAnalysisResult
     {
         public ResponsivenessResult? ResponsivenessResult { get; set; }

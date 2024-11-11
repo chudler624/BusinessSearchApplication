@@ -3,8 +3,8 @@ using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {
-    public interface IWebsiteOpportunitiesService
+    public interface IPageSpeedService
     {
-        Task<WebsiteAnalysisResult> AnalyzeWebsite(string url);
+        Task<PageSpeedResult> AnalyzePageSpeed(string content, double ttfb, double totalLoadTime);
     }
 }

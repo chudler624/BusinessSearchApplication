@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {
-    public interface IGdprComplianceService
-    {
-        GdprComplianceResult AnalyzeGdprCompliance(string content);
-    }
-
     public class GdprComplianceService : IGdprComplianceService
     {
         public GdprComplianceResult AnalyzeGdprCompliance(string content)
@@ -45,12 +41,5 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 
             return result;
         }
-    }
-
-    public class GdprComplianceResult
-    {
-        public bool HasCookieConsent { get; set; }
-        public bool HasPrivacyPolicy { get; set; }
-        public List<string>? OtherComplianceIndicators { get; set; }
     }
 }

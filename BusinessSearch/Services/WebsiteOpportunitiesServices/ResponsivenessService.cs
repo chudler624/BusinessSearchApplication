@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {
-    public interface IResponsivenessService
-    {
-        ResponsivenessResult AnalyzeResponsiveness(string content);
-    }
-
     public class ResponsivenessService : IResponsivenessService
     {
         public ResponsivenessResult AnalyzeResponsiveness(string content)
         {
             var result = new ResponsivenessResult { Details = new List<string>(), Score = 0 };
 
-            // Check for viewport meta tag (essential for mobile responsiveness)
+            // Check for viewport meta tag
             if (Regex.IsMatch(content, @"<meta[^>]*name=[""']viewport[""'][^>]*content=[""'][^""']*width\s*=\s*device-width[^""']*[""'][^>]*>"))
             {
                 result.Score += 30;
@@ -31,13 +27,13 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
                 result.Details.Add("No viewport meta tag found");
             }
 
-            // Check for media queries (crucial for responsive design)
+            // Check for media queries
             var mediaQueryCount = Regex.Matches(content, @"@media\s*\([^)]+\)").Count;
             var mediaQueryScore = Math.Min(mediaQueryCount * 5, 25);
             result.Score += mediaQueryScore;
             result.Details.Add($"Media queries found: {mediaQueryCount} (+{mediaQueryScore} points)");
 
-            // Check for responsive frameworks or custom responsive classes
+            // Check for responsive frameworks
             var responsivePatterns = new Dictionary<string, string> {
                 { @"class=[""'][^""']*(?:container|row|col(?:-[a-z]+)?-\d+)[^""']*[""']", "Bootstrap-like" },
                 { @"class=[""'][^""']*(?:flex|space-[xy]|gap-|grid|md:|lg:)[^""']*[""']", "Tailwind-like" },
@@ -79,12 +75,5 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 
             return result;
         }
-    }
-
-    public class ResponsivenessResult
-    {
-        public bool IsResponsive { get; set; }
-        public List<string>? Details { get; set; }
-        public int Score { get; set; }
     }
 }

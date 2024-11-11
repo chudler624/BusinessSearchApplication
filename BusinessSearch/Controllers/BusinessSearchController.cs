@@ -39,6 +39,7 @@ namespace BusinessSearch.Controllers
                 {
                     BusinessName = business.Name,
                     Phone = business.PhoneNumber,
+                    Email = business.Email,
                     Website = business.Website,
                     Industry = business.Type,
                     DateAdded = DateTime.UtcNow,
