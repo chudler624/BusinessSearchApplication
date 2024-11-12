@@ -129,6 +129,89 @@
                             </div>
                         </div>`;
 
+                    // Accessibility Section
+                    var accessibilityIcon = data.accessibilityResult.complianceScore >= 90 ? 
+                        '<i class="fas fa-check-circle text-success"></i>' : 
+                        data.accessibilityResult.complianceScore >= 70 ?
+                        '<i class="fas fa-exclamation-circle text-warning"></i>' :
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="accessibilityHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#accessibilityCollapse" aria-expanded="false" 
+                                        aria-controls="accessibilityCollapse">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span>
+                                            <i class="bi bi-universal-access me-2"></i>
+                                            Accessibility Analysis ${accessibilityIcon}
+                                        </span>
+                                        <div class="ms-auto d-flex align-items-center">
+                                            <div class="compliance-score me-3">
+                                                <span class="badge rounded-pill bg-${data.accessibilityResult.complianceScore >= 90 ? 
+                                                    'success' : data.accessibilityResult.complianceScore >= 70 ? 'warning' : 'danger'}">
+                                                    Score: ${data.accessibilityResult.complianceScore.toFixed(1)}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="accessibilityCollapse" class="accordion-collapse collapse" 
+                                 aria-labelledby="accessibilityHeading" data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-4">
+                                        <h5>WCAG Level Issues:</h5>
+                                        <div class="d-flex gap-2 mb-3">`;
+                    
+                    ['A', 'AA', 'AAA'].forEach(level => {
+                        if (data.accessibilityResult.issueCountByLevel[level]) {
+                            accordionHtml += `
+                                <span class="badge bg-${level === 'A' ? 'danger' : 
+                                                      level === 'AA' ? 'warning' : 'info'}">
+                                    Level ${level}: ${data.accessibilityResult.issueCountByLevel[level]}
+                                </span>`;
+                        }
+                    });
+                    
+                    accordionHtml += `
+                                        </div>
+                                    </div>
+
+                                    <div class="accessibility-issues">`;
+                    
+                    data.accessibilityResult.issues.forEach(function(issue) {
+                        accordionHtml += `
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>${issue.criterion}</strong>
+                                        <span class="badge bg-${issue.level === 'A' ? 'danger' : 
+                                                                 issue.level === 'AA' ? 'warning' : 'info'}">
+                                            Level ${issue.level}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Issue:</strong> ${issue.description}</p>
+                                    <p class="mb-2"><strong>Impact:</strong> ${issue.impact}</p>
+                                    <p class="mb-2"><strong>Recommendation:</strong> ${issue.recommendation}</p>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <strong>Element:</strong>
+                                            <code class="ms-2">${issue.element}</code>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+
+                    accordionHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+
                     $('#analysisAccordion').html(accordionHtml);
                 });
             });

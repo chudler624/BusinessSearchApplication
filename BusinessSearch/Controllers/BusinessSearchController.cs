@@ -31,6 +31,7 @@ namespace BusinessSearch.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddToCrm([FromForm] Business business)
         {
             try
@@ -48,15 +49,13 @@ namespace BusinessSearch.Controllers
                 };
 
                 await _crmService.AddEntry(crmEntry);
-                TempData["Success"] = "Business successfully added to CRM";
-                return RedirectToAction("Index", "Crm");
+                return Json(new { success = true, message = "Business successfully added to CRM" });
             }
             catch (Exception ex)
             {
                 // Log the error
                 Debug.WriteLine($"Error adding to CRM: {ex.Message}");
-                TempData["Error"] = "Failed to add business to CRM";
-                return RedirectToAction("Index", "Crm");
+                return Json(new { success = false, message = "Failed to add business to CRM" });
             }
         }
     }

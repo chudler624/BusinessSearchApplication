@@ -1,7 +1,5 @@
 ﻿@model IEnumerable<BusinessSearch.Models.Business>
-
 <h2>Search Results</h2>
-
 <div class="row">
     @foreach (var business in Model)
     {
@@ -16,22 +14,76 @@
                         <strong>Type:</strong> @business.Type<br />
                         <strong>Website:</strong> @business.Website
                     </p>
-                    <form asp-controller="BusinessSearch" asp-action="AddToCrm" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="Name" value="@business.Name" />
-                        <input type="hidden" name="PhoneNumber" value="@business.PhoneNumber" />
-                        <input type="hidden" name="Email" value="@business.Email" />
-                        <input type="hidden" name="Website" value="@business.Website" />
-                        <input type="hidden" name="Type" value="@business.Type" />
-                        <input type="hidden" name="FullAddress" value="@business.FullAddress" />
-                        <button type="submit" class="btn btn-primary">Add to CRM</button>
-                    </form>
+                    <button type="button" class="btn btn-primary add-to-crm-btn" 
+                            data-name="@business.Name"
+                            data-phone="@business.PhoneNumber"
+                            data-email="@business.Email"
+                            data-website="@business.Website"
+                            data-type="@business.Type"
+                            data-address="@business.FullAddress">
+                        Add to CRM
+                    </button>
                 </div>
             </div>
         </div>
     }
 </div>
 
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Entry successfully added to CRM
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="mt-4">
     <a asp-action="Index" class="btn btn-secondary">Back to Search</a>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.add-to-crm-btn').click(function() {
+                var button = $(this);
+                var businessData = {
+                    Name: button.data('name'),
+                    PhoneNumber: button.data('phone'),
+                    Email: button.data('email'),
+                    Website: button.data('website'),
+                    Type: button.data('type'),
+                    FullAddress: button.data('address')
+                };
+
+                $.ajax({
+                    url: '@Url.Action("AddToCrm", "BusinessSearch")',
+                    type: 'POST',
+                    data: businessData,
+                    headers: {
+                        'RequestVerificationToken': $('input:hidden[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#successModal').modal('show');
+                        } else {
+                            alert('Failed to add to CRM: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while adding to CRM');
+                    }
+                });
+            });
+        });
+    </script>
+}

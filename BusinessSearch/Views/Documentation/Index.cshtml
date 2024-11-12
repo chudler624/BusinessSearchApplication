@@ -1,0 +1,555 @@
+﻿@{
+    ViewData["Title"] = "Documentation";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<div class="row">
+    <!-- Left sidebar navigation -->
+    <div class="col-md-3">
+        <div class="list-group sticky-top" style="top: 2rem;">
+            <!-- Business Search -->
+            <a href="#business-search" class="list-group-item list-group-item-action">Business Search</a>
+            <a href="#search-features" class="list-group-item list-group-item-action ms-3">Search Features</a>
+            <a href="#search-results" class="list-group-item list-group-item-action ms-3">Search Results</a>
+            <a href="#adding-to-crm" class="list-group-item list-group-item-action ms-3">Adding to CRM</a>
+
+            <!-- CRM System -->
+            <a href="#crm-system" class="list-group-item list-group-item-action">CRM System</a>
+            <a href="#crm-overview" class="list-group-item list-group-item-action ms-3">Overview</a>
+            <a href="#adding-entries" class="list-group-item list-group-item-action ms-3">Adding Entries</a>
+            <a href="#managing-entries" class="list-group-item list-group-item-action ms-3">Managing Entries</a>
+            <a href="#dispositions" class="list-group-item list-group-item-action ms-3">Dispositions</a>
+            <a href="#entry-editing" class="list-group-item list-group-item-action ms-3">Editing Entries</a>
+            <a href="#crm-best-practices" class="list-group-item list-group-item-action ms-3">Best Practices</a>
+
+            <!-- Website Analysis -->
+            <a href="#website-analysis" class="list-group-item list-group-item-action">Website Analysis</a>
+            <a href="#analysis-overview" class="list-group-item list-group-item-action ms-3">Overview</a>
+            <a href="#responsiveness" class="list-group-item list-group-item-action ms-3">Mobile Responsiveness</a>
+            <a href="#gdpr" class="list-group-item list-group-item-action ms-3">GDPR Compliance</a>
+            <a href="#page-speed" class="list-group-item list-group-item-action ms-3">Page Speed</a>
+            <a href="#accessibility" class="list-group-item list-group-item-action ms-3">Accessibility</a>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9">
+        <!-- Business Search Section -->
+        <section id="business-search" class="mb-5">
+            <h3>Business Search</h3>
+            
+            <section id="search-features" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Search Features</h4>
+                        <p>Find potential business opportunities using our search tools:</p>
+                        <ul>
+                            <li><strong>Industry Search:</strong> Filter businesses by industry type</li>
+                            <li><strong>Location Search:</strong> Find businesses by zip code</li>
+                        </ul>
+
+                        <h5>How to Search:</h5>
+                        <ol>
+                            <li>Navigate to the Business Search page</li>
+                            <li>Enter the industry type (e.g., "Restaurant", "Retail")</li>
+                            <li>Enter the target zip code</li>
+                            <li>Click "Search" to view results</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section id="search-results" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Understanding Search Results</h4>
+                        <p>Each business result shows:</p>
+                        <ul>
+                            <li>Business name</li>
+                            <li>Phone number</li>
+                            <li>Email address</li>
+                            <li>Physical address</li>
+                            <li>Business type</li>
+                            <li>Website URL</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adding-to-crm" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Adding to CRM from Search</h4>
+                        <p>Easily add businesses to your CRM:</p>
+                        <ol>
+                            <li>Find a business in the search results</li>
+                            <li>Click the "Add to CRM" button</li>
+                            <li>Information is automatically transferred</li>
+                            <li>Entry is created with "New" status</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- CRM System Section -->
+        <section id="crm-system" class="mb-5">
+            <h3>CRM System</h3>
+
+            <section id="crm-overview" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>CRM Overview</h4>
+                        <p>The CRM system helps manage business relationships and track interactions with potential clients.</p>
+                        <h5>Key Features:</h5>
+                        <ul>
+                            <li>Contact management</li>
+                            <li>Interaction tracking</li>
+                            <li>Disposition status updates</li>
+                            <li>Notes and comments</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adding-entries" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Adding Entries to CRM</h4>
+                        <h5>Method 1: From Business Search</h5>
+                        <ol>
+                            <li>Search for businesses</li>
+                            <li>Click "Add to CRM" on desired business</li>
+                            <li>Information auto-populates</li>
+                            <li>Review and save</li>
+                        </ol>
+
+                        <h5>Method 2: Manual Entry</h5>
+                        <ol>
+                            <li>Click "Create New" on CRM page</li>
+                            <li>Fill in business details:
+                                <ul>
+                                    <li>Business Name</li>
+                                    <li>Phone</li>
+                                    <li>Email</li>
+                                    <li>Website</li>
+                                    <li>Industry</li>
+                                    <li>Google Rating</li>
+                                    <li>Initial Notes</li>
+                                </ul>
+                            </li>
+                            <li>Set initial disposition</li>
+                            <li>Save the entry</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section id="managing-entries" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Managing CRM Entries</h4>
+                        <h5>Basic Management:</h5>
+                        <ul>
+                            <li>View all entries in list format</li>
+                            <li>Filter by disposition status</li>
+                            <li>Quick-update dispositions</li>
+                            <li>Add or update notes</li>
+                        </ul>
+
+                        <h5>Entry Actions:</h5>
+                        <ul>
+                            <li>Edit business information</li>
+                            <li>Update contact details</li>
+                            <li>Change disposition status</li>
+                            <li>Delete entries</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="dispositions" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Understanding Dispositions</h4>
+                        <p>Track interaction status with these dispositions:</p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                    <th>When to Use</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>New</td>
+                                    <td>Recently added to CRM</td>
+                                    <td>Default for new entries</td>
+                                </tr>
+                                <tr>
+                                    <td>Called Once</td>
+                                    <td>First contact made</td>
+                                    <td>After initial outreach</td>
+                                </tr>
+                                <tr>
+                                    <td>Called Twice</td>
+                                    <td>Second contact made</td>
+                                    <td>After follow-up call</td>
+                                </tr>
+                                <tr>
+                                    <td>Call Back</td>
+                                    <td>Requires follow-up</td>
+                                    <td>When business requests callback</td>
+                                </tr>
+                                <tr>
+                                    <td>Do Not Call</td>
+                                    <td>Remove from contact list</td>
+                                    <td>When business declines contact</td>
+                                </tr>
+                                <tr>
+                                    <td>Wants Demo</td>
+                                    <td>Interested in product</td>
+                                    <td>When demo is requested</td>
+                                </tr>
+                                <tr>
+                                    <td>Sale Closed</td>
+                                    <td>Successfully converted</td>
+                                    <td>When business becomes customer</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="entry-editing" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Editing Entries</h4>
+                        <h5>How to Edit:</h5>
+                        <ol>
+                            <li>Locate entry in CRM list</li>
+                            <li>Click "Edit" button</li>
+                            <li>Update information:
+                                <ul>
+                                    <li>Business details</li>
+                                    <li>Contact information</li>
+                                    <li>Disposition status</li>
+                                    <li>Notes and comments</li>
+                                </ul>
+                            </li>
+                            <li>Save changes</li>
+                        </ol>
+
+                        <h5>Quick Updates:</h5>
+                        <ul>
+                            <li>Change disposition directly from list view</li>
+                            <li>Updates save automatically</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="crm-best-practices" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>CRM Best Practices</h4>
+                        <ul>
+                            <li>Update dispositions immediately after contact</li>
+                            <li>Add detailed notes for each interaction</li>
+                            <li>Use filters to manage large lists</li>
+                            <li>Regular review of older entries</li>
+                            <li>Document key conversation points</li>
+                            <li>Keep contact information current</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Website Analysis Section -->
+        <section id="website-analysis" class="mb-5">
+            <h3>Website Analysis</h3>
+
+            <section id="analysis-overview" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Analysis Overview</h4>
+                        <p>Comprehensive website evaluation covering four key areas:</p>
+                        <ul>
+                            <li>Mobile responsiveness</li>
+                            <li>GDPR compliance</li>
+                            <li>Page speed performance</li>
+                            <li>Accessibility standards</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="responsiveness" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Mobile Responsiveness Analysis</h4>
+                        <h5>What We Check:</h5>
+                        <ul>
+                            <li>Viewport Configuration
+                                <ul>
+                                    <li>Meta viewport tag presence</li>
+                                    <li>Scale settings</li>
+                                    <li>Width configurations</li>
+                                </ul>
+                            </li>
+                            <li>Media Queries
+                                <ul>
+                                    <li>Breakpoint implementation</li>
+                                    <li>Mobile-first approach</li>
+                                    <li>Screen adaptability</li>
+                                </ul>
+                            </li>
+                            <li>Touch Targets
+                                <ul>
+                                    <li>Button sizing</li>
+                                    <li>Link spacing</li>
+                                    <li>Interactive elements</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h5>Score Interpretation:</h5>
+                        <ul>
+                            <li><span class="text-success">90-100:</span> Excellent mobile optimization</li>
+                            <li><span class="text-warning">70-89:</span> Good, needs minor improvements</li>
+                            <li><span class="text-danger">Below 70:</span> Requires significant optimization</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gdpr" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>GDPR Compliance Analysis</h4>
+                        <h5>Key Compliance Checks:</h5>
+                        <ul>
+                            <li>Cookie Consent
+                                <ul>
+                                    <li>Banner visibility</li>
+                                    <li>Opt-in mechanisms</li>
+                                    <li>Granular choices</li>
+                                </ul>
+                            </li>
+                            <li>Privacy Policy
+                                <ul>
+                                    <li>Accessibility</li>
+                                    <li>Content completeness</li>
+                                    <li>Data processing transparency</li>
+                                </ul>
+                            </li>
+                            <li>Data Collection
+                                <ul>
+                                    <li>Form notifications</li>
+                                    <li>Purpose declarations</li>
+                                    <li>User rights information</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> This analysis provides guidance but should not be considered legal advice.
+                            Consult with legal professionals for complete GDPR compliance assessment.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-speed" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Page Speed Analysis</h4>
+                        <h5>Core Web Vitals:</h5>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Good</th>
+                                    <th>Needs Improvement</th>
+                                    <th>Poor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Largest Contentful Paint (LCP)</td>
+                                    <td>≤ 2.5s</td>
+                                    <td>2.5s - 4s</td>
+                                    <td>> 4s</td>
+                                </tr>
+                                <tr>
+                                    <td>Cumulative Layout Shift (CLS)</td>
+                                    <td>≤ 0.1</td>
+                                    <td>0.1 - 0.25</td>
+                                    <td>> 0.25</td>
+                                </tr>
+                                <tr>
+                                    <td>Time to First Byte (TTFB)</td>
+                                    <td>< 200ms</td>
+                                    <td>200ms - 600ms</td>
+                                    <td>> 600ms</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h5 class="mt-4">Resource Analysis:</h5>
+                        <ul>
+                            <li>Page Weight
+                                <ul>
+                                    <li>Total page size</li>
+                                    <li>Resource counts</li>
+                                    <li>Compression usage</li>
+                                </ul>
+                            </li>
+                            <li>Asset Optimization
+                                <ul>
+                                    <li>Image compression</li>
+                                    <li>Script minification</li>
+                                    <li>CSS optimization</li>
+                                </ul>
+                            </li>
+                            <li>Caching Implementation
+                                <ul>
+                                    <li>Browser cache settings</li>
+                                    <li>Cache durations</li>
+                                    <li>Cache-Control headers</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="accessibility" class="mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Accessibility Analysis</h4>
+                        <h5>WCAG 2.1 Compliance Levels:</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Level</th>
+                                        <th>Requirements</th>
+                                        <th>Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Level A (Essential)</td>
+                                        <td>
+                                            <ul>
+                                                <li>Alt text for images</li>
+                                                <li>Keyboard navigation</li>
+                                                <li>Basic structure</li>
+                                            </ul>
+                                        </td>
+                                        <td>Critical for basic accessibility</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Level AA (Enhanced)</td>
+                                        <td>
+                                            <ul>
+                                                <li>Color contrast (4.5:1)</li>
+                                                <li>Text resizing</li>
+                                                <li>Navigation consistency</li>
+                                            </ul>
+                                        </td>
+                                        <td>Standard for most websites</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Level AAA (Optimal)</td>
+                                        <td>
+                                            <ul>
+                                                <li>High contrast (7:1)</li>
+                                                <li>Sign language</li>
+                                                <li>Extended audio description</li>
+                                            </ul>
+                                        </td>
+                                        <td>Highest level of accessibility</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h5 class="mt-4">Key Checks:</h5>
+                        <ul>
+                            <li>Text Alternatives
+                                <ul>
+                                    <li>Image alt text</li>
+                                    <li>Button labels</li>
+                                    <li>Form input descriptions</li>
+                                </ul>
+                            </li>
+                            <li>Navigation
+                                <ul>
+                                    <li>Keyboard accessibility</li>
+                                    <li>Skip links</li>
+                                    <li>Focus indicators</li>
+                                </ul>
+                            </li>
+                            <li>Content Structure
+                                <ul>
+                                    <li>Heading hierarchy</li>
+                                    <li>Landmarks and regions</li>
+                                    <li>List formatting</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h5 class="mt-4">Score Interpretation:</h5>
+                        <ul>
+                            <li><span class="text-success">90-100:</span> Excellent accessibility implementation</li>
+                            <li><span class="text-warning">70-89:</span> Good accessibility with minor issues</li>
+                            <li><span class="text-danger">Below 70:</span> Significant accessibility barriers</li>
+                        </ul>
+
+                        <div class="alert alert-info mt-4">
+                            <strong>Recommendation:</strong> Address Level A and AA issues first, as these provide the most essential accessibility features for most users.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Smooth scrolling for anchor links
+            $('a[href^="#"]').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this.getAttribute('href'));
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 20
+                    }, 500);
+                }
+            });
+
+            // Highlight active section
+            $(window).scroll(function() {
+                var scrollPosition = $(window).scrollTop();
+
+                $('section').each(function() {
+                    var top = $(this).offset().top - 100,
+                        bottom = top + $(this).outerHeight();
+
+                    if (scrollPosition >= top && scrollPosition <= bottom) {
+                        $('.list-group-item').removeClass('active');
+                        $('.list-group-item[href="#' + $(this).attr('id') + '"]').addClass('active');
+                    }
+                });
+            });
+        });
+    </script>
+}

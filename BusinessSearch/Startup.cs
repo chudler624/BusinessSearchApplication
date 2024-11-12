@@ -2,6 +2,7 @@
 using BusinessSearch.Data;
 using BusinessSearch.Services;
 using BusinessSearch.Services.WebsiteOpportunitiesServices;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -43,10 +44,12 @@ namespace BusinessSearch
             services.AddScoped<IResponsivenessService, ResponsivenessService>();
             services.AddScoped<IGdprComplianceService, GdprComplianceService>();
             services.AddScoped<IPageSpeedService, PageSpeedService>();
+            services.AddScoped<IAccessibilityService, AccessibilityService>();
             services.AddScoped<IWebsiteOpportunitiesService, WebsiteOpportunitiesService>();
 
             // Add HTTP client
             services.AddHttpClient();
+            services.AddHttpClient<IAccessibilityService, AccessibilityService>();
 
             // Add Memory Cache
             services.AddMemoryCache();
