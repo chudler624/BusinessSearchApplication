@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace BusinessSearch.Models.WebsiteAnalysis
+﻿namespace BusinessSearch.Models.WebsiteAnalysis
 {
     public enum WcagLevel
     {

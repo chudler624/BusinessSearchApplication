@@ -1,6 +1,6 @@
 ﻿using BusinessSearch.Models.WebsiteAnalysis;
 
-namespace BusinessSearch.Services.WebsiteOpportunitiesServices
+namespace BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces
 {
     public interface IResponsivenessService
     {

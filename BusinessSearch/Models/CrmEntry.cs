@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BusinessSearch.Models
 {
@@ -18,32 +17,32 @@ namespace BusinessSearch.Models
 
         [EmailAddress]
         [StringLength(100)]
-        public string? Email { get; set; } 
+        public string? Email { get; set; }
 
         [Display(Name = "Phone Number")]
         [StringLength(20)]
-        public string? Phone { get; set; } 
+        public string? Phone { get; set; }
 
         [Display(Name = "Company")]
         [StringLength(100)]
-        public string? Company { get; set; } 
+        public string? Company { get; set; }
 
         [StringLength(255)]
-        public string? Website { get; set; } 
+        public string? Website { get; set; }
 
         [Display(Name = "Google Rating")]
         [Range(0, 5)]
         public double? GoogleRating { get; set; }
 
         [StringLength(50)]
-        public string? Industry { get; set; } 
+        public string? Industry { get; set; }
 
         [StringLength(50)]
-        public string? Disposition { get; set; } 
+        public string? Disposition { get; set; }
 
         [DataType(DataType.MultilineText)]
         [StringLength(1000)]
-        public string? Notes { get; set; } 
+        public string? Notes { get; set; }
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
     }

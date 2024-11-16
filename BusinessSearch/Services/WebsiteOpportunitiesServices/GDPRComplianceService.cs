@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
 using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
@@ -12,21 +12,21 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
             {
                 HasCookieConsent = false,
                 HasPrivacyPolicy = false,
-                OtherComplianceIndicators = new List<string>()
+                ComplianceIndicators = new List<string>()
             };
 
             // Check for cookie consent
             if (Regex.IsMatch(content, @"cookie(?:\s+consent|banner)", RegexOptions.IgnoreCase))
             {
                 result.HasCookieConsent = true;
-                result.OtherComplianceIndicators.Add("Cookie consent mechanism detected");
+                result.ComplianceIndicators.Add("Cookie consent mechanism detected");
             }
 
             // Check for privacy policy
             if (Regex.IsMatch(content, @"privacy\s+policy", RegexOptions.IgnoreCase))
             {
                 result.HasPrivacyPolicy = true;
-                result.OtherComplianceIndicators.Add("Privacy policy detected");
+                result.ComplianceIndicators.Add("Privacy policy detected");
             }
 
             // Check for other GDPR-related terms
@@ -35,7 +35,7 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
             {
                 if (Regex.IsMatch(content, term, RegexOptions.IgnoreCase))
                 {
-                    result.OtherComplianceIndicators.Add($"{term} mentioned");
+                    result.ComplianceIndicators.Add($"{term} mentioned");
                 }
             }
 

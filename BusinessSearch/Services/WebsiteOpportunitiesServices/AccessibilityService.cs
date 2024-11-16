@@ -1,12 +1,8 @@
 ﻿using BusinessSearch.Models.WebsiteAnalysis;
 using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
 using HtmlAgilityPack;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
+using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {

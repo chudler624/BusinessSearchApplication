@@ -1,13 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BusinessSearch.Data;
+﻿using BusinessSearch.Data;
 using BusinessSearch.Services;
 using BusinessSearch.Services.WebsiteOpportunitiesServices;
 using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessSearch
 {
@@ -45,11 +40,19 @@ namespace BusinessSearch
             services.AddScoped<IGdprComplianceService, GdprComplianceService>();
             services.AddScoped<IPageSpeedService, PageSpeedService>();
             services.AddScoped<IAccessibilityService, AccessibilityService>();
+            services.AddScoped<ILocalSeoService, LocalSeoService>();
             services.AddScoped<IWebsiteOpportunitiesService, WebsiteOpportunitiesService>();
 
-            // Add HTTP client
+            // Configure HTTP clients
             services.AddHttpClient();
             services.AddHttpClient<IAccessibilityService, AccessibilityService>();
+
+            // Register ILogger explicitly (although AddLogging should handle this)
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.AddDebug();
+            });
 
             // Add Memory Cache
             services.AddMemoryCache();

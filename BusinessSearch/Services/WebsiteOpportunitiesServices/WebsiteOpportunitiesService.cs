@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using BusinessSearch.Models.WebsiteAnalysis;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {
@@ -12,20 +13,23 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
         private readonly IResponsivenessService _responsivenessService;
         private readonly IGdprComplianceService _gdprComplianceService;
         private readonly IPageSpeedService _pageSpeedService;
+        private readonly ILocalSeoService _localSeoService;
 
         public WebsiteOpportunitiesService(
             IHttpClientFactory clientFactory,
             IResponsivenessService responsivenessService,
             IGdprComplianceService gdprComplianceService,
-            IPageSpeedService pageSpeedService)
+            IPageSpeedService pageSpeedService,
+            ILocalSeoService localSeoService)
         {
             _clientFactory = clientFactory;
             _responsivenessService = responsivenessService;
             _gdprComplianceService = gdprComplianceService;
             _pageSpeedService = pageSpeedService;
+            _localSeoService = localSeoService;
         }
 
-        public async Task<WebsiteAnalysisResult> AnalyzeWebsite(string url)
+        public async Task<WebsiteAnalysisModel> AnalyzeWebsite(string url)
         {
             var client = _clientFactory.CreateClient();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
@@ -45,12 +49,14 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
             var responsivenessResult = _responsivenessService.AnalyzeResponsiveness(content);
             var gdprResult = _gdprComplianceService.AnalyzeGdprCompliance(content);
             var pageSpeedResult = await _pageSpeedService.AnalyzePageSpeed(content, ttfb, stopwatch.ElapsedMilliseconds);
+            var localSeoResult = await _localSeoService.AnalyzeLocalSeo(content);
 
-            return new WebsiteAnalysisResult
+            return new WebsiteAnalysisModel
             {
                 ResponsivenessResult = responsivenessResult,
                 GdprComplianceResult = gdprResult,
-                PageSpeedResult = pageSpeedResult
+                PageSpeedResult = pageSpeedResult,
+                LocalSeoResult = localSeoResult
             };
         }
     }

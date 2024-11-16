@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using BusinessSearch.Models;
-
-namespace BusinessSearch.Models.ViewModels
+﻿namespace BusinessSearch.Models.ViewModels
 {
     public class CrmViewModel
     {

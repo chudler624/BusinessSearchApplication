@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BusinessSearch.Models;
+﻿using BusinessSearch.Models;
 using BusinessSearch.Services;
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessSearch.Controllers
 {

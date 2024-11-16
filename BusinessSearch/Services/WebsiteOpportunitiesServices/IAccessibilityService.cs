@@ -1,7 +1,7 @@
 ﻿using BusinessSearch.Models.WebsiteAnalysis;
 using HtmlAgilityPack;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
+using BusinessSearch.Models.WebsiteAnalysis;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces
 {

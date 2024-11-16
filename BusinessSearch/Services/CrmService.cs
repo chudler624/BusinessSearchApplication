@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using BusinessSearch.Data;
+﻿using BusinessSearch.Data;
 using BusinessSearch.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace BusinessSearch.Services
 {

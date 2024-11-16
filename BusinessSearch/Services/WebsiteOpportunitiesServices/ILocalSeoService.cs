@@ -2,8 +2,8 @@
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces
 {
-    public interface IWebsiteOpportunitiesService
+    public interface ILocalSeoService
     {
-        Task<WebsiteAnalysisModel> AnalyzeWebsite(string url);
+        Task<LocalSeoAnalysisResult> AnalyzeLocalSeo(string content);
     }
 }

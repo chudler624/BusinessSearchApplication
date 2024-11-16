@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using BusinessSearch.Models.WebsiteAnalysis;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
 
 namespace BusinessSearch.Services.WebsiteOpportunitiesServices
 {
@@ -13,11 +14,10 @@ namespace BusinessSearch.Services.WebsiteOpportunitiesServices
         {
             var result = new PageSpeedResult
             {
-                WebVitals = new CoreWebVitals
+                WebVitals = new WebVitals  // Changed from CoreWebVitals to WebVitals
                 {
                     TimeToFirstByte = ttfb,
                     LargestContentfulPaint = totalLoadTime / 1000.0,
-                    FirstInputDelay = 100,
                     CumulativeLayoutShift = 0.1
                 },
                 ResourceMetrics = AnalyzeResources(content)

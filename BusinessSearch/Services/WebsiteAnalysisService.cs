@@ -1,10 +1,8 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using BusinessSearch.Models.WebsiteAnalysis;
 using BusinessSearch.Services.WebsiteOpportunitiesServices;
+using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace BusinessSearch.Services
 {
@@ -19,7 +17,7 @@ namespace BusinessSearch.Services
             _pageSpeedService = pageSpeedService;
         }
 
-        public async Task<WebsiteAnalysisResult> AnalyzeWebsite(string url)
+        public async Task<WebsiteAnalysisModel> AnalyzeWebsite(string url)
         {
             var client = _clientFactory.CreateClient();
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
@@ -40,7 +38,7 @@ namespace BusinessSearch.Services
             var gdprResult = AnalyzeGdprCompliance(content);
             var pageSpeedResult = await _pageSpeedService.AnalyzePageSpeed(content, ttfb, stopwatch.ElapsedMilliseconds);
 
-            return new WebsiteAnalysisResult
+            return new WebsiteAnalysisModel
             {
                 ResponsivenessResult = responsivenessResult,
                 GdprComplianceResult = gdprResult,
@@ -84,21 +82,21 @@ namespace BusinessSearch.Services
             {
                 HasCookieConsent = false,
                 HasPrivacyPolicy = false,
-                OtherComplianceIndicators = new List<string>()
+                ComplianceIndicators = new List<string>()
             };
 
             // Check for cookie consent
             if (Regex.IsMatch(content, @"cookie(?:\s+consent|banner)", RegexOptions.IgnoreCase))
             {
                 result.HasCookieConsent = true;
-                result.OtherComplianceIndicators.Add("Cookie consent mechanism detected");
+                result.ComplianceIndicators.Add("Cookie consent mechanism detected");
             }
 
             // Check for privacy policy
             if (Regex.IsMatch(content, @"privacy\s+policy", RegexOptions.IgnoreCase))
             {
                 result.HasPrivacyPolicy = true;
-                result.OtherComplianceIndicators.Add("Privacy policy detected");
+                result.ComplianceIndicators.Add("Privacy policy detected");
             }
 
             // Check for other GDPR-related terms
@@ -107,7 +105,7 @@ namespace BusinessSearch.Services
             {
                 if (Regex.IsMatch(content, term, RegexOptions.IgnoreCase))
                 {
-                    result.OtherComplianceIndicators.Add($"{term} mentioned");
+                    result.ComplianceIndicators.Add($"{term} mentioned");
                 }
             }
 

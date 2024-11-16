@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using BusinessSearch.Models.WebsiteAnalysis;
 
-namespace BusinessSearch.Services.WebsiteOpportunitiesServices
+namespace BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces
 {
     public class ResponsivenessService : IResponsivenessService
     {

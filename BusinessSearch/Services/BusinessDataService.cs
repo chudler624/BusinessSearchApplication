@@ -1,12 +1,6 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
+﻿using BusinessSearch.Models;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using BusinessSearch.Models;
 
 namespace BusinessSearch.Services
 {

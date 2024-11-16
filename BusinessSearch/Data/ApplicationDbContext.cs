@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BusinessSearch.Models;
+﻿using BusinessSearch.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessSearch.Data
 {

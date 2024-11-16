@@ -1,0 +1,239 @@
+Folder PATH listing for volume Windows
+Volume serial number is EAD2-BFC9
+C:.
+¦   app.config
+¦   appsettings.json
+¦   BusinessSearch.csproj
+¦   BusinessSearch.csproj.user
+¦   file_structure.txt
+¦   Program.cs
+¦   Startup.cs
+¦   structure_and_errors.txt
+¦   XMLFile.xml
+¦   
++---.config
+¦       dotnet-tools.json
+¦       
++---bin
+¦   +---Debug
+¦       +---net6.0
+¦           +---runtimes
+¦               +---browser
+¦               ¦   +---lib
+¦               ¦       +---net6.0
+¦               +---unix
+¦               ¦   +---lib
+¦               ¦       +---net6.0
+¦               +---win
+¦               ¦   +---lib
+¦               ¦       +---net6.0
+¦               +---win-arm
+¦               ¦   +---native
+¦               +---win-arm64
+¦               ¦   +---native
+¦               +---win-x64
+¦               ¦   +---native
+¦               +---win-x86
+¦                   +---native
++---Controllers
+¦       BusinessSearchController.cs
+¦       CrmController.cs
+¦       DocumentationController.cs
+¦       HomeController.cs
+¦       WebsiteOpportunitiesController.cs
+¦       
++---Data
+¦       ApplicationDbContext.cs
+¦       
++---Migrations
+¦       20241029214351_InitialCreate.cs
+¦       20241029214351_InitialCreate.Designer.cs
+¦       ApplicationDbContextModelSnapshot.cs
+¦       
++---Models
+¦   ¦   AccessibilityAnalysisModel.cs
+¦   ¦   Business.cs
+¦   ¦   CrmEntry.cs
+¦   ¦   DispositionUpdateModel.cs
+¦   ¦   PageSpeedModel.cs
+¦   ¦   WebsiteAnalysisModel.cs
+¦   ¦   
+¦   +---ViewModels
+¦   ¦       CrmViewModel.cs
+¦   ¦       
+¦   +---WebsiteAnalysis
+¦           AccessibilityModel.cs
+¦           LocalSeoModel.cs
+¦           PageSpeedModel.cs
+¦           WebsiteAnalysisModel.cs
+¦           
++---obj
+¦   ¦   BusinessSearch.csproj.EntityFrameworkCore.targets
+¦   ¦   BusinessSearch.csproj.nuget.dgspec.json
+¦   ¦   BusinessSearch.csproj.nuget.g.props
+¦   ¦   BusinessSearch.csproj.nuget.g.targets
+¦   ¦   project.assets.json
+¦   ¦   project.nuget.cache
+¦   ¦   staticwebassets.pack.sentinel
+¦   ¦   
+¦   +---Debug
+¦       +---net6.0
+¦           ¦   .NETCoreApp,Version=v6.0.AssemblyAttributes.cs
+¦           ¦   apphost.exe
+¦           ¦   BusinessSearch.AssemblyInfo.cs
+¦           ¦   BusinessSearch.AssemblyInfoInputs.cache
+¦           ¦   BusinessSearch.assets.cache
+¦           ¦   BusinessSearch.csproj.AssemblyReference.cache
+¦           ¦   BusinessSearch.csproj.BuildWithSkipAnalyzers
+¦           ¦   BusinessSearch.csproj.CoreCompileInputs.cache
+¦           ¦   BusinessSearch.csproj.FileListAbsolute.txt
+¦           ¦   BusinessSearch.GeneratedMSBuildEditorConfig.editorconfig
+¦           ¦   BusinessSearch.GlobalUsings.g.cs
+¦           ¦   BusinessSearch.MvcApplicationPartsAssemblyInfo.cache
+¦           ¦   BusinessSearch.RazorAssemblyInfo.cache
+¦           ¦   BusinessSearch.RazorAssemblyInfo.cs
+¦           ¦   project.razor.vs.json
+¦           ¦   
+¦           +---ref
+¦           +---refint
+¦           +---staticwebassets
++---Properties
+¦       launchSettings.json
+¦       serviceDependencies.json
+¦       serviceDependencies.local.json
+¦       serviceDependencies.local.json.user
+¦       
++---Services
+¦   ¦   BusinessDataService.cs
+¦   ¦   CrmService.cs
+¦   ¦   IWebsiteAnalysisService.cs
+¦   ¦   WebsiteAnalysisService.cs
+¦   ¦   
+¦   +---WebsiteOpportunitiesServices
+¦           AccessibilityService.cs
+¦           GDPRComplianceService.cs
+¦           IAccessibilityService.cs
+¦           IGDPRComplianceService.cs
+¦           ILocalSeoService.cs
+¦           IPageSpeedService.cs
+¦           IResponsivenessService.cs
+¦           iWebsiteOpportunitiesService.cs
+¦           LocalSeoService.cs
+¦           PageSpeedService.cs
+¦           ResponsivenessService.cs
+¦           WebsiteOpportunitiesService.cs
+¦           
++---Views
+¦   ¦   _ViewImports.cshtml
+¦   ¦   _ViewStart.cshtml
+¦   ¦   
+¦   +---BusinessSearch
+¦   ¦       Index.cshtml
+¦   ¦       Results.cshtml
+¦   ¦       
+¦   +---Crm
+¦   ¦       Create.cshtml
+¦   ¦       Edit.cshtml
+¦   ¦       Index.cshtml
+¦   ¦       
+¦   +---Documentation
+¦   ¦       Index.cshtml
+¦   ¦       
+¦   +---Helpers
+¦   ¦       StringHelpers.cs
+¦   ¦       
+¦   +---Home
+¦   ¦       Index.cshtml
+¦   ¦       
+¦   +---Shared
+¦   ¦       _Layout.cshtml
+¦   ¦       _ValidationScriptsPartial.cshtml
+¦   ¦       
+¦   +---WebsiteOpportunities
+¦           Index.cshtml
+¦           
++---wwwroot
+    ¦   favicon.ico
+    ¦   global.json
+    ¦   
+    +---css
+    ¦       site.css
+    ¦       
+    +---js
+    ¦       site.js
+    ¦       
+    +---lib
+        +---bootstrap
+        ¦   ¦   LICENSE
+        ¦   ¦   
+        ¦   +---dist
+        ¦       +---css
+        ¦       ¦       bootstrap-grid.css
+        ¦       ¦       bootstrap-grid.css.map
+        ¦       ¦       bootstrap-grid.min.css
+        ¦       ¦       bootstrap-grid.min.css.map
+        ¦       ¦       bootstrap-grid.rtl.css
+        ¦       ¦       bootstrap-grid.rtl.css.map
+        ¦       ¦       bootstrap-grid.rtl.min.css
+        ¦       ¦       bootstrap-grid.rtl.min.css.map
+        ¦       ¦       bootstrap-reboot.css
+        ¦       ¦       bootstrap-reboot.css.map
+        ¦       ¦       bootstrap-reboot.min.css
+        ¦       ¦       bootstrap-reboot.min.css.map
+        ¦       ¦       bootstrap-reboot.rtl.css
+        ¦       ¦       bootstrap-reboot.rtl.css.map
+        ¦       ¦       bootstrap-reboot.rtl.min.css
+        ¦       ¦       bootstrap-reboot.rtl.min.css.map
+        ¦       ¦       bootstrap-utilities.css
+        ¦       ¦       bootstrap-utilities.css.map
+        ¦       ¦       bootstrap-utilities.min.css
+        ¦       ¦       bootstrap-utilities.min.css.map
+        ¦       ¦       bootstrap-utilities.rtl.css
+        ¦       ¦       bootstrap-utilities.rtl.css.map
+        ¦       ¦       bootstrap-utilities.rtl.min.css
+        ¦       ¦       bootstrap-utilities.rtl.min.css.map
+        ¦       ¦       bootstrap.css
+        ¦       ¦       bootstrap.css.map
+        ¦       ¦       bootstrap.min.css
+        ¦       ¦       bootstrap.min.css.map
+        ¦       ¦       bootstrap.rtl.css
+        ¦       ¦       bootstrap.rtl.css.map
+        ¦       ¦       bootstrap.rtl.min.css
+        ¦       ¦       bootstrap.rtl.min.css.map
+        ¦       ¦       
+        ¦       +---js
+        ¦               bootstrap.bundle.js
+        ¦               bootstrap.bundle.js.map
+        ¦               bootstrap.bundle.min.js
+        ¦               bootstrap.bundle.min.js.map
+        ¦               bootstrap.esm.js
+        ¦               bootstrap.esm.js.map
+        ¦               bootstrap.esm.min.js
+        ¦               bootstrap.esm.min.js.map
+        ¦               bootstrap.js
+        ¦               bootstrap.js.map
+        ¦               bootstrap.min.js
+        ¦               bootstrap.min.js.map
+        ¦               
+        +---jquery
+        ¦   ¦   LICENSE.txt
+        ¦   ¦   
+        ¦   +---dist
+        ¦           jquery.js
+        ¦           jquery.min.js
+        ¦           jquery.min.map
+        ¦           
+        +---jquery-validation
+        ¦   ¦   LICENSE.md
+        ¦   ¦   
+        ¦   +---dist
+        ¦           additional-methods.js
+        ¦           additional-methods.min.js
+        ¦           jquery.validate.js
+        ¦           jquery.validate.min.js
+        ¦           
+        +---jquery-validation-unobtrusive
+                jquery.validate.unobtrusive.js
+                jquery.validate.unobtrusive.min.js
+                LICENSE.txt
+                
