@@ -12,7 +12,7 @@
                         <strong>Email:</strong> <a href="mailto:@business.Email">@business.Email</a><br />
                         <strong>Address:</strong> @business.FullAddress<br />
                         <strong>Type:</strong> @business.Type<br />
-                        <strong>Website:</strong> @business.Website
+                        <strong>Website:</strong> <a href="@business.Website" target="_blank" rel="noopener noreferrer">@business.Website</a>
                     </p>
                     <button type="button" class="btn btn-primary add-to-crm-btn" 
                             data-name="@business.Name"
@@ -20,7 +20,15 @@
                             data-email="@business.Email"
                             data-website="@business.Website"
                             data-type="@business.Type"
-                            data-address="@business.FullAddress">
+                            data-address="@business.FullAddress"
+                            data-rating="@business.Rating"
+                            data-review-count="@business.ReviewCount"
+                            data-photo-url="@business.PhotoUrl"
+                            data-business-status="@business.BusinessStatus"
+                            data-opening-status="@business.OpeningStatus"
+                            data-facebook="@business.Facebook"
+                            data-instagram="@business.Instagram"
+                            data-yelp="@business.YelpUrl">
                         Add to CRM
                     </button>
                 </div>
@@ -62,8 +70,19 @@
                     Email: button.data('email'),
                     Website: button.data('website'),
                     Type: button.data('type'),
-                    FullAddress: button.data('address')
+                    FullAddress: button.data('address'),
+                    Rating: button.data('rating'),
+                    ReviewCount: button.data('review-count'),
+                    PhotoUrl: button.data('photo-url'),
+                    BusinessStatus: button.data('business-status'),
+                    OpeningStatus: button.data('opening-status'),
+                    Facebook: button.data('facebook'),
+                    Instagram: button.data('instagram'),
+                    YelpUrl: button.data('yelp')
                 };
+
+                // Log the data being sent
+                console.log('Sending data to CRM:', businessData);
 
                 $.ajax({
                     url: '@Url.Action("AddToCrm", "BusinessSearch")',
@@ -79,11 +98,22 @@
                             alert('Failed to add to CRM: ' + response.message);
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Error details:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
                         alert('An error occurred while adding to CRM');
                     }
                 });
             });
         });
     </script>
+
+    <!-- Add CSRF token -->
+    @{
+        var antiforgeryToken = @Html.AntiForgeryToken();
+    }
+    @antiforgeryToken
 }

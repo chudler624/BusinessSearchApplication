@@ -1,4 +1,5 @@
 ﻿using BusinessSearch.Models;
+using BusinessSearch.Models.ViewModels;
 using BusinessSearch.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,49 @@ namespace BusinessSearch.Controllers
         {
             var entries = await _crmService.GetAllEntries();
             return View(entries);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BusinessView(int id)
+        {
+            try
+            {
+                var crmEntry = await _crmService.GetEntryById(id);
+                if (crmEntry == null)
+                {
+                    _logger.LogWarning($"CRM entry {id} not found");
+                    return NotFound();
+                }
+
+                var viewModel = new BusinessViewModel
+                {
+                    Id = crmEntry.Id,
+                    Name = crmEntry.BusinessName,
+                    PhoneNumber = crmEntry.Phone,
+                    Email = crmEntry.Email,
+                    Website = crmEntry.Website,
+                    FullAddress = crmEntry.FullAddress,
+                    Rating = crmEntry.GoogleRating ?? 0,
+                    ReviewCount = crmEntry.ReviewCount ?? 0,
+                    Type = crmEntry.Industry,
+                    BusinessStatus = crmEntry.BusinessStatus,
+                    OpeningStatus = crmEntry.OpeningStatus,
+                    PhotoUrl = crmEntry.PhotoUrl,
+                    Facebook = crmEntry.Facebook,
+                    Instagram = crmEntry.Instagram,
+                    YelpUrl = crmEntry.YelpUrl,
+                    Notes = crmEntry.Notes,
+                    Disposition = crmEntry.Disposition,
+                    DateAdded = crmEntry.DateAdded
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in BusinessView: {ex.Message}");
+                throw;
+            }
         }
 
         public IActionResult Create()

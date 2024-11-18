@@ -14,6 +14,7 @@
             <option value="Called Twice">Called Twice</option>
             <option value="Call Back">Call Back</option>
             <option value="Do Not Call">Do Not Call</option>
+            <option value="Not Interested">Not Interested</option>
             <option value="Wants Demo">Wants Demo</option>
             <option value="Sale Closed">Sale Closed</option>
         </select>
@@ -26,7 +27,10 @@
             <th>@Html.DisplayNameFor(model => model.BusinessName)</th>
             <th>@Html.DisplayNameFor(model => model.Email)</th>
             <th>@Html.DisplayNameFor(model => model.Phone)</th>
-            <th>@Html.DisplayNameFor(model => model.Website)</th>
+            <th class="sortable" onclick="sortTableByWebsite()">
+                @Html.DisplayNameFor(model => model.Website)
+                <span id="websiteSortIcon" class="ms-1">↕</span>
+            </th>
             <th>@Html.DisplayNameFor(model => model.Disposition)</th>
             <th>@Html.DisplayNameFor(model => model.Notes)</th>
             <th>Actions</th>
@@ -36,27 +40,31 @@
         @foreach (var item in Model)
         {
             <tr data-disposition="@item.Disposition">
-                <td>@Html.DisplayFor(modelItem => item.BusinessName)</td>
+                <td>
+                    <a asp-action="BusinessView" asp-route-id="@item.Id" class="text-decoration-none">
+                        @Html.DisplayFor(modelItem => item.BusinessName)
+                    </a>
+                </td>
                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
                 <td>@Html.DisplayFor(modelItem => item.Phone)</td>
                 <td>
                     @if (!string.IsNullOrEmpty(item.Website))
                     {
-                        <a href="@item.Website" target="_blank">@item.Website</a>
+                        <a href="@item.Website" target="_blank" class="text-decoration-none">@item.Website</a>
                     }
                 </td>
-
                 <td>
                     @{
                         var dispositions = new[]
                         {
-                "New",
-                "Called Once",
-                "Called Twice",
-                "Call Back",
-                "Do Not Call",
-                "Wants Demo",
-                "Sale Closed"
+                            "New",
+                            "Called Once",
+                            "Called Twice",
+                            "Call Back",
+                            "Do Not Call",
+                            "Not Interested",
+                            "Wants Demo",
+                            "Sale Closed"
                         };
                     }
                     <select class="form-select form-select-sm disposition-select" data-id="@item.Id" onchange="updateDisposition(this)">
@@ -87,6 +95,33 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        let websiteSortDirection = 'asc';
+
+        function sortTableByWebsite() {
+            const tbody = document.querySelector('table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const icon = document.getElementById('websiteSortIcon');
+
+            rows.sort((a, b) => {
+                const websiteA = a.cells[3].textContent.trim() || '';
+                const websiteB = b.cells[3].textContent.trim() || '';
+
+                if (websiteSortDirection === 'asc') {
+                    if (!websiteA && websiteB) return -1;
+                    if (websiteA && !websiteB) return 1;
+                    return websiteA.localeCompare(websiteB);
+                } else {
+                    if (!websiteA && websiteB) return 1;
+                    if (websiteA && !websiteB) return -1;
+                    return websiteB.localeCompare(websiteA);
+                }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            websiteSortDirection = websiteSortDirection === 'asc' ? 'desc' : 'asc';
+            icon.textContent = websiteSortDirection === 'asc' ? '↕' : '↕';
+        }
+
         function updateDisposition(select) {
             const id = select.dataset.id;
             const newDisposition = select.value;
@@ -104,7 +139,6 @@
                     if (data.success) {
                         const row = select.closest('tr');
                         row.dataset.disposition = newDisposition;
-                        // Show success message
                         showMessage('Disposition updated successfully', 'success');
                     } else {
                         showMessage('Failed to update disposition', 'error');
@@ -133,9 +167,9 @@
             const alertDiv = document.createElement('div');
             alertDiv.classList.add('alert', type === 'success' ? 'alert-success' : 'alert-danger', 'alert-dismissible', 'fade', 'show');
             alertDiv.innerHTML = `
-                                        ${message}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    `;
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
             document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
             setTimeout(() => alertDiv.remove(), 5000);
         }
@@ -157,7 +191,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Remove the row from the table
                         const row = event.target.closest('tr');
                         row.remove();
                         showMessage('Entry deleted successfully', 'success');

@@ -45,5 +45,13 @@ namespace BusinessSearch.Models
         public string? Notes { get; set; }
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+        public string? PhotoUrl { get; set; }
+        public int? ReviewCount { get; set; }
+        public string? BusinessStatus { get; set; }
+        public string? OpeningStatus { get; set; }
+        public string? Facebook { get; set; }
+        public string? Instagram { get; set; }
+        public string? YelpUrl { get; set; }
+        public string? FullAddress { get; set; }
     }
 }
