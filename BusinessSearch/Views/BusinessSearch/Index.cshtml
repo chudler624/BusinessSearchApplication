@@ -2,16 +2,37 @@
     ViewData["Title"] = "Business Search";
 }
 
-<h2>Business Search</h2>
+<h2 class="mb-4">Business Search</h2>
 
-<form asp-action="Search" method="post">
-    <div class="form-group">
-        <label for="industry">Industry:</label>
-        <input type="text" id="industry" name="industry" class="form-control" required>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <form asp-action="Search" method="post">
+                <div class="mb-3">
+                    <label for="industry" class="form-label">Industry:</label>
+                    <input type="text" id="industry" name="industry" class="form-control" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="zipcode" class="form-label">Zip Code:</label>
+                    <input type="text" id="zipcode" name="zipcode" class="form-control" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="limit" class="form-label">Results Limit:</label>
+                    <select id="limit" name="limit" class="form-select">
+                        <option value="1">1 result</option>
+                        <option value="5" selected>5 results</option>
+                        <option value="10">10 results</option>
+                        <option value="25">25 results</option>
+                        <option value="100">Unlimited</option>
+                    </select>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary px-4">Search</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="zipcode">Zip Code:</label>
-        <input type="text" id="zipcode" name="zipcode" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
+</div>

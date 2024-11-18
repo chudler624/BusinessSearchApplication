@@ -16,10 +16,38 @@ namespace BusinessSearch.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageSize = 25, int page = 1)
         {
-            var entries = await _crmService.GetAllEntries();
-            return View(entries);
+            try
+            {
+                var entries = await _crmService.GetAllEntries();
+
+                // Calculate pagination
+                var totalItems = entries.Count();
+                var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+                page = Math.Max(1, Math.Min(page, totalPages));
+
+                var pagedEntries = entries
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                var viewModel = new CrmIndexViewModel
+                {
+                    Entries = pagedEntries,
+                    CurrentPage = page,
+                    TotalPages = totalPages,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error retrieving CRM entries: {ex.Message}");
+                throw;
+            }
         }
 
         [HttpGet]

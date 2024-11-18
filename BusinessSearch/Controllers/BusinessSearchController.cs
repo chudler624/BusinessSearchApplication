@@ -25,10 +25,21 @@ namespace BusinessSearch.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Search(string industry, string zipcode)
+        public async Task<IActionResult> Search(string industry, string zipcode, int? limit)
         {
-            var businesses = await _businessDataService.SearchBusinessesAsync(industry, zipcode);
-            return View("Results", businesses);
+            try
+            {
+                _logger.LogInformation($"Searching for {industry} businesses in {zipcode} with limit: {limit ?? 5}");
+                var businesses = await _businessDataService.SearchBusinessesAsync(industry, zipcode, limit);
+                _logger.LogInformation($"Found {businesses.Count} businesses");
+                return View("Results", businesses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error during business search: {ex.Message}");
+                TempData["Error"] = "An error occurred while searching for businesses. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]

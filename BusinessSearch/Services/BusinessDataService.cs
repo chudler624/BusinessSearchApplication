@@ -19,53 +19,58 @@ namespace BusinessSearch.Services
             _apiHost = configuration["RapidAPI:Host"];
             _cache = memoryCache;
             _logger = logger;
+            Console.WriteLine("BusinessDataService initialized");
         }
 
-        public async Task<List<Business>> SearchBusinessesAsync(string query, string zipcode, int limit = 5)
+        public async Task<List<Business>> SearchBusinessesAsync(string query, string zipcode, int? limit = 5)
         {
-            var cacheKey = $"search_{query}_{zipcode}_{limit}";
-
-            if (_cache.TryGetValue(cacheKey, out List<Business>? businesses))
+            try
             {
-                _logger.LogInformation($"Cache hit for key: {cacheKey}");
-                return businesses;
-            }
+                Console.WriteLine($"\n=== Starting Business Search ===");
+                Console.WriteLine($"Query: {query}, Zipcode: {zipcode}, Limit: {limit}");
 
-            _logger.LogInformation($"Cache miss for key: {cacheKey}");            
+                var actualLimit = limit == 100 ? 50 : limit ?? 5;
+                var cacheKey = $"search_{query}_{zipcode}_{actualLimit}";
 
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(
-                    $"https://local-business-data.p.rapidapi.com/search?" +
-                    $"query={Uri.EscapeDataString(query)}%20in%20{zipcode}" +
-                    $"&limit={limit}" +                   
-                    $"&zoom=13" +
-                    $"&language=en" +
-                    $"&region=us" +
-                    $"&extract_emails_and_contacts=true"
-                )
-            };
+                Console.WriteLine($"Cache key: {cacheKey}");
 
-            _logger.LogInformation($"Making API request to URL: {request.RequestUri}");
-            request.Headers.Add("x-rapidapi-key", _apiKey);
-            request.Headers.Add("x-rapidapi-host", _apiHost);
+                if (_cache.TryGetValue(cacheKey, out List<Business>? businesses))
+                {
+                    Console.WriteLine($"Cache hit - returning {businesses?.Count ?? 0} cached results");
+                    return businesses;
+                }
 
-            int retryCount = 0;
-            const int maxRetries = 3;
-            const int retryDelay = 2000;
+                Console.WriteLine("Cache miss - making API request");
 
-            while (retryCount < maxRetries)
-            {
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri(
+                        $"https://local-business-data.p.rapidapi.com/search?" +
+                        $"query={Uri.EscapeDataString(query)}%20in%20{zipcode}" +
+                        $"&limit={actualLimit}" +
+                        $"&zoom=13" +
+                        $"&language=en" +
+                        $"&region=us" +
+                        $"&extract_emails_and_contacts=true"
+                    )
+                };
+
+                Console.WriteLine($"API Request URL: {request.RequestUri}");
+                request.Headers.Add("x-rapidapi-key", _apiKey);
+                request.Headers.Add("x-rapidapi-host", _apiHost);
+
+                var response = await _httpClient.SendAsync(request);
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Response Length: {body.Length} characters");
+                Console.WriteLine("Raw API Response:");
+                Console.WriteLine(body);
+
                 try
                 {
-                    var response = await _httpClient.SendAsync(request);
-                    response.EnsureSuccessStatusCode();
-                    var body = await response.Content.ReadAsStringAsync();
-
-                    _logger.LogInformation("API Response received");
-                    _logger.LogDebug($"Full API Response: {body}");
-
                     var jsonObject = JObject.Parse(body);
                     businesses = ParseBusinesses(jsonObject);
 
@@ -73,60 +78,73 @@ namespace BusinessSearch.Services
                         .SetSlidingExpiration(TimeSpan.FromMinutes(30));
 
                     _cache.Set(cacheKey, businesses, cacheEntryOptions);
-                    _logger.LogInformation($"Cached {businesses.Count} businesses for key: {cacheKey}");
+                    Console.WriteLine($"Cached {businesses.Count} businesses");
 
                     return businesses;
                 }
-                catch (HttpRequestException ex) when (ex.Message.Contains("429"))
-                {
-                    retryCount++;
-                    if (retryCount >= maxRetries)
-                    {
-                        _logger.LogError($"Rate limit exceeded after {maxRetries} attempts.");
-                        throw;
-                    }
-                    _logger.LogWarning($"Rate limit exceeded. Retrying in {retryDelay}ms. Attempt {retryCount} of {maxRetries}");
-                    await Task.Delay(retryDelay * retryCount);
-                }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error occurred while fetching business data: {ex.Message}");
-                    _logger.LogError($"Stack trace: {ex.StackTrace}");
+                    Console.WriteLine($"JSON parsing error: {ex.Message}");
+                    Console.WriteLine($"Raw response that caused error: {body}");
                     throw;
                 }
             }
-
-            throw new Exception("Failed to retrieve data after multiple attempts");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Search error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         private List<Business> ParseBusinesses(JObject apiResult)
         {
             var businesses = new List<Business>();
+            var skippedBusinesses = new List<string>();
+
             try
             {
-                _logger.LogInformation("Starting to parse businesses from API result");
-
-                var data = apiResult["data"] as JArray;
+                Console.WriteLine("\n=== Parsing Businesses ===");
+                var data = apiResult["data"];
                 if (data == null)
                 {
-                    _logger.LogWarning("No data array found in API result");
+                    Console.WriteLine("WARNING: No 'data' field in API response");
+                    Console.WriteLine($"Raw API response: {apiResult}");
                     return businesses;
                 }
 
-                _logger.LogInformation($"Found {data.Count} businesses in data array");
+                // Try to parse as array
+                if (!(data is JArray dataArray))
+                {
+                    Console.WriteLine($"WARNING: 'data' field is not an array. Type: {data.Type}");
+                    Console.WriteLine($"Data content: {data}");
+                    return businesses;
+                }
 
-                foreach (var item in data)
+                Console.WriteLine($"Found {dataArray.Count} businesses in API response");
+
+                foreach (JToken item in dataArray)
                 {
                     try
                     {
-                        _logger.LogInformation($"Processing business: {item["name"]}");
+                        Console.WriteLine($"\nParsing business raw data:");
+                        Console.WriteLine(item.ToString());
+
+                        var businessName = item["name"]?.ToString() ?? "Unknown";
+                        Console.WriteLine($"Processing business: {businessName}");
+
+                        var emailToken = item["emails_and_contacts"]?["emails"]?.FirstOrDefault();
+                        var email = emailToken?.ToString();
+                        var phone = item["phone_number"]?.ToString();
+
+                        Console.WriteLine($"Basic info - Name: {businessName}, Email: {email}, Phone: {phone}");
 
                         var business = new Business
                         {
                             BusinessId = item["business_id"]?.ToString(),
-                            Name = item["name"]?.ToString(),
-                            PhoneNumber = item["phone_number"]?.ToString(),
-                            Email = item["emails_and_contacts"]?["emails"]?[0]?.ToString(),
+                            Name = businessName,
+                            PhoneNumber = phone,
+                            Email = email,
                             FullAddress = item["full_address"]?.ToString(),
                             Rating = item["rating"]?.Value<double?>() ?? 0,
                             ReviewCount = item["review_count"]?.Value<int?>() ?? 0,
@@ -142,34 +160,41 @@ namespace BusinessSearch.Services
                             City = TryGetNestedValue(item, "address", "city")?.ToString(),
                             Zipcode = TryGetNestedValue(item, "address", "postal_code")?.ToString(),
                             State = TryGetNestedValue(item, "address", "state")?.ToString(),
-                            Country = TryGetNestedValue(item, "address", "country")?.ToString(),                            
-                            PhotoUrl = item["photos_sample"]?[0]?["photo_url"]?.ToString(),                            
+                            Country = TryGetNestedValue(item, "address", "country")?.ToString(),
+                            PhotoUrl = item["photos_sample"]?[0]?["photo_url"]?.ToString(),
                             Facebook = item["emails_and_contacts"]?["facebook"]?.ToString(),
                             Instagram = item["emails_and_contacts"]?["instagram"]?.ToString(),
                             YelpUrl = item["emails_and_contacts"]?["yelp"]?.ToString()
                         };
 
-                        _logger.LogInformation($"Successfully parsed business: {business.Name}");
-                        _logger.LogInformation($"Business details - Email: {business.Email}, Phone: {business.PhoneNumber}, Photo: {business.PhotoUrl}");
-
                         businesses.Add(business);
+                        Console.WriteLine($"Successfully parsed business: {businessName}");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error parsing individual business: {ex.Message}");
-                        _logger.LogError($"Business data that caused error: {item}");
+                        var businessName = item["name"]?.ToString() ?? "Unknown";
+                        skippedBusinesses.Add(businessName);
+                        Console.WriteLine($"Error parsing business {businessName}: {ex.Message}");
+                        Console.WriteLine($"Error stack trace: {ex.StackTrace}");
+                        Console.WriteLine($"Problematic JSON: {item}");
                         continue;
                     }
+                }
+
+                Console.WriteLine($"\n=== Parsing Summary ===");
+                Console.WriteLine($"Successfully parsed {businesses.Count} businesses");
+                if (skippedBusinesses.Any())
+                {
+                    Console.WriteLine($"Skipped businesses: {string.Join(", ", skippedBusinesses)}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error parsing businesses: {ex.Message}");
-                _logger.LogError($"Stack trace: {ex.StackTrace}");
-                throw new Exception("Failed to parse business data", ex);
+                Console.WriteLine($"Critical error parsing businesses: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"Full API response: {apiResult}");
             }
 
-            _logger.LogInformation($"Finished parsing {businesses.Count} businesses");
             return businesses;
         }
 
@@ -187,7 +212,7 @@ namespace BusinessSearch.Services
             }
             catch (Exception ex)
             {
-                _logger.LogWarning($"Error getting nested value: {ex.Message}");
+                Console.WriteLine($"Error getting nested value: {ex.Message}");
                 return null;
             }
         }
