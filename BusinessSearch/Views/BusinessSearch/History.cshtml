@@ -1,0 +1,159 @@
+﻿@model BusinessSearch.Models.ViewModels.SearchHistoryViewModel
+@{
+    ViewData["Title"] = "Search History";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Search History</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-primary">New Search</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Industry</label>
+                    <input type="text" name="industryFilter" class="form-control" value="@Model.Filter.Industry">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Zip Code</label>
+                    <input type="text" name="zipCodeFilter" class="form-control" value="@Model.Filter.ZipCode">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                    <a href="@Url.Action("History")" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("History", new { sortBy = "date", ascending = Model.CurrentSort == "date" ? !Model.IsAscending : false })">
+                                    Date
+                                    @if (Model.CurrentSort == "date")
+                                    {
+                                        <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="@Url.Action("History", new { sortBy = "industry", ascending = Model.CurrentSort == "industry" ? !Model.IsAscending : true })">
+                                    Industry
+                                    @if (Model.CurrentSort == "industry")
+                                    {
+                                        <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="@Url.Action("History", new { sortBy = "zipcode", ascending = Model.CurrentSort == "zipcode" ? !Model.IsAscending : true })">
+                                    Zip Code
+                                    @if (Model.CurrentSort == "zipcode")
+                                    {
+                                        <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="@Url.Action("History", new { sortBy = "results", ascending = Model.CurrentSort == "results" ? !Model.IsAscending : true })">
+                                    Results
+                                    @if (Model.CurrentSort == "results")
+                                    {
+                                        <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var search in Model.Searches)
+                        {
+                            <tr>
+                                <td>@search.SearchDate.ToString("MM/dd/yyyy HH:mm")</td>
+                                <td>@search.Industry</td>
+                                <td>@search.ZipCode</td>
+                                <td>@search.TotalResults</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("ViewHistoricalResults", new { id = search.Id })" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-search"></i> View
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete(@search.Id)">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.Pagination.TotalPages > 1)
+            {
+                <nav aria-label="Search history pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(!Model.Pagination.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage - 1 })">&laquo;</a>
+                        </li>
+                        @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("History", new { page = i })">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(!Model.Pagination.HasNextPage ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage + 1 })">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this search history entry?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const form = document.getElementById('deleteForm');
+            form.action = '@Url.Action("DeleteSearch")/' + id;
+            modal.show();
+        }
+    </script>
+}

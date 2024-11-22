@@ -1,12 +1,13 @@
-﻿@{
+﻿@model BusinessSearch.Models.ViewModels.RecentSearchesViewModel
+@{
     ViewData["Title"] = "Business Search";
 }
 
 <h2 class="mb-4">Business Search</h2>
 
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
+    <div class="row">
+        <div class="col-md-6">
             <form asp-action="Search" method="post">
                 <div class="mb-3">
                     <label for="industry" class="form-label">Industry:</label>
@@ -33,6 +34,49 @@
                     <button type="submit" class="btn btn-primary px-4">Search</button>
                 </div>
             </form>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Searches</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="displayCountDropdown" data-bs-toggle="dropdown">
+                            Show: @Model.DisplayCount
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { displayCount = 5 })">Show 5</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Index", new { displayCount = 10 })">Show 10</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentSearches.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var search in Model.RecentSearches)
+                            {
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@search.Industry in @search.ZipCode</h6>
+                                        <small>@search.SearchDate.ToString("MM/dd/yyyy HH:mm")</small>
+                                    </div>
+                                    <p class="mb-1">Results: @search.TotalResults</p>
+                                    <a href="@Url.Action("ViewHistoricalResults", new { id = search.Id })" 
+                                       class="btn btn-sm btn-outline-primary">View Results</a>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">No recent searches</p>
+                    }
+                </div>
+                <div class="card-footer text-center">
+                    <a href="@Url.Action("History")" class="btn btn-link">View All Search History</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

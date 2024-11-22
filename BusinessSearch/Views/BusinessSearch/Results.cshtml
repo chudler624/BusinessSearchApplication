@@ -1,40 +1,59 @@
 ﻿@model IEnumerable<BusinessSearch.Models.Business>
-<h2>Search Results</h2>
-<div class="row">
-    @foreach (var business in Model)
-    {
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@business.Name</h5>
-                    <p class="card-text">
-                        <strong>Phone:</strong> @business.PhoneNumber<br />
-                        <strong>Email:</strong> <a href="mailto:@business.Email">@business.Email</a><br />
-                        <strong>Address:</strong> @business.FullAddress<br />
-                        <strong>Type:</strong> @business.Type<br />
-                        <strong>Website:</strong> <a href="@business.Website" target="_blank" rel="noopener noreferrer">@business.Website</a>
-                    </p>
-                    <button type="button" class="btn btn-primary add-to-crm-btn" 
-                            data-name="@business.Name"
-                            data-phone="@business.PhoneNumber"
-                            data-email="@business.Email"
-                            data-website="@business.Website"
-                            data-type="@business.Type"
-                            data-address="@business.FullAddress"
-                            data-rating="@business.Rating"
-                            data-review-count="@business.ReviewCount"
-                            data-photo-url="@business.PhotoUrl"
-                            data-business-status="@business.BusinessStatus"
-                            data-opening-status="@business.OpeningStatus"
-                            data-facebook="@business.Facebook"
-                            data-instagram="@business.Instagram"
-                            data-yelp="@business.YelpUrl">
-                        Add to CRM
-                    </button>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Search Results</h2>
+        @if (ViewBag.SearchDate != null)
+        {
+            <div class="alert alert-info mb-0">
+                Results from search performed on @(((DateTime)ViewBag.SearchDate).ToString("MM/dd/yyyy HH:mm"))
+            </div>
+        }
+    </div>
+
+    <div class="row">
+        @foreach (var business in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@business.Name</h5>
+                        <p class="card-text">
+                            <strong>Phone:</strong> @business.PhoneNumber<br />
+                            <strong>Email:</strong> <a href="mailto:@business.Email">@business.Email</a><br />
+                            <strong>Address:</strong> @business.FullAddress<br />
+                            <strong>Type:</strong> @business.Type<br />
+                            <strong>Website:</strong> <a href="@business.Website" target="_blank" rel="noopener noreferrer">@business.Website</a>
+                        </p>
+                        <button type="button" class="btn btn-primary add-to-crm-btn" 
+                                data-name="@business.Name"
+                                data-phone="@business.PhoneNumber"
+                                data-email="@business.Email"
+                                data-website="@business.Website"
+                                data-type="@business.Type"
+                                data-address="@business.FullAddress"
+                                data-rating="@business.Rating"
+                                data-review-count="@business.ReviewCount"
+                                data-photo-url="@business.PhotoUrl"
+                                data-business-status="@business.BusinessStatus"
+                                data-opening-status="@business.OpeningStatus"
+                                data-facebook="@business.Facebook"
+                                data-instagram="@business.Instagram"
+                                data-yelp="@business.YelpUrl">
+                            Add to CRM
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Back to Search</a>
+        @if (ViewBag.SearchDate != null)
+        {
+            <a asp-action="History" class="btn btn-outline-primary">Back to History</a>
+        }
+    </div>
 </div>
 
 <!-- Success Modal -->
@@ -53,10 +72,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="mt-4">
-    <a asp-action="Index" class="btn btn-secondary">Back to Search</a>
 </div>
 
 @section Scripts {

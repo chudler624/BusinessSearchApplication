@@ -34,6 +34,7 @@ namespace BusinessSearch
             // Register base services
             services.AddScoped<BusinessDataService>();
             services.AddScoped<CrmService>();
+            services.AddScoped<ISearchHistoryService, SearchHistoryService>(); // Add SearchHistoryService
 
             // Register all analysis services in the correct order
             services.AddScoped<IResponsivenessService, ResponsivenessService>();
