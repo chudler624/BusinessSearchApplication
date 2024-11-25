@@ -176,35 +176,36 @@ namespace BusinessSearch.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddToCrm([FromForm] Business business)
+        public async Task<IActionResult> AddToCrm([FromBody] AddToCrmRequest request)
         {
             try
             {
-                _logger.LogInformation($"Adding business to CRM: {business.Name}");
+                _logger.LogInformation($"Adding business {request.Name} to CRM list {request.ListId}");
 
                 var crmEntry = new CrmEntry
                 {
-                    BusinessName = business.Name,
-                    Phone = business.PhoneNumber,
-                    Email = business.Email,
-                    Website = business.Website,
-                    Industry = business.Type,
+                    BusinessName = request.Name,
+                    Phone = request.PhoneNumber,
+                    Email = request.Email,
+                    Website = request.Website,
+                    Industry = request.Type,
                     DateAdded = DateTime.UtcNow,
-                    Disposition = "New",
-                    Notes = $"Added from search results on {DateTime.UtcNow}",
-                    GoogleRating = business.Rating,
-                    ReviewCount = business.ReviewCount,
-                    PhotoUrl = business.PhotoUrl,
-                    BusinessStatus = business.BusinessStatus,
-                    OpeningStatus = business.OpeningStatus,
-                    FullAddress = business.FullAddress,
-                    Facebook = business.Facebook,
-                    Instagram = business.Instagram,
-                    YelpUrl = business.YelpUrl
+                    Disposition = request.Disposition ?? "New",
+                    Notes = request.Notes,
+                    GoogleRating = request.Rating,
+                    ReviewCount = request.ReviewCount,
+                    PhotoUrl = request.PhotoUrl,
+                    BusinessStatus = request.BusinessStatus,
+                    OpeningStatus = request.OpeningStatus,
+                    FullAddress = request.FullAddress,
+                    Facebook = request.Facebook,
+                    Instagram = request.Instagram,
+                    YelpUrl = request.YelpUrl
                 };
 
-                await _crmService.AddEntry(crmEntry);
-                _logger.LogInformation($"Successfully added {business.Name} to CRM");
+                // Add to CRM with specified list
+                await _crmService.AddEntry(crmEntry, request.ListId);
+                _logger.LogInformation($"Successfully added {request.Name} to CRM list {request.ListId}");
                 return Json(new { success = true, message = "Business successfully added to CRM" });
             }
             catch (Exception ex)
@@ -218,6 +219,27 @@ namespace BusinessSearch.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public class AddToCrmRequest
+        {
+            public string Name { get; set; }
+            public string? PhoneNumber { get; set; }
+            public string? Email { get; set; }
+            public string? Website { get; set; }
+            public string? Type { get; set; }
+            public string? FullAddress { get; set; }
+            public double? Rating { get; set; }
+            public int? ReviewCount { get; set; }
+            public string? PhotoUrl { get; set; }
+            public string? BusinessStatus { get; set; }
+            public string? OpeningStatus { get; set; }
+            public string? Facebook { get; set; }
+            public string? Instagram { get; set; }
+            public string? YelpUrl { get; set; }
+            public string? Disposition { get; set; }
+            public string? Notes { get; set; }
+            public int ListId { get; set; }
         }
     }
 }

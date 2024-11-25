@@ -1,0 +1,563 @@
+﻿@model BusinessSearch.Models.ViewModels.CrmListViewModel
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">@Model.List.Name</h2>
+            <div class="text-muted">
+                @if (!string.IsNullOrEmpty(Model.List.Industry))
+                {
+                    <span class="badge bg-info me-2">@Model.List.Industry</span>
+                }
+                <span class="me-3">@Model.List.EntryCount Entries</span>
+                @if (Model.List.AssignedTo != null)
+                {
+                    <span class="me-3">
+                        <i class="fas fa-user me-1"></i> @Model.List.AssignedTo.Name
+                    </span>
+                }
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add New Entry
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Lists
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search entries...">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select id="dispositionFilter" class="form-select" onchange="filterTable()">
+                <option value="">All Dispositions</option>
+                <option value="New">New</option>
+                <option value="Called Once">Called Once</option>
+                <option value="Called Twice">Called Twice</option>
+                <option value="Call Back">Call Back</option>
+                <option value="Do Not Call">Do Not Call</option>
+                <option value="Not Interested">Not Interested</option>
+                <option value="Wants Demo">Wants Demo</option>
+                <option value="Sale Closed">Sale Closed</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select id="bulkAction" class="form-select" onchange="handleBulkAction(this.value)">
+                <option value="">Bulk Actions...</option>
+                <option value="move">Move to Another List</option>
+                <option value="copy">Copy to Another List</option>
+                <option value="delete">Delete Selected</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Business Name</th>
+                            <th>Industry</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th class="sortable" onclick="sortTableByWebsite()">
+                                Website
+                                <span id="websiteSortIcon" class="ms-1">↕</span>
+                            </th>
+                            <th>Disposition</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Entries)
+                        {
+                            <tr data-disposition="@item.Disposition">
+                                <td>
+                                    <input type="checkbox" class="form-check-input entry-checkbox" 
+                                           name="selectedEntries" value="@item.Id" 
+                                           onchange="updateBulkActionState()">
+                                </td>
+                                <td>
+                                    <a asp-action="BusinessView" asp-route-id="@item.Id" class="text-decoration-none">
+                                        @Html.DisplayFor(modelItem => item.BusinessName)
+                                    </a>
+                                    @if (item.IsInMultipleLists)
+                                    {
+                                        <span class="ms-1 text-primary" title="In multiple lists">*</span>
+                                    }
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.Industry)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Website))
+                                    {
+                                        <a href="@item.Website" target="_blank" class="text-decoration-none">@item.Website</a>
+                                    }
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm disposition-select" 
+                                            data-id="@item.Id" 
+                                            onchange="updateDisposition(this)">
+                                        @foreach (var disposition in new[] { "New", "Called Once", "Called Twice", 
+                                            "Call Back", "Do Not Call", "Not Interested", "Wants Demo", "Sale Closed" })
+                                        {
+                                            <option value="@disposition" selected="@(item.Disposition == disposition)">
+                                                @disposition
+                                            </option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.Notes)</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-warning action-btn">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="deleteEntry(@item.Id)" 
+                                                class="btn btn-sm btn-danger action-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    <select id="pageSizeSelect" class="form-select" onchange="changePageSize(this.value)">
+                        @foreach (var size in new[] { 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(Model.PageSize == size)">
+                                @size entries per page
+                            </option>
+                        }
+                    </select>
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination mb-0">
+                        <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ListView", new { id = Model.List.Id, page = Model.CurrentPage - 1, pageSize = Model.PageSize })">Previous</a>
+                        </li>
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("ListView", new { id = Model.List.Id, page = i, pageSize = Model.PageSize })">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ListView", new { id = Model.List.Id, page = Model.CurrentPage + 1, pageSize = Model.PageSize })">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- Move Entries Modal -->
+<div class="modal fade" id="moveEntriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Move Entries to Another List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="moveToList" class="form-label">Select Destination List</label>
+                    <select id="moveToList" class="form-select" required>
+                        <option value="">Select a list...</option>
+                        @foreach (var list in Model.AvailableLists.Where(l => l.Id != Model.List.Id))
+                        {
+                            <option value="@list.Id">@list.Name</option>
+                        }
+                    </select>
+                </div>
+                <p class="text-muted">
+                    Selected entries will be moved to the chosen list and removed from the current list.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmMoveEntries()">
+                    Move Entries
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Copy Entries Modal -->
+<div class="modal fade" id="copyEntriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Copy Entries to Another List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="copyToList" class="form-label">Select Destination List</label>
+                    <select id="copyToList" class="form-select" required>
+                        <option value="">Select a list...</option>
+                        @foreach (var list in Model.AvailableLists.Where(l => l.Id != Model.List.Id))
+                        {
+                            <option value="@list.Id">@list.Name</option>
+                        }
+                    </select>
+                </div>
+                <p class="text-muted">
+                    Selected entries will be copied to the chosen list while remaining in the current list.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCopyEntries()">
+                    Copy Entries
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteEntriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Selected Entries</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">
+                    Are you sure you want to delete the selected entries? This action cannot be undone.
+                </p>
+                <p id="deleteEntriesCount" class="fw-bold"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteEntries()">
+                    Delete Entries
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <style>
+        .action-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        let websiteSortDirection = 'asc';
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.entry-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkActionState();
+        }
+
+        function updateBulkActionState() {
+            const checkedCount = document.querySelectorAll('.entry-checkbox:checked').length;
+            document.getElementById('bulkAction').disabled = checkedCount === 0;
+        }
+
+        function handleBulkAction(action) {
+            if (!action) return;
+
+            const selectedIds = Array.from(document.querySelectorAll('.entry-checkbox:checked'))
+                .map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                showMessage('Please select entries first', 'warning');
+                return;
+            }
+
+            switch (action) {
+                case 'move':
+                    moveEntries(selectedIds);
+                    break;
+                case 'copy':
+                    copyEntries(selectedIds);
+                    break;
+                case 'delete':
+                    deleteSelectedEntries(selectedIds);
+                    break;
+            }
+
+            document.getElementById('bulkAction').value = '';
+        }
+
+        function sortTableByWebsite() {
+            const tbody = document.querySelector('table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const icon = document.getElementById('websiteSortIcon');
+
+            rows.sort((a, b) => {
+                const websiteA = a.cells[5].textContent.trim() || '';
+                const websiteB = b.cells[5].textContent.trim() || '';
+
+                if (websiteSortDirection === 'asc') {
+                    if (!websiteA && websiteB) return -1;
+                    if (websiteA && !websiteB) return 1;
+                    return websiteA.localeCompare(websiteB);
+                } else {
+                    if (!websiteA && websiteB) return 1;
+                    if (websiteA && !websiteB) return -1;
+                    return websiteB.localeCompare(websiteA);
+                }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            websiteSortDirection = websiteSortDirection === 'asc' ? 'desc' : 'asc';
+            icon.textContent = websiteSortDirection === 'asc' ? '↕' : '↕';
+        }
+
+        function updateDisposition(select) {
+            const id = select.dataset.id;
+            const newDisposition = select.value;
+
+            fetch('@Url.Action("UpdateDisposition", "Crm")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: parseInt(id), disposition: newDisposition })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = select.closest('tr');
+                    row.dataset.disposition = newDisposition;
+                    showMessage('Disposition updated successfully', 'success');
+                } else {
+                    showMessage('Failed to update disposition', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to update disposition', 'error');
+            });
+        }
+
+        function filterTable() {
+            const filter = document.getElementById('dispositionFilter').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('table tbody tr');
+
+            rows.forEach(row => {
+                const disposition = row.dataset.disposition;
+                const text = row.textContent.toLowerCase();
+                const matchesDisposition = !filter || disposition === filter;
+                const matchesSearch = !searchText || text.includes(searchText);
+                row.style.display = matchesDisposition && matchesSearch ? '' : 'none';
+            });
+        }
+
+        function showMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show', 'position-fixed', 'top-0', 'end-0', 'm-3');
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function deleteEntry(id) {
+            if (!confirm('Are you sure you want to delete this entry?')) {
+                return;
+            }
+
+            fetch(`@Url.Action("Delete", "Crm")/${id}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.querySelector(`tr input[value="${id}"]`).closest('tr');
+                    row.remove();
+                    showMessage('Entry deleted successfully', 'success');
+                } else {
+                    showMessage('Failed to delete entry', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to delete entry', 'error');
+            });
+        }
+
+        function changePageSize(size) {
+            window.location.href = '@Url.Action("ListView", new { id = Model.List.Id })' + '?pageSize=' + size;
+        }
+
+        // Initialize search input handler
+        document.getElementById('searchInput').addEventListener('keyup', 
+            debounce(filterTable, 300)
+        );
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Initialize bulk action state
+        updateBulkActionState();
+        let selectedEntryIds = [];
+
+function moveEntries(ids) {
+    selectedEntryIds = ids;
+    const modal = new bootstrap.Modal(document.getElementById('moveEntriesModal'));
+    modal.show();
+}
+
+function copyEntries(ids) {
+    selectedEntryIds = ids;
+    const modal = new bootstrap.Modal(document.getElementById('copyEntriesModal'));
+    modal.show();
+}
+
+function deleteSelectedEntries(ids) {
+    selectedEntryIds = ids;
+    const modal = new bootstrap.Modal(document.getElementById('deleteEntriesModal'));
+    document.getElementById('deleteEntriesCount').textContent = 
+        `Number of entries to delete: ${ids.length}`;
+    modal.show();
+}
+
+function confirmMoveEntries() {
+    const destinationListId = document.getElementById('moveToList').value;
+    if (!destinationListId) {
+        showMessage('Please select a destination list', 'warning');
+        return;
+    }
+
+    fetch('@Url.Action("MoveEntries", "Crm")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({
+            sourceListId: @Model.List.Id,
+            destinationListId: destinationListId,
+            entryIds: selectedEntryIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            showMessage(data.message || 'Failed to move entries', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Failed to move entries', 'error');
+    });
+}
+
+function confirmCopyEntries() {
+    const destinationListId = document.getElementById('copyToList').value;
+    if (!destinationListId) {
+        showMessage('Please select a destination list', 'warning');
+        return;
+    }
+
+    fetch('@Url.Action("CopyEntries", "Crm")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({
+            sourceListId: @Model.List.Id,
+            destinationListId: destinationListId,
+            entryIds: selectedEntryIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Entries copied successfully', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('copyEntriesModal')).hide();
+        } else {
+            showMessage(data.message || 'Failed to copy entries', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Failed to copy entries', 'error');
+    });
+}
+
+function confirmDeleteEntries() {
+    fetch('@Url.Action("DeleteEntries", "Crm")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({
+            listId: @Model.List.Id,
+            entryIds: selectedEntryIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            showMessage(data.message || 'Failed to delete entries', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Failed to delete entries', 'error');
+    });
+}
+    </script>
+}

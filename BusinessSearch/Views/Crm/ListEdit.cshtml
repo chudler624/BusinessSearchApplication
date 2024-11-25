@@ -1,0 +1,54 @@
+﻿@model BusinessSearch.Models.CrmList
+
+<div class="container">
+    <h2>Edit List</h2>
+
+    <form asp-action="UpdateList" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedDate" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Name" class="control-label">List Name</label>
+                    <input asp-for="Name" class="form-control" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Description" class="control-label">Description (Optional)</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Industry" class="control-label">Industry (Optional)</label>
+                    <input asp-for="Industry" class="form-control" />
+                    <span asp-validation-for="Industry" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="AssignedToId" class="control-label">Assigned To (Optional)</label>
+                    <select asp-for="AssignedToId" class="form-select">
+                        <option value="">Unassigned</option>
+                        @foreach (var member in ViewBag.TeamMembers)
+                        {
+                            <option value="@member.Id">@member.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="AssignedToId" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to Lists</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

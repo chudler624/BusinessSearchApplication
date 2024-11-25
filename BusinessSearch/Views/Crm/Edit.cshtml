@@ -1,113 +1,109 @@
-﻿@model BusinessSearch.Models.CrmEntry
+﻿@model BusinessSearch.Models.ViewModels.EditCrmEntryViewModel
 
 <div class="container">
     <h2>Edit CRM Entry</h2>
 
     <form asp-action="Edit" method="post">
-        <div id="formDebug" style="display:none;">
-            <pre>@Html.Raw(Json.Serialize(Model))</pre>
-        </div>
         @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="DateAdded" />
+        <input type="hidden" asp-for="Entry.Id" />
+        <input type="hidden" asp-for="Entry.DateAdded" />
 
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group mb-3">
-                    <label asp-for="BusinessName" class="control-label"></label>
-                    <input asp-for="BusinessName" class="form-control" />
-                    <span asp-validation-for="BusinessName" class="text-danger"></span>
+                    <label asp-for="Entry.BusinessName" class="control-label">Business Name</label>
+                    <input asp-for="Entry.BusinessName" class="form-control" />
+                    <span asp-validation-for="Entry.BusinessName" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Phone" class="control-label"></label>
-                    <input asp-for="Phone" class="form-control" />
-                    <span asp-validation-for="Phone" class="text-danger"></span>
+                    <label asp-for="Entry.Phone" class="control-label">Phone</label>
+                    <input asp-for="Entry.Phone" class="form-control" />
+                    <span asp-validation-for="Entry.Phone" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Email" class="control-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
+                    <label asp-for="Entry.Email" class="control-label">Email (Optional)</label>
+                    <input asp-for="Entry.Email" class="form-control" />
+                    <span asp-validation-for="Entry.Email" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Website" class="control-label"></label>
-                    <input asp-for="Website" class="form-control" />
-                    <span asp-validation-for="Website" class="text-danger"></span>
+                    <label asp-for="Entry.Website" class="control-label">Website</label>
+                    <input asp-for="Entry.Website" class="form-control" />
+                    <span asp-validation-for="Entry.Website" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Industry" class="control-label"></label>
-                    <input asp-for="Industry" class="form-control" />
-                    <span asp-validation-for="Industry" class="text-danger"></span>
+                    <label asp-for="Entry.Industry" class="control-label">Industry</label>
+                    <input asp-for="Entry.Industry" class="form-control" />
+                    <span asp-validation-for="Entry.Industry" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="col-md-6">
                 <div class="form-group mb-3">
-                    <label asp-for="Disposition" class="control-label"></label>
-                    <select asp-for="Disposition" class="form-select">
+                    <label asp-for="Entry.Disposition" class="control-label">Disposition</label>
+                    <select asp-for="Entry.Disposition" class="form-select">
                         <option value="New">New</option>
                         <option value="Called Once">Called Once</option>
                         <option value="Called Twice">Called Twice</option>
                         <option value="Call Back">Call Back</option>
                         <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
                         <option value="Wants Demo">Wants Demo</option>
                         <option value="Sale Closed">Sale Closed</option>
                     </select>
-                    <span asp-validation-for="Disposition" class="text-danger"></span>
+                    <span asp-validation-for="Entry.Disposition" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="GoogleRating" class="control-label"></label>
-                    <input asp-for="GoogleRating" class="form-control" />
-                    <span asp-validation-for="GoogleRating" class="text-danger"></span>
+                    <label asp-for="Entry.GoogleRating" class="control-label">Google Rating</label>
+                    <input asp-for="Entry.GoogleRating" class="form-control" type="number" step="0.1" min="0" max="5" />
+                    <span asp-validation-for="Entry.GoogleRating" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="Notes" class="control-label"></label>
-                    <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
-                    <span asp-validation-for="Notes" class="text-danger"></span>
+                    <label asp-for="Entry.Notes" class="control-label">Notes</label>
+                    <textarea asp-for="Entry.Notes" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label">Lists</label>
+                    <div class="list-group">
+                        @foreach (var list in Model.AvailableLists)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" 
+                                       name="SelectedListIds" 
+                                       value="@list.Id" 
+                                       @(Model.CurrentListIds.Contains(list.Id) ? "checked" : "") />
+                                <label class="form-check-label">@list.Name</label>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="form-group mt-3">
             <button type="submit" class="btn btn-primary">Save</button>
-            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to Lists</a>
         </div>
     </form>
 </div>
 
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var modelState in ViewData.ModelState.Values)
-            {
-                foreach (var error in modelState.Errors)
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            }
-        </ul>
-    </div>
-}
-
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
-            $('form').on('submit', function(e) {
-                console.log('Form submitting...');
-                let formData = {};
-                $(this).serializeArray().forEach(item => {
-                    formData[item.name] = item.value;
-                });
-                console.log('Form data:', formData);
+            // Auto-format website input
+            $('#Entry_Website').on('blur', function() {
+                var value = $(this).val().trim();
+                if (value && !value.match(/^https?:\/\//)) {
+                    $(this).val('https://' + value);
+                }
             });
         });
     </script>

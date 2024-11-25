@@ -26,5 +26,6 @@ namespace BusinessSearch.Models.ViewModels
         public string? Facebook { get; set; }
         public string? Instagram { get; set; }
         public string? YelpUrl { get; set; }
+        public ICollection<CrmList>? Lists { get; set; }
     }
 }

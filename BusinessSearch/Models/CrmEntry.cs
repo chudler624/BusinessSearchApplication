@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessSearch.Models
 {
@@ -45,13 +46,34 @@ namespace BusinessSearch.Models
         public string? Notes { get; set; }
 
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
+
+        [StringLength(500)]
         public string? PhotoUrl { get; set; }
+
         public int? ReviewCount { get; set; }
+
+        [StringLength(50)]
         public string? BusinessStatus { get; set; }
+
+        [StringLength(50)]
         public string? OpeningStatus { get; set; }
+
+        [StringLength(255)]
         public string? Facebook { get; set; }
+
+        [StringLength(255)]
         public string? Instagram { get; set; }
+
+        [StringLength(255)]
         public string? YelpUrl { get; set; }
+
+        [StringLength(500)]
         public string? FullAddress { get; set; }
+
+        // New properties for list management
+        public virtual ICollection<CrmEntryList> CrmEntryLists { get; set; } = new List<CrmEntryList>();
+
+        [NotMapped]
+        public bool IsInMultipleLists => CrmEntryLists?.Count > 1;
     }
 }

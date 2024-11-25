@@ -13,6 +13,8 @@ namespace BusinessSearch.Data
         public DbSet<CrmEntry> CrmEntries { get; set; }
         public DbSet<SavedSearch> SavedSearches { get; set; }
         public DbSet<SavedBusinessResult> SavedBusinessResults { get; set; }
+        public DbSet<CrmList> CrmLists { get; set; }
+        public DbSet<TeamMember> TeamMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,7 +49,7 @@ namespace BusinessSearch.Data
                 entity.Property(e => e.Notes)
                     .HasMaxLength(1000);
 
-                // New fields
+                // Additional fields
                 entity.Property(e => e.PhotoUrl)
                     .HasMaxLength(500);
                 entity.Property(e => e.Facebook)
@@ -67,6 +69,69 @@ namespace BusinessSearch.Data
                 entity.HasIndex(e => e.BusinessName);
                 entity.HasIndex(e => e.DateAdded);
                 entity.HasIndex(e => e.Disposition);
+            });
+
+            modelBuilder.Entity<CrmList>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                entity.Property(e => e.Description)
+                    .HasMaxLength(500);
+                entity.Property(e => e.Industry)
+                    .HasMaxLength(50);
+                entity.Property(e => e.CreatedDate)
+                    .IsRequired();
+
+                entity.HasOne(e => e.AssignedTo)
+                    .WithMany(t => t.AssignedLists)
+                    .HasForeignKey(e => e.AssignedToId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                // Indexes
+                entity.HasIndex(e => e.Name);
+                entity.HasIndex(e => e.Industry);
+                entity.HasIndex(e => e.AssignedToId);
+            });
+
+            modelBuilder.Entity<TeamMember>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                entity.Property(e => e.Role)
+                    .HasMaxLength(100);
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100);
+                entity.Property(e => e.DateAdded)
+                    .IsRequired();
+
+                // Indexes
+                entity.HasIndex(e => e.Name);
+                entity.HasIndex(e => e.Role);
+            });
+
+            modelBuilder.Entity<CrmEntryList>(entity =>
+            {
+                entity.HasKey(e => new { e.CrmEntryId, e.CrmListId });
+
+                entity.Property(e => e.DateAdded)
+                    .IsRequired();
+
+                entity.HasOne(el => el.CrmEntry)
+                    .WithMany(e => e.CrmEntryLists)
+                    .HasForeignKey(el => el.CrmEntryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(el => el.CrmList)
+                    .WithMany(l => l.CrmEntryLists)
+                    .HasForeignKey(el => el.CrmListId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Index
+                entity.HasIndex(e => new { e.CrmEntryId, e.CrmListId });
             });
 
             modelBuilder.Entity<SavedSearch>(entity =>
@@ -94,11 +159,11 @@ namespace BusinessSearch.Data
 
                 // Configure one-to-many relationship with SavedBusinessResult
                 entity.HasMany(e => e.Results)
-                      .WithOne(e => e.SavedSearch)
-                      .HasForeignKey(e => e.SavedSearchId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                    .WithOne(e => e.SavedSearch)
+                    .HasForeignKey(e => e.SavedSearchId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                // Indexes for efficient querying
+                // Indexes
                 entity.HasIndex(e => e.SearchDate);
                 entity.HasIndex(e => e.Industry);
                 entity.HasIndex(e => e.ZipCode);
@@ -157,7 +222,7 @@ namespace BusinessSearch.Data
                 entity.Property(e => e.YelpUrl)
                     .HasMaxLength(255);
 
-                // Indexes for efficient querying
+                // Indexes
                 entity.HasIndex(e => e.SavedSearchId);
                 entity.HasIndex(e => e.BusinessId);
                 entity.HasIndex(e => e.Name);

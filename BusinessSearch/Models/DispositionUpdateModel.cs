@@ -8,6 +8,6 @@ namespace BusinessSearch.Models
         public int Id { get; set; }
 
         [JsonPropertyName("disposition")]
-        public string Disposition { get; set; } = string.Empty;
+        public string? Disposition { get; set; }
     }
 }
