@@ -1,7 +1,9 @@
 ﻿using BusinessSearch.Data;
+using BusinessSearch.Models;
 using BusinessSearch.Services;
 using BusinessSearch.Services.WebsiteOpportunitiesServices;
 using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -29,6 +31,39 @@ namespace BusinessSearch
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null);
                     }));
+
+            // Add Identity configuration
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                // Password settings
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequiredUniqueChars = 1;
+
+                // Lockout settings
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+
+                // User settings
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+            // Configure cookie settings
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+                options.SlidingExpiration = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
 
             services.AddControllersWithViews()
                 .AddJsonOptions(options =>
@@ -60,14 +95,7 @@ namespace BusinessSearch
             {
                 builder.AddConsole();
                 builder.AddDebug();
-                builder.AddSerilog(new LoggerConfiguration()
-                    .MinimumLevel.Information()
-                    .WriteTo.Console()
-                    .WriteTo.File("logs/businesssearch-.txt",
-                        rollingInterval: RollingInterval.Day,
-                        fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
-                        retainedFileCountLimit: 31)
-                    .CreateLogger());
+                builder.AddSerilog();
             });
 
             // Add Memory Cache with simplified configuration
@@ -163,8 +191,10 @@ namespace BusinessSearch
             // Add CORS middleware in the correct order
             app.UseCors();
 
+            // Authentication must come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseSession();
 
             app.UseEndpoints(endpoints =>

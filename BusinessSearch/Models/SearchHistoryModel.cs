@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessSearch.Models
@@ -12,11 +10,11 @@ namespace BusinessSearch.Models
 
         [Required]
         [MaxLength(100)]
-        public string Industry { get; set; }
+        public string Industry { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(10)]
-        public string ZipCode { get; set; }
+        public string ZipCode { get; set; } = string.Empty;
 
         [Required]
         public int ResultLimit { get; set; }
@@ -26,11 +24,13 @@ namespace BusinessSearch.Models
 
         public int TotalResults { get; set; }
 
-        // For future authentication implementation
+        // Updated Identity reference
+        [StringLength(450)]
         public string? UserId { get; set; }
 
-        // Navigation property
-        public virtual ICollection<SavedBusinessResult> Results { get; set; }
+        // Navigation properties
+        public virtual ApplicationUser? User { get; set; }
+        public virtual ICollection<SavedBusinessResult> Results { get; set; } = new List<SavedBusinessResult>();
     }
 
     public class SavedBusinessResult

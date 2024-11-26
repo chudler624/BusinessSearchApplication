@@ -25,11 +25,20 @@ namespace BusinessSearch.Models
 
         public DateTime? LastModifiedDate { get; set; }
 
+        // New Identity-related fields
+        [StringLength(450)]
+        public string? CreatedById { get; set; }
+
+        [StringLength(450)]
+        public string? LastModifiedById { get; set; }
+
         [NotMapped]
         public int EntryCount => CrmEntryLists?.Count ?? 0;
 
         // Navigation properties
         public virtual TeamMember? AssignedTo { get; set; }
+        public virtual ApplicationUser? CreatedBy { get; set; }
+        public virtual ApplicationUser? LastModifiedBy { get; set; }
         public virtual ICollection<CrmEntryList> CrmEntryLists { get; set; } = new List<CrmEntryList>();
     }
 }

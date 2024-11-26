@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using BusinessSearch.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav ms-auto">
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    var displayName = user?.TeamMember?.Name ?? user?.Email ?? "User";
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i>
+            @displayName
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
+            <li>
+                <span class="dropdown-item-text small text-muted">
+                    Signed in as <strong>@user?.Email</strong>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                    <i class="fas fa-user me-2"></i>Profile
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="dropdown-item text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">
+            <i class="fas fa-user-plus me-1"></i>Register
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
+            <i class="fas fa-sign-in-alt me-1"></i>Sign In
+        </a>
+    </li>
+}
+</ul>
