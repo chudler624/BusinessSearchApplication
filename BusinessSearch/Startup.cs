@@ -1,155 +1,114 @@
-﻿using BusinessSearch.Data;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using BusinessSearch.Data;
+using Microsoft.AspNetCore.Identity;
 using BusinessSearch.Models;
 using BusinessSearch.Services;
 using BusinessSearch.Services.WebsiteOpportunitiesServices;
 using BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
+using BusinessSearch.Services.Email;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System;
 
 namespace BusinessSearch
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IConfiguration Configuration { get; }
+        private readonly IWebHostEnvironment _environment;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            _environment = environment;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configure DbContext with SQL Server
+            // Add MVC services
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+
+            // Configure DbContext
             services.AddDbContext<ApplicationDbContext>(options =>
+            {
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection"),
-                    sqlServerOptionsAction: sqlOptions =>
+                    sqlOptions =>
                     {
                         sqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 10,
+                            maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null);
-                    }));
+                        sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                    });
+                if (_environment.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging();
+                    options.EnableDetailedErrors();
+                }
+            });
 
-            // Add Identity configuration
+            // Configure Identity
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                // Password settings
+                options.SignIn.RequireConfirmedAccount = false;
                 options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
+                options.Password.RequiredLength = 8;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequiredUniqueChars = 1;
-
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.AllowedForNewUsers = true;
-
-                // User settings
-                options.User.RequireUniqueEmail = true;
+                options.Password.RequireLowercase = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-            // Configure cookie settings
+            // Configure Email
+            services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
+            services.AddScoped<IEmailSender, EmailSender>();
+
+            // Configure Cookie Policy
             services.ConfigureApplicationCookie(options =>
             {
+                options.LoginPath = "/Account/Login";
+                options.LogoutPath = "/Account/Logout";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+                options.Cookie.Name = "BusinessSearch";
                 options.Cookie.HttpOnly = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-                options.LoginPath = "/Account/Login";
-                options.AccessDeniedPath = "/Account/AccessDenied";
                 options.SlidingExpiration = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });
 
-            services.AddControllersWithViews()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-                });
+            // Register Core Services
+            services.AddHttpClient();
+            services.AddMemoryCache();
+            services.AddHttpContextAccessor();
 
-            // Register CRM-related services
-            services.AddScoped<BusinessDataService>();
-            services.AddScoped<CrmService>();
-            services.AddScoped<TeamService>();
-            services.AddScoped<ISearchHistoryService, SearchHistoryService>();
+            // Register Organization Services
+            services.AddScoped<IOrganizationFilterService, OrganizationFilterService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
 
-            // Register WebsiteOpportunities services
-            services.AddScoped<IResponsivenessService, ResponsivenessService>();
+            // Register Website Analysis Services
+            services.AddScoped<IWebsiteAnalysisService, WebsiteAnalysisService>();
             services.AddScoped<IGdprComplianceService, GdprComplianceService>();
             services.AddScoped<IPageSpeedService, PageSpeedService>();
-            services.AddScoped<IAccessibilityService, AccessibilityService>();
+            services.AddScoped<IResponsivenessService, ResponsivenessService>();
             services.AddScoped<ILocalSeoService, LocalSeoService>();
             services.AddScoped<IWebsiteOpportunitiesService, WebsiteOpportunitiesService>();
+            services.AddScoped<BusinessDataService>();
 
-            // Configure HTTP clients
-            services.AddHttpClient();
-            services.AddHttpClient<IAccessibilityService, AccessibilityService>();
-
-            // Configure Logging
-            services.AddLogging(builder =>
-            {
-                builder.AddConsole();
-                builder.AddDebug();
-                builder.AddSerilog();
-            });
-
-            // Add Memory Cache with simplified configuration
-            services.AddMemoryCache(options =>
-            {
-                options.ExpirationScanFrequency = TimeSpan.FromMinutes(30);
-            });
-
-            // Configure Session
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            });
-
-            // Add Antiforgery with enhanced security
-            services.AddAntiforgery(options =>
-            {
-                options.HeaderName = "RequestVerificationToken";
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SameSite = SameSiteMode.Strict;
-            });
-
-            // Simplified CORS configuration
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(builder =>
-                {
-                    if (Configuration["AllowedOrigins"] != null)
-                    {
-                        var origins = Configuration["AllowedOrigins"].Split(',', StringSplitOptions.RemoveEmptyEntries);
-                        builder.WithOrigins(origins)
-                               .AllowAnyMethod()
-                               .AllowAnyHeader()
-                               .AllowCredentials();
-                    }
-                    else
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    }
-                });
-            });
+            // Register Business Services
+            services.AddScoped<TeamService>();
+            services.AddScoped<CrmService>();
+            services.AddScoped<SearchHistoryService>();
+            services.AddScoped<IOrganizationInviteService, OrganizationInviteService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Ensure database is created and migrations are applied
-            context.Database.Migrate();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -160,48 +119,19 @@ namespace BusinessSearch
                 app.UseHsts();
             }
 
-            // Add security headers
-            app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-                context.Response.Headers.Add("X-Frame-Options", "DENY");
-                context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
-                context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
-                context.Response.Headers.Add("Content-Security-Policy",
-                    "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; " +
-                    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
-                    "img-src 'self' data: https:; " +
-                    "font-src 'self' https://cdnjs.cloudflare.com;");
-                await next();
-            });
-
             app.UseHttpsRedirection();
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                OnPrepareResponse = ctx =>
-                {
-                    ctx.Context.Response.Headers.Append(
-                        "Cache-Control", $"public, max-age=31536000");
-                }
-            });
-
+            app.UseStaticFiles();
             app.UseRouting();
 
-            // Add CORS middleware in the correct order
-            app.UseCors();
-
-            // Authentication must come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
     }

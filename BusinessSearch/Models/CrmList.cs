@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BusinessSearch.Models.Organization;
 
 namespace BusinessSearch.Models
 {
@@ -18,27 +19,30 @@ namespace BusinessSearch.Models
         [StringLength(50)]
         public string? Industry { get; set; }
 
-        [Display(Name = "Assigned To")]
-        public int? AssignedToId { get; set; }
+        public int? OrganizationId { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? LastModifiedDate { get; set; }
 
-        // New Identity-related fields
+        [Required]
         [StringLength(450)]
-        public string? CreatedById { get; set; }
+        public string CreatedById { get; set; }
 
         [StringLength(450)]
         public string? LastModifiedById { get; set; }
+
+        [StringLength(450)]
+        public string? AssignedToId { get; set; }
 
         [NotMapped]
         public int EntryCount => CrmEntryLists?.Count ?? 0;
 
         // Navigation properties
-        public virtual TeamMember? AssignedTo { get; set; }
-        public virtual ApplicationUser? CreatedBy { get; set; }
+        public virtual OrganizationEntity Organization { get; set; }
+        public virtual ApplicationUser CreatedBy { get; set; }
         public virtual ApplicationUser? LastModifiedBy { get; set; }
+        public virtual ApplicationUser? AssignedTo { get; set; }
         public virtual ICollection<CrmEntryList> CrmEntryLists { get; set; } = new List<CrmEntryList>();
     }
 }

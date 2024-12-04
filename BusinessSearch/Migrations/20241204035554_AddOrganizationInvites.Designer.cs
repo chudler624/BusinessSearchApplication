@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessSearch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241126023237_UpdateIdentitySchema")]
-    partial class UpdateIdentitySchema
+    [Migration("20241204035554_AddOrganizationInvites")]
+    partial class AddOrganizationInvites
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,11 +47,23 @@ namespace BusinessSearch.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -66,6 +78,12 @@ namespace BusinessSearch.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationRole")
+                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -98,6 +116,8 @@ namespace BusinessSearch.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("TeamMemberId")
                         .IsUnique()
@@ -190,12 +210,6 @@ namespace BusinessSearch.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessName");
-
-                    b.HasIndex("DateAdded");
-
-                    b.HasIndex("Disposition");
-
                     b.ToTable("CrmEntries");
                 });
 
@@ -208,15 +222,15 @@ namespace BusinessSearch.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateAdded")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("CrmEntryId", "CrmListId");
 
                     b.HasIndex("CrmListId");
 
-                    b.HasIndex("CrmEntryId", "CrmListId");
-
-                    b.ToTable("CrmEntryList");
+                    b.ToTable("CrmEntryLists");
                 });
 
             modelBuilder.Entity("BusinessSearch.Models.CrmList", b =>
@@ -227,14 +241,12 @@ namespace BusinessSearch.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignedToId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedById")
+                    b.Property<string>("AssignedToId")
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("CreatedById1")
+                    b.Property<string>("CreatedById")
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedDate")
@@ -260,21 +272,142 @@ namespace BusinessSearch.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TeamMemberId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedToId");
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("CreatedById1");
+                    b.HasIndex("LastModifiedById");
 
-                    b.HasIndex("Industry");
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("TeamMemberId");
+
+                    b.ToTable("CrmLists");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedById")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationInvite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("OrganizationInvites");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationPermissions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanManageCrm")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanSearch")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanViewHistory")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedById")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("LastModifiedById");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("OrganizationId");
 
-                    b.ToTable("CrmLists");
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("OrganizationPermissions");
                 });
 
             modelBuilder.Entity("BusinessSearch.Models.SavedBusinessResult", b =>
@@ -400,10 +533,6 @@ namespace BusinessSearch.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("Name");
-
                     b.HasIndex("SavedSearchId");
 
                     b.ToTable("SavedBusinessResults");
@@ -422,22 +551,20 @@ namespace BusinessSearch.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ResultLimit")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("SearchDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("TotalResults")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ZipCode")
@@ -447,15 +574,9 @@ namespace BusinessSearch.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Industry");
-
-                    b.HasIndex("SearchDate");
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
-
-                    b.HasIndex("ZipCode");
 
                     b.ToTable("SavedSearches");
                 });
@@ -480,15 +601,16 @@ namespace BusinessSearch.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Role")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
-
-                    b.HasIndex("Role");
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("TeamMembers");
                 });
@@ -628,10 +750,17 @@ namespace BusinessSearch.Migrations
 
             modelBuilder.Entity("BusinessSearch.Models.ApplicationUser", b =>
                 {
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BusinessSearch.Models.TeamMember", "TeamMember")
                         .WithOne()
                         .HasForeignKey("BusinessSearch.Models.ApplicationUser", "TeamMemberId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Organization");
 
                     b.Navigation("TeamMember");
                 });
@@ -657,29 +786,83 @@ namespace BusinessSearch.Migrations
 
             modelBuilder.Entity("BusinessSearch.Models.CrmList", b =>
                 {
-                    b.HasOne("BusinessSearch.Models.TeamMember", "AssignedTo")
+                    b.HasOne("BusinessSearch.Models.ApplicationUser", "AssignedTo")
                         .WithMany("AssignedLists")
                         .HasForeignKey("AssignedToId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessSearch.Models.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessSearch.Models.ApplicationUser", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById1");
+                        .WithMany("CreatedLists")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("BusinessSearch.Models.ApplicationUser", "LastModifiedBy")
                         .WithMany()
-                        .HasForeignKey("LastModifiedById");
+                        .HasForeignKey("LastModifiedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany("CrmLists")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessSearch.Models.TeamMember", null)
+                        .WithMany("AssignedLists")
+                        .HasForeignKey("TeamMemberId");
 
                     b.Navigation("AssignedTo");
 
                     b.Navigation("CreatedBy");
 
                     b.Navigation("LastModifiedBy");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationEntity", b =>
+                {
+                    b.HasOne("BusinessSearch.Models.ApplicationUser", "CreatedBy")
+                        .WithMany("CreatedOrganizations")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationInvite", b =>
+                {
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationPermissions", b =>
+                {
+                    b.HasOne("BusinessSearch.Models.ApplicationUser", "LastModifiedBy")
+                        .WithMany("ModifiedPermissions")
+                        .HasForeignKey("LastModifiedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessSearch.Models.ApplicationUser", "User")
+                        .WithOne("Permissions")
+                        .HasForeignKey("BusinessSearch.Models.Organization.OrganizationPermissions", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("LastModifiedBy");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessSearch.Models.SavedBusinessResult", b =>
@@ -695,16 +878,28 @@ namespace BusinessSearch.Migrations
 
             modelBuilder.Entity("BusinessSearch.Models.SavedSearch", b =>
                 {
-                    b.HasOne("BusinessSearch.Models.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany("SavedSearches")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BusinessSearch.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1");
+                        .WithMany("SavedSearches")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Organization");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.TeamMember", b =>
+                {
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -758,6 +953,22 @@ namespace BusinessSearch.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BusinessSearch.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("AssignedLists");
+
+                    b.Navigation("CreatedLists");
+
+                    b.Navigation("CreatedOrganizations");
+
+                    b.Navigation("ModifiedPermissions");
+
+                    b.Navigation("Permissions")
+                        .IsRequired();
+
+                    b.Navigation("SavedSearches");
+                });
+
             modelBuilder.Entity("BusinessSearch.Models.CrmEntry", b =>
                 {
                     b.Navigation("CrmEntryLists");
@@ -766,6 +977,15 @@ namespace BusinessSearch.Migrations
             modelBuilder.Entity("BusinessSearch.Models.CrmList", b =>
                 {
                     b.Navigation("CrmEntryLists");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationEntity", b =>
+                {
+                    b.Navigation("CrmLists");
+
+                    b.Navigation("SavedSearches");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("BusinessSearch.Models.SavedSearch", b =>

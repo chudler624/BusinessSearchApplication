@@ -10,12 +10,17 @@ namespace BusinessSearch.Services
         private readonly ApplicationDbContext _context;
         private readonly ILogger<CrmService> _logger;
         private readonly IExecutionStrategy _strategy;
+        private readonly IOrganizationFilterService _orgFilter;
 
-        public CrmService(ApplicationDbContext context, ILogger<CrmService> logger)
+        public CrmService(
+            ApplicationDbContext context,
+            ILogger<CrmService> logger,
+            IOrganizationFilterService orgFilter)
         {
             _context = context;
             _logger = logger;
             _strategy = _context.Database.CreateExecutionStrategy();
+            _orgFilter = orgFilter;
         }
 
         #region List Operations
@@ -24,7 +29,12 @@ namespace BusinessSearch.Services
         {
             try
             {
-                return await _context.CrmLists
+                // Apply organization filter first
+                var baseQuery = _context.CrmLists.AsQueryable();
+                baseQuery = _orgFilter.ApplyOrganizationFilter(baseQuery);
+
+                // Then apply includes and ordering
+                return await baseQuery
                     .Include(l => l.AssignedTo)
                     .Include(l => l.CrmEntryLists)
                     .OrderBy(l => l.Name)
@@ -41,11 +51,14 @@ namespace BusinessSearch.Services
         {
             try
             {
-                return await _context.CrmLists
+                var query = _context.CrmLists
                     .Include(l => l.AssignedTo)
                     .Include(l => l.CrmEntryLists)
                         .ThenInclude(el => el.CrmEntry)
-                    .FirstOrDefaultAsync(l => l.Id == id);
+                    .Where(l => l.Id == id);
+
+                query = _orgFilter.ApplyOrganizationFilter(query);
+                return await query.FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -61,6 +74,7 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    list.OrganizationId = await _orgFilter.GetCurrentOrganizationId();
                     list.CreatedDate = DateTime.UtcNow;
                     _context.CrmLists.Add(list);
                     await _context.SaveChangesAsync();
@@ -78,17 +92,25 @@ namespace BusinessSearch.Services
 
         public async Task UpdateList(CrmList list)
         {
-            try
+            await _strategy.ExecuteAsync(async () =>
             {
-                list.LastModifiedDate = DateTime.UtcNow;
-                _context.Entry(list).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error updating list: {ex.Message}");
-                throw;
-            }
+                try
+                {
+                    if (!await _orgFilter.IsUserInOrganization(list.OrganizationId ?? -1))
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to this list");
+                    }
+
+                    list.LastModifiedDate = DateTime.UtcNow;
+                    _context.Entry(list).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error updating list: {ex.Message}");
+                    throw;
+                }
+            });
         }
 
         public async Task DeleteList(int id)
@@ -98,8 +120,8 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    var list = await _context.CrmLists.FindAsync(id);
-                    if (list != null)
+                    var list = await GetListById(id);
+                    if (list != null && await _orgFilter.IsUserInOrganization(list.OrganizationId ?? -1))
                     {
                         _context.CrmLists.Remove(list);
                         await _context.SaveChangesAsync();
@@ -123,7 +145,13 @@ namespace BusinessSearch.Services
                 try
                 {
                     var sourceList = await GetListById(sourceListId);
+                    if (sourceList == null || !await _orgFilter.IsUserInOrganization(sourceList.OrganizationId ?? -1))
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to source list");
+                    }
+
                     CrmList targetList;
+                    var orgId = await _orgFilter.GetCurrentOrganizationId();
 
                     if (createNew)
                     {
@@ -131,7 +159,8 @@ namespace BusinessSearch.Services
                         {
                             Name = newListName ?? $"Merged List {DateTime.UtcNow:yyyyMMdd}",
                             Industry = sourceList.Industry,
-                            CreatedDate = DateTime.UtcNow
+                            CreatedDate = DateTime.UtcNow,
+                            OrganizationId = orgId
                         };
                         _context.CrmLists.Add(targetList);
                         await _context.SaveChangesAsync();
@@ -139,6 +168,10 @@ namespace BusinessSearch.Services
                     else
                     {
                         targetList = await GetListById(targetListId.Value);
+                        if (targetList == null || !await _orgFilter.IsUserInOrganization(targetList.OrganizationId ?? -1))
+                        {
+                            throw new UnauthorizedAccessException("User does not have access to target list");
+                        }
                     }
 
                     var entriesToMerge = sourceList.CrmEntryLists.Select(el => el.CrmEntry).ToList();
@@ -176,7 +209,12 @@ namespace BusinessSearch.Services
         {
             try
             {
-                return await _context.CrmEntries
+                // Apply organization filter first
+                var baseQuery = _context.CrmEntries.AsQueryable();
+                baseQuery = _orgFilter.ApplyOrganizationFilter(baseQuery);
+
+                // Then apply includes and ordering
+                return await baseQuery
                     .Include(e => e.CrmEntryLists)
                         .ThenInclude(el => el.CrmList)
                     .OrderByDescending(e => e.DateAdded)
@@ -193,10 +231,13 @@ namespace BusinessSearch.Services
         {
             try
             {
-                return await _context.CrmEntries
+                var query = _context.CrmEntries
                     .Include(e => e.CrmEntryLists)
                         .ThenInclude(el => el.CrmList)
-                    .FirstOrDefaultAsync(e => e.Id == id);
+                    .Where(e => e.Id == id);
+
+                query = _orgFilter.ApplyOrganizationFilter(query);
+                return await query.FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -215,12 +256,14 @@ namespace BusinessSearch.Services
                     _logger.LogInformation($"=== Starting AddEntry ===");
                     _logger.LogInformation($"Entry details: BusinessName={entry.BusinessName}, ListId={listId}");
 
+                    var orgId = await _orgFilter.GetCurrentOrganizationId();
+
                     if (listId.HasValue)
                     {
-                        var listExists = await _context.CrmLists.AnyAsync(l => l.Id == listId.Value);
-                        if (!listExists)
+                        var list = await GetListById(listId.Value);
+                        if (list == null || list.OrganizationId != orgId)
                         {
-                            throw new Exception($"List with ID {listId} not found");
+                            throw new UnauthorizedAccessException($"User does not have access to list {listId}");
                         }
                     }
 
@@ -258,6 +301,12 @@ namespace BusinessSearch.Services
             {
                 try
                 {
+                    var existingEntry = await GetEntryById(entry.Id);
+                    if (existingEntry == null)
+                    {
+                        throw new UnauthorizedAccessException("Entry not found or access denied");
+                    }
+
                     _context.Entry(entry).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                 }
@@ -276,6 +325,18 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    var orgId = await _orgFilter.GetCurrentOrganizationId();
+
+                    // Verify all lists belong to the organization
+                    var lists = await _context.CrmLists
+                        .Where(l => listIds.Contains(l.Id))
+                        .ToListAsync();
+
+                    if (lists.Any(l => l.OrganizationId != orgId))
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to one or more lists");
+                    }
+
                     var existingRelations = await _context.Set<CrmEntryList>()
                         .Where(el => el.CrmEntryId == entryId)
                         .ToListAsync();
@@ -308,19 +369,19 @@ namespace BusinessSearch.Services
         {
             await _strategy.ExecuteAsync(async () =>
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var entry = await GetEntryById(id);
+                if (entry != null)
                 {
-                    var entry = await _context.CrmEntries.FindAsync(id);
-                    if (entry != null)
-                    {
-                        _context.CrmEntries.Remove(entry);
-                        await _context.SaveChangesAsync();
-                        await transaction.CommitAsync();
-                    }
+                    _context.CrmEntries.Remove(entry);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
                     await transaction.RollbackAsync();
                     _logger.LogError($"Error deleting entry {id}: {ex.Message}");
                     throw;
@@ -339,6 +400,17 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    var orgId = await _orgFilter.GetCurrentOrganizationId();
+
+                    // Verify list ownership
+                    var sourcelist = await GetListById(sourceListId);
+                    var destList = await GetListById(destinationListId);
+
+                    if (sourcelist?.OrganizationId != orgId || destList?.OrganizationId != orgId)
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to one or more lists");
+                    }
+
                     var sourceRelations = await _context.Set<CrmEntryList>()
                         .Where(el => el.CrmListId == sourceListId && entryIds.Contains(el.CrmEntryId))
                         .ToListAsync();
@@ -374,6 +446,17 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    var orgId = await _orgFilter.GetCurrentOrganizationId();
+
+                    // Verify list ownership
+                    var sourcelist = await GetListById(sourceListId);
+                    var destList = await GetListById(destinationListId);
+
+                    if (sourcelist?.OrganizationId != orgId || destList?.OrganizationId != orgId)
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to one or more lists");
+                    }
+
                     foreach (var entryId in entryIds)
                     {
                         var exists = await _context.Set<CrmEntryList>()
@@ -410,6 +493,12 @@ namespace BusinessSearch.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    var list = await GetListById(listId);
+                    if (list == null || !await _orgFilter.IsUserInOrganization(list.OrganizationId ?? -1))
+                    {
+                        throw new UnauthorizedAccessException("User does not have access to this list");
+                    }
+
                     var relations = await _context.Set<CrmEntryList>()
                         .Where(el => el.CrmListId == listId && entryIds.Contains(el.CrmEntryId))
                         .ToListAsync();
@@ -453,6 +542,9 @@ namespace BusinessSearch.Services
         {
             try
             {
+                var list = await GetListById(listId);
+                if (list == null) return false;
+
                 return await _context.Set<CrmEntryList>()
                     .AnyAsync(el => el.CrmEntryId == entryId && el.CrmListId == listId);
             }
@@ -467,10 +559,12 @@ namespace BusinessSearch.Services
         {
             try
             {
-                return await _context.CrmLists
+                var query = _context.CrmLists
                     .Include(l => l.CrmEntryLists)
-                    .Where(l => l.CrmEntryLists.Any(el => el.CrmEntryId == entryId))
-                    .ToListAsync();
+                    .Where(l => l.CrmEntryLists.Any(el => el.CrmEntryId == entryId));
+
+                query = _orgFilter.ApplyOrganizationFilter(query);
+                return await query.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -531,6 +625,8 @@ namespace BusinessSearch.Services
                 IQueryable<CrmEntry> query = _context.CrmEntries
                     .Include(e => e.CrmEntryLists)
                     .ThenInclude(el => el.CrmList);
+
+                query = _orgFilter.ApplyOrganizationFilter(query);
 
                 if (listId.HasValue)
                 {

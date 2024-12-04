@@ -44,6 +44,13 @@
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-4">
+                            <label asp-for="InviteCode" class="form-label">Organization Invite Code</label>
+                            <input asp-for="InviteCode" class="form-control" placeholder="Optional - Enter if joining an existing organization" />
+                            <span asp-validation-for="InviteCode" class="text-danger"></span>
+                            <small class="form-text text-muted">Leave blank if you want to create a new organization later</small>
+                        </div>
+
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Register</button>
                         </div>

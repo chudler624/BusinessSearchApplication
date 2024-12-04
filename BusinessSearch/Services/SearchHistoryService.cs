@@ -24,28 +24,35 @@ namespace BusinessSearch.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<SearchHistoryService> _logger;
+        private readonly IOrganizationFilterService _orgFilter;
 
-        public SearchHistoryService(ApplicationDbContext context, ILogger<SearchHistoryService> logger)
+        public SearchHistoryService(
+            ApplicationDbContext context,
+            ILogger<SearchHistoryService> logger,
+            IOrganizationFilterService orgFilter)
         {
             _context = context;
             _logger = logger;
+            _orgFilter = orgFilter;
         }
 
         public async Task SaveSearchAsync(string industry, string zipCode, int limit, IEnumerable<Business> results)
         {
             try
             {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
                 var savedSearch = new SavedSearch
                 {
                     Industry = industry,
                     ZipCode = zipCode,
                     ResultLimit = limit,
                     SearchDate = DateTime.UtcNow,
-                    TotalResults = results.Count()
+                    TotalResults = results.Count(),
+                    OrganizationId = orgId
                 };
 
                 _context.SavedSearches.Add(savedSearch);
-                await _context.SaveChangesAsync(); // Save to get the Id
+                await _context.SaveChangesAsync();
 
                 var savedResults = results.Select(business => new SavedBusinessResult
                 {
@@ -93,9 +100,12 @@ namespace BusinessSearch.Services
 
         public async Task<SavedSearch?> GetSearchByIdAsync(int id)
         {
-            return await _context.SavedSearches
+            var query = _context.SavedSearches
                 .Include(s => s.Results)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .Where(s => s.Id == id);
+
+            query = _orgFilter.ApplyOrganizationFilter(query);
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<(IEnumerable<SavedSearch> Searches, int TotalCount)> GetSearchHistoryAsync(
@@ -107,6 +117,9 @@ namespace BusinessSearch.Services
             string? zipCodeFilter = null)
         {
             var query = _context.SavedSearches.AsQueryable();
+
+            // Apply organization filter
+            query = _orgFilter.ApplyOrganizationFilter(query);
 
             // Apply filters
             if (!string.IsNullOrWhiteSpace(industryFilter))
@@ -148,7 +161,10 @@ namespace BusinessSearch.Services
 
         public async Task<IEnumerable<SavedSearch>> GetRecentSearchesAsync(int count)
         {
-            return await _context.SavedSearches
+            var query = _context.SavedSearches.AsQueryable();
+            query = _orgFilter.ApplyOrganizationFilter(query);
+
+            return await query
                 .OrderByDescending(s => s.SearchDate)
                 .Take(count)
                 .ToListAsync();
@@ -156,7 +172,10 @@ namespace BusinessSearch.Services
 
         public async Task DeleteSearchAsync(int id)
         {
-            var search = await _context.SavedSearches.FindAsync(id);
+            var query = _context.SavedSearches.Where(s => s.Id == id);
+            query = _orgFilter.ApplyOrganizationFilter(query);
+
+            var search = await query.FirstOrDefaultAsync();
             if (search != null)
             {
                 _context.SavedSearches.Remove(search);

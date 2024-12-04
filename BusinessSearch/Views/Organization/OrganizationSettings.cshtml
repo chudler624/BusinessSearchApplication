@@ -1,0 +1,174 @@
+﻿@model BusinessSearch.Models.ViewModels.OrganizationSettingsViewModel
+@{
+    ViewData["Title"] = "Organization Settings";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Organization Settings</h4>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="UpdateSettings" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-4">
+                            <h5>Basic Information</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="Name" class="form-label">Organization Name</label>
+                                        <input asp-for="Name" class="form-control" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Created By</label>
+                                                <input type="text" class="form-control" value="@Model.CreatedByName" disabled />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Created On</label>
+                                                <input type="text" class="form-control" value="@Model.CreatedAt.ToString("MMMM d, yyyy")" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5>Security Settings</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="requireApproval" 
+                                                   asp-for="RequireApprovalForNewMembers">
+                                            <label class="form-check-label" for="requireApproval">
+                                                Require approval for new members
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="restrictDataAccess" 
+                                                   asp-for="RestrictDataAccess">
+                                            <label class="form-check-label" for="restrictDataAccess">
+                                                Restrict data access by team
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5>Danger Zone</h5>
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <h6 class="card-title text-danger">Delete Organization</h6>
+                                    <p class="card-text">
+                                        Once you delete an organization, there is no going back. Please be certain.
+                                    </p>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        Delete Organization
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Organization Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Organization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This action cannot be undone. This will permanently delete the organization <strong>@Model.Name</strong> and remove all associated data.</p>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <li>All team members will be removed</li>
+                        <li>All organization data will be deleted</li>
+                        <li>All settings and configurations will be lost</li>
+                    </ul>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmDelete" class="form-label">Please type <strong>@Model.Name</strong> to confirm:</label>
+                    <input type="text" class="form-control" id="confirmDelete">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                    I understand, delete this organization
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Delete confirmation handler
+            $('#confirmDelete').on('input', function() {
+                var confirmText = $(this).val();
+                var organizationName = '@Model.Name';
+                $('#confirmDeleteBtn').prop('disabled', confirmText !== organizationName);
+            });
+
+            $('#confirmDeleteBtn').click(function() {
+                $.post('@Url.Action("DeleteOrganization")', {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function() {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                })
+                .fail(function() {
+                    toastr.error('Failed to delete organization');
+                });
+            });
+        });
+    </script>
+}

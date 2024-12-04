@@ -37,6 +37,9 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="WebsiteOpportunities" asp-action="Index">Website Opportunities</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Organization" asp-action="Index">Organization</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Documentation" asp-action="Index">Documentation</a>
                         </li>
                     </ul>
@@ -76,7 +79,7 @@
     <script>
         // Setup AJAX antiforgery token
         $.ajaxSetup({
-            beforeSend: function (xhr) {
+            beforeSend: function(xhr) {
                 var token = $('input[name="__RequestVerificationToken"]').val();
                 xhr.setRequestHeader("RequestVerificationToken", token);
             }

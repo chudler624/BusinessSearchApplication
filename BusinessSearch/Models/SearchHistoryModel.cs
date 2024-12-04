@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BusinessSearch.Models.Organization;
 
 namespace BusinessSearch.Models
 {
@@ -24,11 +25,15 @@ namespace BusinessSearch.Models
 
         public int TotalResults { get; set; }
 
-        // Updated Identity reference
+        // Organization reference - changed to nullable int
+        public int? OrganizationId { get; set; }
+
+        // User who performed the search
         [StringLength(450)]
         public string? UserId { get; set; }
 
         // Navigation properties
+        public virtual OrganizationEntity? Organization { get; set; }
         public virtual ApplicationUser? User { get; set; }
         public virtual ICollection<SavedBusinessResult> Results { get; set; } = new List<SavedBusinessResult>();
     }
@@ -38,10 +43,8 @@ namespace BusinessSearch.Models
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public int SavedSearchId { get; set; }
+        public int SavedSearchId { get; set; }  // Removed Required since it's a foreign key
 
-        // All the Business properties
         [MaxLength(100)]
         public string? BusinessId { get; set; }
 
@@ -83,7 +86,6 @@ namespace BusinessSearch.Models
         [MaxLength(50)]
         public string? Type { get; set; }
 
-        // Store as JSON string
         [MaxLength(500)]
         public string? SubtypesJson { get; set; }
 
@@ -122,8 +124,8 @@ namespace BusinessSearch.Models
         [MaxLength(255)]
         public string? YelpUrl { get; set; }
 
-        // Navigation property
+        // Navigation properties
         [ForeignKey("SavedSearchId")]
-        public virtual SavedSearch SavedSearch { get; set; }
+        public virtual SavedSearch? SavedSearch { get; set; }  // Made nullable
     }
 }

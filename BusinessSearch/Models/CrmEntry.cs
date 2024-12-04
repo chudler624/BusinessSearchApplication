@@ -70,7 +70,7 @@ namespace BusinessSearch.Models
         [StringLength(500)]
         public string? FullAddress { get; set; }
 
-        // New properties for list management
+        // Navigation properties
         public virtual ICollection<CrmEntryList> CrmEntryLists { get; set; } = new List<CrmEntryList>();
 
         [NotMapped]

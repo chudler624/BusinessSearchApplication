@@ -1,33 +1,38 @@
-﻿using BusinessSearch.Models;
+﻿using BusinessSearch.Authorization;
+using BusinessSearch.Models;
 using BusinessSearch.Models.ViewModels;
 using BusinessSearch.Services;
-using BusinessSearch.DTOs;           
-using BusinessSearch.Extensions;     
+using BusinessSearch.DTOs;
+using BusinessSearch.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace BusinessSearch.Controllers
 {
+    [Authorize]
+    [RequireOrganization]
     public class CrmController : Controller
     {
         private readonly CrmService _crmService;
         private readonly TeamService _teamService;
         private readonly ILogger<CrmController> _logger;
+        private readonly IOrganizationFilterService _orgFilter;
 
         public CrmController(
             CrmService crmService,
             TeamService teamService,
-            ILogger<CrmController> logger)
+            ILogger<CrmController> logger,
+            IOrganizationFilterService orgFilter)
         {
             _crmService = crmService;
             _teamService = teamService;
             _logger = logger;
+            _orgFilter = orgFilter;
         }
 
         #region List Management
 
-        // Lists Overview
-        // CrmController.cs - Update the Index action
         [HttpGet]
         public async Task<IActionResult> Index(
             int pageSize = 25,
@@ -40,6 +45,9 @@ namespace BusinessSearch.Controllers
         {
             try
             {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
+                ViewBag.OrganizationId = orgId;
+
                 var lists = await _crmService.GetAllLists();
                 var teamMembers = await _teamService.GetAllTeamMembers();
 
@@ -59,7 +67,7 @@ namespace BusinessSearch.Controllers
 
                 if (assignedToFilter.HasValue)
                 {
-                    lists = lists.Where(l => l.AssignedToId == assignedToFilter).ToList();
+                    lists = lists.Where(l => l.AssignedToId == assignedToFilter.Value.ToString()).ToList();
                 }
 
                 // Apply sorting
@@ -91,6 +99,10 @@ namespace BusinessSearch.Controllers
                     AssignedToFilter = assignedToFilter
                 });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in CRM Index: {ex.Message}");
@@ -99,7 +111,6 @@ namespace BusinessSearch.Controllers
             }
         }
 
-        // List View with Entries
         public async Task<IActionResult> ListView(
             int id,
             int pageSize = 25,
@@ -171,6 +182,10 @@ namespace BusinessSearch.Controllers
 
                 return View(viewModel);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in ListView: {ex.Message}");
@@ -183,7 +198,7 @@ namespace BusinessSearch.Controllers
 
         #region Entry Management
 
-        public async Task<IActionResult> Create(int? listId = null)  
+        public async Task<IActionResult> Create(int? listId = null)
         {
             try
             {
@@ -195,10 +210,14 @@ namespace BusinessSearch.Controllers
                         DateAdded = DateTime.UtcNow,
                         Disposition = "New"
                     },
-                    SelectedListId = listId,  
+                    SelectedListId = listId,
                     AvailableLists = lists.Select(l => l.ToDto()).ToList()
                 };
                 return View(viewModel);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
             }
             catch (Exception ex)
             {
@@ -216,18 +235,14 @@ namespace BusinessSearch.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-
-                    _logger.LogWarning($"Invalid model state: {string.Join(", ", errors)}");
-
                     return Json(new
                     {
                         success = false,
                         message = "Validation failed",
-                        errors = errors
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                            .ToList()
                     });
                 }
 
@@ -251,17 +266,15 @@ namespace BusinessSearch.Controllers
                     message = "Entry created successfully"
                 });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in Create: {ex.Message}");
                 return Json(new { success = false, message = $"Error creating entry: {ex.Message}" });
             }
-        }
-
-        public class CreateEntryRequestModel
-        {
-            public CrmEntry Entry { get; set; }
-            public int? SelectedListId { get; set; }
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -284,6 +297,10 @@ namespace BusinessSearch.Controllers
 
                 return View(viewModel);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in Edit GET: {ex.Message}");
@@ -305,6 +322,10 @@ namespace BusinessSearch.Controllers
                     TempData["Success"] = "Entry updated successfully.";
                     return RedirectToAction("ListView", new { id = viewModel.SelectedListIds.First() });
                 }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
             }
             catch (Exception ex)
             {
@@ -351,6 +372,10 @@ namespace BusinessSearch.Controllers
 
                 return View(viewModel);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in BusinessView: {ex.Message}");
@@ -377,6 +402,10 @@ namespace BusinessSearch.Controllers
                 await _crmService.MoveEntries(request.EntryIds, request.SourceListId, request.DestinationListId);
                 return Json(new { success = true });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error moving entries: {ex.Message}");
@@ -398,6 +427,10 @@ namespace BusinessSearch.Controllers
                 await _crmService.CopyEntries(request.EntryIds, request.SourceListId, request.DestinationListId);
                 return Json(new { success = true });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error copying entries: {ex.Message}");
@@ -418,6 +451,10 @@ namespace BusinessSearch.Controllers
 
                 await _crmService.DeleteEntriesFromList(request.EntryIds, request.ListId);
                 return Json(new { success = true });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
             }
             catch (Exception ex)
             {
@@ -446,6 +483,10 @@ namespace BusinessSearch.Controllers
                 await _crmService.UpdateEntry(entry);
                 return Json(new { success = true });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error updating disposition: {ex.Message}");
@@ -462,47 +503,15 @@ namespace BusinessSearch.Controllers
                 await _crmService.DeleteEntry(id);
                 return Json(new { success = true });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error deleting entry: {ex.Message}");
                 return Json(new { success = false, message = ex.Message });
             }
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        private IEnumerable<CrmList> SortLists(IEnumerable<CrmList> lists, string column, string? direction)
-        {
-            var isAscending = direction?.ToLower() != "desc";
-
-            return column.ToLower() switch
-            {
-            "name" => isAscending ? lists.OrderBy(l => l.Name) : lists.OrderByDescending(l => l.Name),
-            "industry" => isAscending ? lists.OrderBy(l => l.Industry) : lists.OrderByDescending(l => l.Industry),
-            "assignedto" => isAscending ? lists.OrderBy(l => l.AssignedTo.Name) : lists.OrderByDescending(l => l.AssignedTo.Name),
-            "entrycount" => isAscending ? lists.OrderBy(l => l.EntryCount) : lists.OrderByDescending(l => l.EntryCount),            
-            "createddate" => isAscending ? lists.OrderBy(l => l.CreatedDate) : lists.OrderByDescending(l => l.CreatedDate),
-                _ => lists.OrderBy(l => l.Name)
-            };
-        }
-
-        private IQueryable<CrmEntry> SortEntries(IQueryable<CrmEntry> entries, string column, string? direction)
-        {
-            var isAscending = direction?.ToLower() != "desc";
-
-            return column.ToLower() switch
-            {
-                "businessname" => isAscending ? entries.OrderBy(e => e.BusinessName) : entries.OrderByDescending(e => e.BusinessName),
-                "industry" => isAscending ? entries.OrderBy(e => e.Industry) : entries.OrderByDescending(e => e.Industry),
-                "email" => isAscending ? entries.OrderBy(e => e.Email) : entries.OrderByDescending(e => e.Email),
-                "phone" => isAscending ? entries.OrderBy(e => e.Phone) : entries.OrderByDescending(e => e.Phone),
-                "website" => isAscending ? entries.OrderBy(e => e.Website) : entries.OrderByDescending(e => e.Website),
-                "disposition" => isAscending ? entries.OrderBy(e => e.Disposition) : entries.OrderByDescending(e => e.Disposition),
-                "dateadded" => isAscending ? entries.OrderBy(e => e.DateAdded) : entries.OrderByDescending(e => e.DateAdded),
-                _ => entries.OrderBy(e => e.BusinessName)
-            };
         }
 
         #endregion
@@ -524,6 +533,10 @@ namespace BusinessSearch.Controllers
                 var createdList = await _crmService.CreateList(list);
                 return Json(new { success = true, listId = createdList.Id, listName = createdList.Name });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error creating list: {ex.Message}");
@@ -542,10 +555,12 @@ namespace BusinessSearch.Controllers
                     return NotFound();
                 }
 
-                // Get team members for the dropdown
                 ViewBag.TeamMembers = await _teamService.GetAllTeamMembers();
-
                 return View(list);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("AccessDenied", "Account");
             }
             catch (Exception ex)
             {
@@ -557,7 +572,7 @@ namespace BusinessSearch.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateList([FromBody] CrmList list)  // Add [FromBody] attribute
+        public async Task<IActionResult> UpdateList([FromBody] CrmList list)
         {
             try
             {
@@ -572,12 +587,15 @@ namespace BusinessSearch.Controllers
                     return Json(new { success = false, message = "List not found" });
                 }
 
-                // Preserve creation date and update last modified date
                 list.CreatedDate = existingList.CreatedDate;
                 list.LastModifiedDate = DateTime.UtcNow;
 
                 await _crmService.UpdateList(list);
                 return Json(new { success = true });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
             }
             catch (Exception ex)
             {
@@ -594,6 +612,10 @@ namespace BusinessSearch.Controllers
             {
                 await _crmService.DeleteList(id);
                 return Json(new { success = true });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
             }
             catch (Exception ex)
             {
@@ -616,11 +638,51 @@ namespace BusinessSearch.Controllers
 
                 return Json(new { success = true });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Json(new { success = false, message = "Access denied" });
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Error merging lists: {ex.Message}");
                 return Json(new { success = false, message = "Failed to merge lists" });
             }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private IEnumerable<CrmList> SortLists(IEnumerable<CrmList> lists, string column, string? direction)
+        {
+            var isAscending = direction?.ToLower() != "desc";
+
+            return column.ToLower() switch
+            {
+                "name" => isAscending ? lists.OrderBy(l => l.Name) : lists.OrderByDescending(l => l.Name),
+                "industry" => isAscending ? lists.OrderBy(l => l.Industry) : lists.OrderByDescending(l => l.Industry),
+                "assignedto" => isAscending ? lists.OrderBy(l => l.AssignedTo.Name) : lists.OrderByDescending(l => l.AssignedTo.Name),
+                "entrycount" => isAscending ? lists.OrderBy(l => l.EntryCount) : lists.OrderByDescending(l => l.EntryCount),
+                "createddate" => isAscending ? lists.OrderBy(l => l.CreatedDate) : lists.OrderByDescending(l => l.CreatedDate),
+                _ => lists.OrderBy(l => l.Name)
+            };
+        }
+
+        private IQueryable<CrmEntry> SortEntries(IQueryable<CrmEntry> entries, string column, string? direction)
+        {
+            var isAscending = direction?.ToLower() != "desc";
+
+            return column.ToLower() switch
+            {
+                "businessname" => isAscending ? entries.OrderBy(e => e.BusinessName) : entries.OrderByDescending(e => e.BusinessName),
+                "industry" => isAscending ? entries.OrderBy(e => e.Industry) : entries.OrderByDescending(e => e.Industry),
+                "email" => isAscending ? entries.OrderBy(e => e.Email) : entries.OrderByDescending(e => e.Email),
+                "phone" => isAscending ? entries.OrderBy(e => e.Phone) : entries.OrderByDescending(e => e.Phone),
+                "website" => isAscending ? entries.OrderBy(e => e.Website) : entries.OrderByDescending(e => e.Website),
+                "disposition" => isAscending ? entries.OrderBy(e => e.Disposition) : entries.OrderByDescending(e => e.Disposition),
+                "dateadded" => isAscending ? entries.OrderBy(e => e.DateAdded) : entries.OrderByDescending(e => e.DateAdded),
+                _ => entries.OrderBy(e => e.BusinessName)
+            };
         }
 
         #endregion
@@ -653,86 +715,5 @@ namespace BusinessSearch.Controllers
         }
 
         #endregion
-
-        #region API Methods
-
-        [HttpGet]
-        public async Task<IActionResult> GetAvailableLists()
-        {
-            try
-            {
-                var lists = await _crmService.GetAllLists();
-                // Transform the data to avoid serialization issues
-                var listData = lists.Select(l => new {
-                    id = l.Id,
-                    name = l.Name,
-                    description = l.Description,
-                    industry = l.Industry
-                });
-                return Json(new { success = true, lists = listData });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error getting available lists: {ex.Message}");
-                return Json(new { success = false, message = "Failed to get lists" });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetListDetails(int id)
-        {
-            try
-            {
-                var list = await _crmService.GetListById(id);
-                if (list == null)
-                {
-                    return Json(new { success = false, message = "List not found" });
-                }
-
-                // Transform the data to avoid serialization issues
-                var listData = new
-                {
-                    id = list.Id,
-                    name = list.Name,
-                    description = list.Description,
-                    industry = list.Industry,
-                    assignedToId = list.AssignedToId,
-                    assignedToName = list.AssignedTo?.Name,
-                    entryCount = list.EntryCount
-                };
-
-                return Json(new { success = true, list = listData });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error getting list details: {ex.Message}");
-                return Json(new { success = false, message = "Failed to get list details" });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetEntryLists(int entryId)
-        {
-            try
-            {
-                var entry = await _crmService.GetEntryById(entryId);
-                if (entry == null)
-                {
-                    return Json(new { success = false, message = "Entry not found" });
-                }
-
-                var lists = entry.CrmEntryLists.Select(el => el.CrmList).ToList();
-                return Json(new { success = true, lists });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error getting entry lists: {ex.Message}");
-                return Json(new { success = false, message = "Failed to get entry lists" });
-            }
-        }
-
-        #endregion
-
-
     }
 }

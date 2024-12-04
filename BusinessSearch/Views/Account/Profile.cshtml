@@ -25,6 +25,7 @@
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="TeamMemberId" />
                         <input type="hidden" asp-for="CreatedAt" />
+                        <input type="hidden" asp-for="OrganizationId" />
 
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label"></label>
@@ -36,6 +37,38 @@
                             <label asp-for="Email" class="form-label"></label>
                             <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Organization</label>
+                            @if (Model.OrganizationId.HasValue)
+                            {
+                                <input type="text" class="form-control" value="@Model.OrganizationName" disabled />
+                            }
+                            else
+                            {
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Join or Create Organization</h6>
+                                        <div class="mb-3">
+                                            <label for="inviteCode" class="form-label">Have an invite code?</label>
+                                            <div class="input-group">
+                                                <input type="text" id="inviteCode" name="InviteCode" class="form-control" 
+                                                       placeholder="Enter organization invite code" />
+                                                <button type="button" class="btn btn-primary" onclick="joinOrganization()">
+                                                    Join
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="text-center">
+                                            <span class="text-muted">or</span>
+                                        </div>
+                                        <div class="text-center mt-2">
+                                            <a asp-action="CreateOrganization" class="btn btn-outline-primary">Create New Organization</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         </div>
 
                         <div class="mb-4">
@@ -81,5 +114,32 @@
         $(document).ready(function () {
             $("form").validate();
         });
+
+        function joinOrganization() {
+            const inviteCode = $("#inviteCode").val();
+            if (!inviteCode) {
+                alert("Please enter an invite code");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("JoinOrganization", "Organization")',
+                type: 'POST',
+                data: { 
+                    inviteCode: inviteCode,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(data) {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || "Error joining organization");
+                    }
+                },
+                error: function() {
+                    alert("Error joining organization");
+                }
+            });
+        }
     </script>
 }

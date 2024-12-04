@@ -10,13 +10,13 @@ namespace BusinessSearch.Controllers
     {
         private readonly BusinessDataService _businessDataService;
         private readonly CrmService _crmService;
-        private readonly ISearchHistoryService _searchHistoryService;
+        private readonly SearchHistoryService _searchHistoryService;
         private readonly ILogger<BusinessSearchController> _logger;
 
         public BusinessSearchController(
             BusinessDataService businessDataService,
             CrmService crmService,
-            ISearchHistoryService searchHistoryService,
+            SearchHistoryService searchHistoryService,
             ILogger<BusinessSearchController> logger)
         {
             _businessDataService = businessDataService;

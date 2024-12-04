@@ -24,5 +24,9 @@ namespace BusinessSearch.Models.ViewModels
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [StringLength(8)]
+        [Display(Name = "Organization Invite Code")]
+        public string? InviteCode { get; set; }
     }
 }

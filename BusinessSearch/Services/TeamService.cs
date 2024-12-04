@@ -8,86 +8,134 @@ namespace BusinessSearch.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<TeamService> _logger;
+        private readonly IOrganizationFilterService _orgFilter;
 
-        public TeamService(ApplicationDbContext context, ILogger<TeamService> logger)
+        public TeamService(
+            ApplicationDbContext context,
+            ILogger<TeamService> logger,
+            IOrganizationFilterService orgFilter)
         {
             _context = context;
             _logger = logger;
+            _orgFilter = orgFilter;
         }
 
         public async Task<List<TeamMember>> GetAllTeamMembers()
         {
             try
             {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
                 return await _context.TeamMembers
-                    .Include(t => t.AssignedLists)
+                    .Join(_context.Users,
+                        tm => tm.Id,
+                        u => u.TeamMemberId,
+                        (tm, u) => new { TeamMember = tm, User = u })
+                    .Where(x => x.User.OrganizationId == orgId)
+                    .Select(x => x.TeamMember)
+                    .OrderBy(t => t.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting team members: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving team members");
                 throw;
             }
         }
 
-        public async Task<TeamMember?> GetTeamMemberById(int id)
+        public async Task<TeamMember> GetTeamMemberById(int id)
         {
             try
             {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
                 return await _context.TeamMembers
-                    .Include(t => t.AssignedLists)
-                    .FirstOrDefaultAsync(t => t.Id == id);
+                    .Join(_context.Users,
+                        tm => tm.Id,
+                        u => u.TeamMemberId,
+                        (tm, u) => new { TeamMember = tm, User = u })
+                    .Where(x => x.User.OrganizationId == orgId && x.TeamMember.Id == id)
+                    .Select(x => x.TeamMember)
+                    .FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting team member {id}: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving team member with ID: {Id}", id);
                 throw;
             }
         }
 
-        public async Task<TeamMember> AddTeamMember(TeamMember member)
+        public async Task<TeamMember> AddTeamMember(TeamMember teamMember)
         {
             try
             {
-                _context.TeamMembers.Add(member);
+                teamMember.DateAdded = DateTime.UtcNow;
+                teamMember.OrganizationId = await _orgFilter.GetCurrentOrganizationId();
+                _context.TeamMembers.Add(teamMember);
                 await _context.SaveChangesAsync();
-                return member;
+                return teamMember;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error adding team member: {ex.Message}");
+                _logger.LogError(ex, "Error adding team member: {Name}", teamMember.Name);
                 throw;
             }
         }
 
-        public async Task UpdateTeamMember(TeamMember member)
+        public async Task<TeamMember> UpdateTeamMember(TeamMember teamMember)
         {
             try
             {
-                _context.Entry(member).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error updating team member: {ex.Message}");
-                throw;
-            }
-        }
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
+                var existingMember = await _context.TeamMembers
+                    .Join(_context.Users,
+                        tm => tm.Id,
+                        u => u.TeamMemberId,
+                        (tm, u) => new { TeamMember = tm, User = u })
+                    .Where(x => x.User.OrganizationId == orgId && x.TeamMember.Id == teamMember.Id)
+                    .Select(x => x.TeamMember)
+                    .FirstOrDefaultAsync();
 
-        public async Task DeleteTeamMember(int id)
-        {
-            try
-            {
-                var member = await _context.TeamMembers.FindAsync(id);
-                if (member != null)
+                if (existingMember == null)
                 {
-                    _context.TeamMembers.Remove(member);
-                    await _context.SaveChangesAsync();
+                    throw new InvalidOperationException($"TeamMember with ID {teamMember.Id} not found or access denied");
                 }
+
+                _context.Entry(existingMember).CurrentValues.SetValues(teamMember);
+                await _context.SaveChangesAsync();
+                return existingMember;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error deleting team member {id}: {ex.Message}");
+                _logger.LogError(ex, "Error updating team member with ID: {Id}", teamMember.Id);
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteTeamMember(int id)
+        {
+            try
+            {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
+                var teamMember = await _context.TeamMembers
+                    .Join(_context.Users,
+                        tm => tm.Id,
+                        u => u.TeamMemberId,
+                        (tm, u) => new { TeamMember = tm, User = u })
+                    .Where(x => x.User.OrganizationId == orgId && x.TeamMember.Id == id)
+                    .Select(x => x.TeamMember)
+                    .FirstOrDefaultAsync();
+
+                if (teamMember == null)
+                {
+                    return false;
+                }
+
+                _context.TeamMembers.Remove(teamMember);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting team member with ID: {Id}", id);
                 throw;
             }
         }
@@ -96,15 +144,29 @@ namespace BusinessSearch.Services
         {
             try
             {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
                 return await _context.CrmLists
-                    .Where(l => l.AssignedToId == teamMemberId)
+                    .Where(l => l.AssignedToId == teamMemberId.ToString() && l.OrganizationId == orgId)
+                    .Include(l => l.CrmEntryLists)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting assigned lists for team member {teamMemberId}: {ex.Message}");
+                _logger.LogError(ex, "Error retrieving assigned lists for team member ID: {Id}", teamMemberId);
                 throw;
             }
+        }
+
+        public async Task<bool> ValidateTeamMemberId(int? id)
+        {
+            if (!id.HasValue) return false;
+            var orgId = await _orgFilter.GetCurrentOrganizationId();
+            return await _context.TeamMembers
+                .Join(_context.Users,
+                    tm => tm.Id,
+                    u => u.TeamMemberId,
+                    (tm, u) => new { TeamMember = tm, User = u })
+                .AnyAsync(x => x.User.OrganizationId == orgId && x.TeamMember.Id == id.Value);
         }
     }
 }

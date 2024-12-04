@@ -4,26 +4,111 @@ using Microsoft.EntityFrameworkCore;
 using BusinessSearch.Models;
 using BusinessSearch.Models.ViewModels;
 using BusinessSearch.Data;
+using BusinessSearch.Services;
 
 namespace BusinessSearch.Controllers
 {
-    public class AccountController : Controller
+    public partial class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IOrganizationService _organizationService;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<AccountController> logger,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IOrganizationService organizationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _context = context;
+            _organizationService = organizationService;
+        }
+
+        [HttpGet]
+        public IActionResult NoOrganization(string returnUrl = null)
+        {
+            var viewModel = new NoOrganizationViewModel
+            {
+                ReturnUrl = returnUrl
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrganization(CreateOrganizationViewModel model)
+        {
+            _logger.LogInformation("CreateOrganization POST action started");
+            try
+            {
+                if (model == null)
+                {
+                    _logger.LogError("Model is null");
+                    return Json(new { success = false, message = "Invalid request data." });
+                }
+
+                _logger.LogInformation($"Received organization name: {model.OrganizationName}");
+
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("ModelState is invalid");
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage);
+                    _logger.LogWarning($"Validation errors: {string.Join(", ", errors)}");
+                    return Json(new { success = false, message = "Please check the form values." });
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                _logger.LogInformation($"Retrieved user: {user?.Id ?? "null"}");
+
+                if (user == null)
+                {
+                    _logger.LogError("User not found or not authenticated");
+                    return Json(new { success = false, message = "User not found or not authenticated." });
+                }
+
+                try
+                {
+                    _logger.LogInformation("Calling CreateOrganizationAsync");
+                    var organization = await _organizationService.CreateOrganizationAsync(
+                        model.OrganizationName,
+                        user);
+
+                    _logger.LogInformation($"Organization created successfully. ID: {organization.Id}");
+                    return Json(new { success = true, organizationId = organization.Id });
+                }
+                catch (Exception innerEx)
+                {
+                    _logger.LogError($"Error in CreateOrganizationAsync: {innerEx.Message}");
+                    _logger.LogError($"Inner exception: {innerEx.InnerException?.Message}");
+                    _logger.LogError($"Stack trace: {innerEx.StackTrace}");
+                    return Json(new { success = false, message = $"Error creating organization: {innerEx.Message}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unhandled error in CreateOrganization action: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = "An unexpected error occurred. Please try again." });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult CreateOrganization(string returnUrl = null)
+        {
+            var viewModel = new CreateOrganizationViewModel
+            {
+                ReturnUrl = returnUrl
+            };
+            return View(viewModel);
         }
 
         [HttpGet]
@@ -241,6 +326,7 @@ namespace BusinessSearch.Controllers
 
             user = await _userManager.Users
                 .Include(u => u.TeamMember)
+                .Include(u => u.Organization)
                 .FirstOrDefaultAsync(u => u.Id == user.Id);
 
             var model = new ProfileViewModel
@@ -249,7 +335,9 @@ namespace BusinessSearch.Controllers
                 Name = user.TeamMember?.Name ?? "",
                 Email = user.Email ?? "",
                 CreatedAt = user.CreatedAt,
-                TeamMemberId = user.TeamMemberId
+                TeamMemberId = user.TeamMemberId,
+                OrganizationId = user.OrganizationId,
+                OrganizationName = user.Organization?.Name
             };
 
             return View(model);

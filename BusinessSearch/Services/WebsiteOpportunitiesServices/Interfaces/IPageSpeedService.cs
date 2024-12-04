@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using BusinessSearch.Models.WebsiteAnalysis;
 
-namespace BusinessSearch.Services.WebsiteOpportunitiesServices
+namespace BusinessSearch.Services.WebsiteOpportunitiesServices.Interfaces
 {
     public interface IPageSpeedService
     {

@@ -1,0 +1,264 @@
+﻿@model BusinessSearch.Models.ViewModels.OrganizationDetailsViewModel
+@{
+    ViewData["Title"] = "Organization Management";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@Model.Name</h1>
+        <div>
+            <a href="@Url.Action("Settings", "Organization")" class="btn btn-outline-primary">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Team Members Section -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Team Members (@Model.UserCount)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var member in Model.Members)
+                                {
+                                    <tr>
+                                        <td>@member.Name</td>
+                                        <td>@member.Email</td>
+                                        <td>
+                                            @if (Model.IsCurrentUserAdmin)
+                                            {
+                                                <select class="form-select form-select-sm role-select" 
+                                                        data-user-id="@member.Id" 
+                                                        onchange="updateUserRole(this)">
+                                                    <option value="Member" selected="@(member.Role == "Member")">Member</option>
+                                                    <option value="Admin" selected="@(member.Role == "Admin")">Admin</option>
+                                                </select>
+                                            }
+                                            else
+                                            {
+                                                <span>@member.Role</span>
+                                            }
+                                        </td>
+                                        <td>@member.JoinedDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            @if (Model.IsCurrentUserAdmin || member.Id == Model.CurrentUserId)
+                                            {
+                                                <button class="btn btn-sm btn-danger" 
+                                                        onclick="removeUser('@member.Id')">
+                                                    Remove
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invites Section -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Organization Invites</h5>
+                    @if (Model.IsCurrentUserAdmin)
+                    {
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateInviteModal">
+                            Generate New Invite
+                        </button>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (!Model.ActiveInvites.Any())
+                    {
+                        <p class="text-muted">No active invites</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Role</th>
+                                        <th>Expires</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var invite in Model.ActiveInvites)
+                                    {
+                                        <tr>
+                                            <td><code>@invite.InviteCode</code></td>
+                                            <td>@invite.Role</td>
+                                            <td>@invite.ExpiryDate.ToString("MMM dd")</td>
+                                            <td>
+                                                @if (Model.IsCurrentUserAdmin)
+                                                {
+                                                    <button class="btn btn-sm btn-danger" 
+                                                            onclick="deactivateInvite('@invite.InviteCode')">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Invite Modal -->
+@if (Model.IsCurrentUserAdmin)
+{
+    <div class="modal fade" id="generateInviteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Generate New Invite</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="roleSelect" class="form-label">Select Role</label>
+                        <select class="form-select" id="roleSelect">
+                            <option value="Member">Member</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div id="inviteCodeResult" class="d-none">
+                        <div class="alert alert-success">
+                            <p class="mb-1">Invite Code Generated:</p>
+                            <code class="fs-4" id="generatedInviteCode"></code>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="generateInvite()">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function generateInvite() {
+            const role = document.getElementById('roleSelect').value;
+            
+            $.ajax({
+                url: '@Url.Action("GenerateInvite", "Organization")',
+                type: 'POST',
+                data: { role: role },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (data.success) {
+                        $('#generatedInviteCode').text(data.inviteCode);
+                        $('#inviteCodeResult').removeClass('d-none');
+                    } else {
+                        alert('Error generating invite: ' + data.message);
+                    }
+                },
+                error: function () {
+                    alert('Error generating invite code');
+                }
+            });
+        }
+
+        function updateUserRole(select) {
+            const userId = $(select).data('user-id');
+            const role = $(select).val();
+
+            $.ajax({
+                url: '@Url.Action("UpdateUserRole", "Organization")',
+                type: 'POST',
+                data: { userId: userId, role: role },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (!data.success) {
+                        alert('Error updating role: ' + data.message);
+                    }
+                },
+                error: function () {
+                    alert('Error updating user role');
+                }
+            });
+        }
+
+        function removeUser(userId) {
+            if (!confirm('Are you sure you want to remove this user?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("RemoveUser", "Organization")',
+                type: 'POST',
+                data: { userId: userId },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error removing user: ' + data.message);
+                    }
+                },
+                error: function () {
+                    alert('Error removing user');
+                }
+            });
+        }
+
+        function deactivateInvite(inviteCode) {
+            if (!confirm('Are you sure you want to deactivate this invite?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeactivateInvite", "Organization")',
+                type: 'POST',
+                data: { inviteCode: inviteCode },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (data) {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Error deactivating invite: ' + data.message);
+                    }
+                },
+                error: function () {
+                    alert('Error deactivating invite');
+                }
+            });
+        }
+    </script>
+}

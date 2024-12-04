@@ -33,5 +33,11 @@ namespace BusinessSearch.Models.ViewModels
         [Display(Name = "Confirm New Password")]
         [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
         public string? ConfirmNewPassword { get; set; }
+
+        // New organization-related properties
+        public int? OrganizationId { get; set; }
+
+        [Display(Name = "Organization")]
+        public string? OrganizationName { get; set; }
     }
 }
