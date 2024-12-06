@@ -5,6 +5,7 @@ using BusinessSearch.Models;
 using BusinessSearch.Models.ViewModels;
 using BusinessSearch.Data;
 using BusinessSearch.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BusinessSearch.Controllers
 {
@@ -112,10 +113,19 @@ namespace BusinessSearch.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             if (_signInManager.IsSignedIn(User))
+            {
+                // Only redirect if there's a valid return URL
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+                // Otherwise, go to home
                 return RedirectToAction("Index", "Home");
+            }
 
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }

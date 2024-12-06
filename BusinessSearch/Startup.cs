@@ -90,6 +90,7 @@ namespace BusinessSearch
             // Register Organization Services
             services.AddScoped<IOrganizationFilterService, OrganizationFilterService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<ISearchUsageService, SearchUsageService>();
 
             // Register Website Analysis Services
             services.AddScoped<IWebsiteAnalysisService, WebsiteAnalysisService>();
@@ -105,6 +106,9 @@ namespace BusinessSearch
             services.AddScoped<CrmService>();
             services.AddScoped<SearchHistoryService>();
             services.AddScoped<IOrganizationInviteService, OrganizationInviteService>();
+
+            // Register Background Services
+            services.AddHostedService<SearchUsageService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

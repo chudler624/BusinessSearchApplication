@@ -1,11 +1,39 @@
 ﻿@model BusinessSearch.Models.ViewModels.RecentSearchesViewModel
+@using BusinessSearch.Models.Organization
 @{
     ViewData["Title"] = "Business Search";
 }
 
-<h2 class="mb-4">Business Search</h2>
-
 <div class="container">
+    <!-- Search Usage Alert -->
+    @if (Model.SearchUsage.Remaining <= 20)
+    {
+        <div class="alert @(Model.SearchUsage.Remaining == 0 ? "alert-danger" : "alert-warning") alert-dismissible fade show mb-4" role="alert">
+            @if (Model.SearchUsage.Remaining == 0)
+            {
+                <span>Daily search results limit reached! Your results quota will reset at @Model.SearchUsage.NextReset.ToString("HH:mm") UTC.</span>
+                <a href="@Url.Action("Settings", "Organization")" class="alert-link">Upgrade your plan</a>
+                <span>for more search results.</span>
+            }
+            else
+            {
+                <span>Running low on search results! You have @Model.SearchUsage.Remaining results remaining today.</span>
+                <span>Resets at @Model.SearchUsage.NextReset.ToString("HH:mm") UTC.</span>
+            }
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Business Search</h2>
+        <div class="text-end">
+            <div class="badge bg-primary mb-2">@Model.OrganizationPlan</div>
+            <div class="small text-muted">
+                Remaining Results: @Model.SearchUsage.Remaining / @Model.SearchUsage.DailyLimit
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6">
             <form asp-action="Search" method="post">
@@ -31,7 +59,10 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary px-4">Search</button>
+                    <button type="submit" class="btn btn-primary px-4" 
+                            @(Model.SearchUsage.Remaining == 0 ? "disabled" : "")>
+                        Search
+                    </button>
                 </div>
             </form>
         </div>

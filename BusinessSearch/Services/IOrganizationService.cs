@@ -17,5 +17,7 @@ namespace BusinessSearch.Services
         Task<bool> CanManageRoles(string currentUserId, int organizationId);
         Task<bool> RemoveUserFromOrganizationAsync(string currentUserId, string targetUserId, int organizationId);
         Task<bool> UpdateUserRoleAsync(string currentUserId, string targetUserId, int organizationId, OrganizationRole newRole);
+        Task<bool> UpdateOrganizationPlanAsync(int organizationId, OrganizationPlan newPlan, string promoCode);
+        Task<bool> UpdateOrganizationAsync(OrganizationEntity organization);
     }
 }

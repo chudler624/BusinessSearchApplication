@@ -3,38 +3,72 @@ using BusinessSearch.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using BusinessSearch.Models.ViewModels;
+using BusinessSearch.Models.Organization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BusinessSearch.Controllers
 {
+    [Authorize]
     public class BusinessSearchController : Controller
     {
         private readonly BusinessDataService _businessDataService;
         private readonly CrmService _crmService;
         private readonly SearchHistoryService _searchHistoryService;
+        private readonly ISearchUsageService _searchUsageService;
+        private readonly IOrganizationFilterService _orgFilter;
         private readonly ILogger<BusinessSearchController> _logger;
 
         public BusinessSearchController(
             BusinessDataService businessDataService,
             CrmService crmService,
             SearchHistoryService searchHistoryService,
+            ISearchUsageService searchUsageService,
+            IOrganizationFilterService orgFilter,
             ILogger<BusinessSearchController> logger)
         {
             _businessDataService = businessDataService;
             _crmService = crmService;
             _searchHistoryService = searchHistoryService;
+            _searchUsageService = searchUsageService;
+            _orgFilter = orgFilter;
             _logger = logger;
         }
 
         public async Task<IActionResult> Index(int? displayCount)
         {
-            var count = displayCount ?? 5; // Default to 5 if not specified
-            var recentSearches = await _searchHistoryService.GetRecentSearchesAsync(count);
-            var viewModel = new RecentSearchesViewModel
+            try
             {
-                RecentSearches = recentSearches,
-                DisplayCount = count
-            };
-            return View(viewModel);
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return RedirectToAction("NoOrganization", "Account");
+                }
+
+                var count = displayCount ?? 5; // Default to 5 if not specified
+                var recentSearches = await _searchHistoryService.GetRecentSearchesAsync(count);
+                var status = await _searchUsageService.GetSearchUsageStatusAsync(organization.Id);
+
+                var viewModel = new RecentSearchesViewModel
+                {
+                    RecentSearches = recentSearches,
+                    DisplayCount = count,
+                    SearchUsage = status,
+                    OrganizationPlan = organization.Plan
+                };
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading search index");
+                TempData["Error"] = "An error occurred while loading the page.";
+                return RedirectToAction("NoOrganization", "Account");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Search()
+        {
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -42,12 +76,31 @@ namespace BusinessSearch.Controllers
         {
             try
             {
-                _logger.LogInformation($"Searching for {industry} businesses in {zipcode} with limit: {limit ?? 5}");
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return RedirectToAction("NoOrganization", "Account");
+                }
+
+                var maxResults = limit ?? 5;
+                if (!await _searchUsageService.CanPerformSearchAsync(organization.Id, maxResults))
+                {
+                    TempData["Error"] = "Daily search results limit reached. Please try again tomorrow or upgrade your plan.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _logger.LogInformation($"Searching for {industry} businesses in {zipcode} with limit: {maxResults}");
                 var businesses = await _businessDataService.SearchBusinessesAsync(industry, zipcode, limit);
                 _logger.LogInformation($"Found {businesses.Count} businesses");
 
-                // Save search to history
-                await _searchHistoryService.SaveSearchAsync(industry, zipcode, limit ?? 5, businesses);
+                // Increment by actual results returned, not the requested limit
+                await _searchUsageService.IncrementSearchResultsCountAsync(organization.Id, businesses.Count);
+                await _searchHistoryService.SaveSearchAsync(industry, zipcode, maxResults, businesses);
+
+                // Pass the current usage status to the view
+                var searchStatus = await _searchUsageService.GetSearchUsageStatusAsync(organization.Id);
+                ViewBag.SearchUsage = searchStatus;
+                ViewBag.OrganizationPlan = organization.Plan;
 
                 return View("Results", businesses);
             }
@@ -59,6 +112,7 @@ namespace BusinessSearch.Controllers
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> History(
             int page = 1,
             string? sortBy = null,
@@ -68,9 +122,17 @@ namespace BusinessSearch.Controllers
         {
             try
             {
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return RedirectToAction("NoOrganization", "Account");
+                }
+
                 const int PageSize = 10;
                 var (searches, totalCount) = await _searchHistoryService.GetSearchHistoryAsync(
                     page, PageSize, sortBy, ascending, industryFilter, zipCodeFilter);
+
+                var searchStatus = await _searchUsageService.GetSearchUsageStatusAsync(organization.Id);
 
                 var viewModel = new SearchHistoryViewModel
                 {
@@ -88,7 +150,9 @@ namespace BusinessSearch.Controllers
                         ZipCode = zipCodeFilter
                     },
                     CurrentSort = sortBy,
-                    IsAscending = ascending
+                    IsAscending = ascending,
+                    SearchUsage = searchStatus,
+                    OrganizationPlan = organization.Plan
                 };
 
                 return View(viewModel);
@@ -106,12 +170,21 @@ namespace BusinessSearch.Controllers
         {
             try
             {
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return RedirectToAction("NoOrganization", "Account");
+                }
+
                 var savedSearch = await _searchHistoryService.GetSearchByIdAsync(id);
                 if (savedSearch == null)
                 {
                     TempData["Error"] = "Search not found.";
                     return RedirectToAction(nameof(History));
                 }
+
+                // Get current search usage status
+                var searchStatus = await _searchUsageService.GetSearchUsageStatusAsync(organization.Id);
 
                 // Convert SavedBusinessResults back to Business objects
                 var businesses = savedSearch.Results.Select(r => new Business
@@ -146,7 +219,10 @@ namespace BusinessSearch.Controllers
                     YelpUrl = r.YelpUrl
                 }).ToList();
 
+                ViewBag.SearchUsage = searchStatus;
+                ViewBag.OrganizationPlan = organization.Plan;
                 ViewBag.SearchDate = savedSearch.SearchDate;
+
                 return View("Results", businesses);
             }
             catch (Exception ex)
@@ -162,6 +238,12 @@ namespace BusinessSearch.Controllers
         {
             try
             {
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return RedirectToAction("NoOrganization", "Account");
+                }
+
                 await _searchHistoryService.DeleteSearchAsync(id);
                 TempData["Success"] = "Search history deleted successfully.";
                 return RedirectToAction(nameof(History));
@@ -180,6 +262,12 @@ namespace BusinessSearch.Controllers
         {
             try
             {
+                var organization = await _orgFilter.GetCurrentOrganization();
+                if (organization == null)
+                {
+                    return Json(new { success = false, message = "Organization not found" });
+                }
+
                 _logger.LogInformation($"Adding business {request.Name} to CRM list {request.ListId}");
 
                 var crmEntry = new CrmEntry

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using BusinessSearch.Models.ViewModels;
 using BusinessSearch.Services;
 using BusinessSearch.Authorization;
+using BusinessSearch.Models.Organization;
 
 namespace BusinessSearch.Controllers
 {
@@ -12,17 +13,20 @@ namespace BusinessSearch.Controllers
         private readonly IOrganizationService _organizationService;
         private readonly IOrganizationFilterService _orgFilter;
         private readonly IOrganizationInviteService _inviteService;
+        private readonly ISearchUsageService _searchUsageService;
         private readonly ILogger<OrganizationController> _logger;
 
         public OrganizationController(
             IOrganizationService organizationService,
             IOrganizationFilterService orgFilter,
             IOrganizationInviteService inviteService,
+            ISearchUsageService searchUsageService,
             ILogger<OrganizationController> logger)
         {
             _organizationService = organizationService;
             _orgFilter = orgFilter;
             _inviteService = inviteService;
+            _searchUsageService = searchUsageService;
             _logger = logger;
         }
 
@@ -34,15 +38,24 @@ namespace BusinessSearch.Controllers
                 var organization = await _orgFilter.GetCurrentOrganization();
                 if (organization == null)
                 {
+                    _logger.LogWarning("No organization found for current user");
                     return RedirectToAction("NoOrganization", "Account");
                 }
 
-                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var isAdmin = await _organizationService.CanManageRoles(currentUserId, organization.Id);
+                _logger.LogInformation($"Loading organization details for organization ID: {organization.Id}");
 
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (currentUserId == null)
+                {
+                    _logger.LogWarning("Current user ID not found");
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var searchUsage = await _searchUsageService.GetSearchUsageStatusAsync(organization.Id);
+                var isAdmin = await _organizationService.CanManageRoles(currentUserId, organization.Id);
                 var users = await _organizationService.GetOrganizationUsersAsync(organization.Id);
                 var permissions = await _organizationService.GetUserPermissionsAsync(organization.Id);
-                var activeInvites = isAdmin ? await _inviteService.GetActiveInvites(organization.Id) : new List<Models.Organization.OrganizationInvite>();
+                var activeInvites = isAdmin ? await _inviteService.GetActiveInvites(organization.Id) : new List<OrganizationInvite>();
 
                 var viewModel = new OrganizationDetailsViewModel
                 {
@@ -52,11 +65,13 @@ namespace BusinessSearch.Controllers
                     UserCount = users.Count(),
                     IsCurrentUserAdmin = isAdmin,
                     CurrentUserId = currentUserId,
+                    Plan = organization.Plan,
+                    SearchUsage = searchUsage,
                     Members = users.Select(u => new OrganizationMemberViewModel
                     {
                         Id = u.Id,
-                        Name = u.Name,
-                        Email = u.Email,
+                        Name = u.Name ?? string.Empty,
+                        Email = u.Email ?? string.Empty,
                         Role = u.OrganizationRole.ToString(),
                         JoinedDate = u.CreatedAt,
                         Permissions = permissions.FirstOrDefault(p => p.UserId == u.Id)
@@ -73,7 +88,7 @@ namespace BusinessSearch.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error loading organization details: {ex.Message}");
+                _logger.LogError(ex, "Error loading organization details: {Message}", ex.Message);
                 TempData["Error"] = "Error loading organization details.";
                 return RedirectToAction("Index", "Home");
             }
@@ -95,7 +110,9 @@ namespace BusinessSearch.Controllers
                     Id = organization.Id,
                     Name = organization.Name,
                     CreatedAt = organization.CreatedAt,
-                    CreatedByName = organization.CreatedBy?.Name
+                    CreatedByName = organization.CreatedBy?.Name,
+                    Plan = organization.Plan,
+                    PromoCode = organization.PromoCode
                 };
 
                 return View(viewModel);
@@ -126,9 +143,26 @@ namespace BusinessSearch.Controllers
                 }
 
                 organization.Name = model.Name;
-                // Add more settings as needed
 
-                // Update logic would go here
+                if (organization.Plan != model.Plan || organization.PromoCode != model.PromoCode)
+                {
+                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(currentUserId) && await _organizationService.CanManageRoles(currentUserId, organization.Id))
+                    {
+                        var updateSuccess = await _organizationService.UpdateOrganizationPlanAsync(
+                            organization.Id,
+                            model.Plan,
+                            model.PromoCode);
+
+                        if (!updateSuccess)
+                        {
+                            ModelState.AddModelError("", "Unable to update organization plan. Please check your promo code if you're upgrading to unlimited.");
+                            return View("Settings", model);
+                        }
+                    }
+                }
+
+                await _organizationService.UpdateOrganizationAsync(organization);
                 TempData["Success"] = "Organization settings updated successfully.";
                 return RedirectToAction("Settings");
             }
@@ -154,7 +188,7 @@ namespace BusinessSearch.Controllers
                     return Json(new { success = false, message = "Organization not found" });
                 }
 
-                if (Enum.TryParse<Models.Organization.OrganizationRole>(role, out var organizationRole))
+                if (Enum.TryParse<OrganizationRole>(role, out var organizationRole))
                 {
                     var success = await _organizationService.UpdateUserRoleAsync(currentUserId, userId, organization.Id, organizationRole);
                     if (!success)

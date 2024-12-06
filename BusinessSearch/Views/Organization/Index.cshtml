@@ -1,15 +1,53 @@
 ﻿@model BusinessSearch.Models.ViewModels.OrganizationDetailsViewModel
+@using BusinessSearch.Models.Organization
 @{
     ViewData["Title"] = "Organization Management";
 }
 
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>@Model.Name</h1>
+        <div>
+            <h1>@Model.Name</h1>
+            <div class="text-muted">
+                Current Plan: <span class="badge bg-primary">@Model.Plan.GetDisplayName()</span>
+            </div>
+        </div>
         <div>
             <a href="@Url.Action("Settings", "Organization")" class="btn btn-outline-primary">
                 <i class="bi bi-gear"></i> Settings
             </a>
+        </div>
+    </div>
+
+    <!-- Search Usage Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Search Usage</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Today's Usage:</span>
+                        <span>@Model.SearchUsage.UsedToday / @Model.SearchUsage.DailyLimit searches</span>
+                    </div>
+                    <div class="progress mb-3">
+                        @{
+                            var usagePercentage = (Model.SearchUsage.UsedToday * 100.0) / Model.SearchUsage.DailyLimit;
+                            var progressClass = usagePercentage > 90 ? "bg-danger" : 
+                                              usagePercentage > 70 ? "bg-warning" : "bg-success";
+                        }
+                        <div class="progress-bar @progressClass" role="progressbar" 
+                             style="width: @usagePercentage%"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-end">
+                        <p class="mb-1">Searches Remaining Today: @Model.SearchUsage.Remaining</p>
+                        <small class="text-muted">Resets at @Model.SearchUsage.NextReset.ToString("HH:mm") UTC</small>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,4 +299,4 @@
             });
         }
     </script>
-}
+}, c

@@ -1,4 +1,5 @@
 ﻿using BusinessSearch.Models;
+using BusinessSearch.Models.Organization;
 
 namespace BusinessSearch.Models.ViewModels
 {
@@ -9,6 +10,8 @@ namespace BusinessSearch.Models.ViewModels
         public SearchHistoryFilter Filter { get; set; }
         public string? CurrentSort { get; set; }
         public bool IsAscending { get; set; }
+        public SearchUsageStatus SearchUsage { get; set; }
+        public OrganizationPlan OrganizationPlan { get; set; }
     }
 
     public class PaginationInfo
@@ -31,5 +34,15 @@ namespace BusinessSearch.Models.ViewModels
     {
         public IEnumerable<SavedSearch> RecentSearches { get; set; }
         public int DisplayCount { get; set; }
+        public SearchUsageStatus SearchUsage { get; set; }
+        public OrganizationPlan OrganizationPlan { get; set; }
+    }
+
+    public class SearchUsageStatus
+    {
+        public int DailyLimit { get; set; }
+        public int UsedToday { get; set; }
+        public DateTime NextReset { get; set; }
+        public int Remaining => DailyLimit - UsedToday;
     }
 }

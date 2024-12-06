@@ -1,4 +1,5 @@
 ﻿@model BusinessSearch.Models.ViewModels.OrganizationSettingsViewModel
+@using BusinessSearch.Models.Organization
 @{
     ViewData["Title"] = "Organization Settings";
 }
@@ -35,6 +36,7 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="IsActive" />
 
                         <div class="mb-4">
                             <h5>Basic Information</h5>
@@ -59,6 +61,37 @@
                                                 <input type="text" class="form-control" value="@Model.CreatedAt.ToString("MMMM d, yyyy")" disabled />
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5>Plan Settings</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label asp-for="Plan" class="form-label">Current Plan</label>
+                                        <select asp-for="Plan" class="form-select" id="planSelect">
+                                            <option value="@OrganizationPlan.Bronze" selected="@(Model.Plan == OrganizationPlan.Bronze)">
+                                                Bronze (100 searches/day) - Free
+                                            </option>
+                                            <option value="@OrganizationPlan.Silver" selected="@(Model.Plan == OrganizationPlan.Silver)">
+                                                Silver (300 searches/day) - $49/month
+                                            </option>
+                                            <option value="@OrganizationPlan.Gold" selected="@(Model.Plan == OrganizationPlan.Gold)">
+                                                Gold (500 searches/day) - $99/month
+                                            </option>
+                                            <option value="@OrganizationPlan.Unlimited" selected="@(Model.Plan == OrganizationPlan.Unlimited)">
+                                                Unlimited Searches (Requires Promo Code)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="promoCodeSection" class="mb-3 @(Model.Plan == OrganizationPlan.Unlimited ? "" : "d-none")">
+                                        <label asp-for="PromoCode" class="form-label">Promo Code</label>
+                                        <input asp-for="PromoCode" class="form-control" maxlength="50" 
+                                               placeholder="Enter promo code for unlimited plan" />
                                     </div>
                                 </div>
                             </div>
@@ -151,6 +184,16 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
+            // Plan selection handler
+            $('#planSelect').on('change', function() {
+                const promoSection = document.getElementById('promoCodeSection');
+                promoSection.classList.toggle('d-none', this.value !== '@OrganizationPlan.Unlimited.ToString()');
+                
+                if (this.value !== '@OrganizationPlan.Unlimited.ToString()') {
+                    document.getElementById('PromoCode').value = '';
+                }
+            });
+
             // Delete confirmation handler
             $('#confirmDelete').on('input', function() {
                 var confirmText = $(this).val();
@@ -166,7 +209,7 @@
                     window.location.href = '@Url.Action("Index", "Home")';
                 })
                 .fail(function() {
-                    toastr.error('Failed to delete organization');
+                    alert('Failed to delete organization');
                 });
             });
         });

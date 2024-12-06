@@ -313,6 +313,23 @@ namespace BusinessSearch.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime>("NextSearchReset")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("DATEADD(day, 1, GETUTCDATE())");
+
+                    b.Property<int>("Plan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PromoCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RequireApprovalForNewMembers")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RestrictDataAccess")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
@@ -405,6 +422,36 @@ namespace BusinessSearch.Migrations
                         .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("OrganizationPermissions");
+                });
+
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationSearchUsage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResultsCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Date");
+
+                    b.ToTable("OrganizationSearchUsage");
                 });
 
             modelBuilder.Entity("BusinessSearch.Models.SavedBusinessResult", b =>
@@ -862,6 +909,17 @@ namespace BusinessSearch.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessSearch.Models.Organization.OrganizationSearchUsage", b =>
+                {
+                    b.HasOne("BusinessSearch.Models.Organization.OrganizationEntity", "Organization")
+                        .WithMany("SearchUsage")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("BusinessSearch.Models.SavedBusinessResult", b =>
                 {
                     b.HasOne("BusinessSearch.Models.SavedSearch", "SavedSearch")
@@ -981,6 +1039,8 @@ namespace BusinessSearch.Migrations
                     b.Navigation("CrmLists");
 
                     b.Navigation("SavedSearches");
+
+                    b.Navigation("SearchUsage");
 
                     b.Navigation("Users");
                 });

@@ -1,13 +1,23 @@
 ﻿@model IEnumerable<BusinessSearch.Models.Business>
+@using BusinessSearch.Models.Organization
+
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Search Results</h2>
-        @if (ViewBag.SearchDate != null)
-        {
-            <div class="alert alert-info mb-0">
-                Results from search performed on @(((DateTime)ViewBag.SearchDate).ToString("MM/dd/yyyy HH:mm"))
+        <div>
+            <h2>Search Results (@Model.Count() results found)</h2>
+            @if (ViewBag.SearchDate != null)
+            {
+                <div class="alert alert-info mb-0">
+                    Results from search performed on @(((DateTime)ViewBag.SearchDate).ToString("MM/dd/yyyy HH:mm"))
+                </div>
+            }
+        </div>
+        <div class="text-end">
+            <div class="badge bg-primary mb-2">@ViewBag.OrganizationPlan</div>
+            <div class="small text-muted">
+                Remaining Results: @ViewBag.SearchUsage.Remaining / @ViewBag.SearchUsage.DailyLimit
             </div>
-        }
+        </div>
     </div>
 
     <div class="row">
@@ -25,6 +35,8 @@
                             <strong>Website:</strong> <a href="@business.Website" target="_blank" rel="noopener noreferrer">@business.Website</a>
                         </p>
                         <button type="button" class="btn btn-primary add-to-crm-btn"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addToCrmModal"
                             onclick="showAddToCrmModal(this)"
                             data-name="@business.Name"
                             data-phone="@business.PhoneNumber"
@@ -139,7 +151,7 @@
     </style>
 }
 
-    @section Scripts {
+@section Scripts {
     <script>
         let currentBusinessData = null;
         let availableLists = [];
@@ -240,9 +252,6 @@
             document.getElementById('targetList').value = '';
             document.getElementById('notes').value = '';
             document.getElementById('initialDisposition').value = 'New';
-
-            const modal = new bootstrap.Modal(document.getElementById('addToCrmModal'));
-            modal.show();
         }
 
         // Handle list selection change
@@ -330,7 +339,6 @@
                     listId = parseInt(targetListSelect.value);
                 }
 
-                // Prepare entry data - mapping from Business model to CrmEntry model
                 const formData = {
                     entry: {
                         businessName: currentBusinessData.name || '',
@@ -353,8 +361,6 @@
                     },
                     selectedListId: listId
                 };
-
-                console.log('Sending data:', formData); // For debugging
 
                 const response = await fetch('/Crm/Create', {
                     method: 'POST',
@@ -385,13 +391,15 @@
         }
 
         function showAlert(type, message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show', 'position-fixed', 'top-0', 'end-0', 'm-3');
+            const alertDiv = document.createElement('div');            
+            alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show',
+            'position-fixed', 'top-0',
+            'end-0', 'm-3');
             alertDiv.style.zIndex = '9999';
             alertDiv.innerHTML = `
-                        ${message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
             document.body.appendChild(alertDiv);
             setTimeout(() => alertDiv.remove(), 5000);
         }

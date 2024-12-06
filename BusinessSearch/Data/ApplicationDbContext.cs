@@ -22,6 +22,7 @@ namespace BusinessSearch.Data
         public DbSet<OrganizationEntity> Organizations { get; set; }
         public DbSet<OrganizationPermissions> OrganizationPermissions { get; set; }
         public DbSet<OrganizationInvite> OrganizationInvites { get; set; }
+        public DbSet<OrganizationSearchUsage> OrganizationSearchUsage { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -93,7 +94,6 @@ namespace BusinessSearch.Data
                 entity.Property(e => e.AssignedToId).HasMaxLength(450);
                 entity.Property(e => e.OrganizationId).IsRequired(false);
 
-                // Configure relationships
                 entity.HasOne(l => l.CreatedBy)
                     .WithMany(u => u.CreatedLists)
                     .HasForeignKey(l => l.CreatedById)
@@ -125,6 +125,9 @@ namespace BusinessSearch.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.CreatedAt).IsRequired();
                 entity.Property(e => e.CreatedById).HasMaxLength(450).IsRequired(false);
+                entity.Property(e => e.Plan).IsRequired();
+                entity.Property(e => e.NextSearchReset).IsRequired()
+                    .HasDefaultValueSql("DATEADD(day, 1, GETUTCDATE())");
 
                 entity.HasOne(o => o.CreatedBy)
                     .WithMany(u => u.CreatedOrganizations)
@@ -196,8 +199,23 @@ namespace BusinessSearch.Data
                     .HasForeignKey(i => i.OrganizationId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Add unique index on InviteCode
                 entity.HasIndex(e => e.InviteCode).IsUnique();
+            });
+
+            // Configure OrganizationSearchUsage
+            modelBuilder.Entity<OrganizationSearchUsage>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Date).IsRequired();
+                entity.Property(e => e.Count).IsRequired();
+                entity.Property(e => e.LastUpdated).IsRequired();
+
+                entity.HasOne(u => u.Organization)
+                    .WithMany(o => o.SearchUsage)
+                    .HasForeignKey(u => u.OrganizationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.OrganizationId, e.Date });
             });
         }
     }

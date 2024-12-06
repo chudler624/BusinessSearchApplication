@@ -119,6 +119,24 @@ namespace BusinessSearch.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrganizationInvites",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    InviteCode = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationInvites", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrganizationPermissions",
                 columns: table => new
                 {
@@ -147,11 +165,39 @@ namespace BusinessSearch.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedById = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    RequireApprovalForNewMembers = table.Column<bool>(type: "bit", nullable: false),
+                    RestrictDataAccess = table.Column<bool>(type: "bit", nullable: false),
+                    Plan = table.Column<int>(type: "int", nullable: false),
+                    PromoCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NextSearchReset = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "DATEADD(day, 1, GETUTCDATE())")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Organizations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrganizationSearchUsage",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Count = table.Column<int>(type: "int", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ResultsCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationSearchUsage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrganizationSearchUsage_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -417,6 +463,17 @@ namespace BusinessSearch.Migrations
                 column: "TeamMemberId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrganizationInvites_InviteCode",
+                table: "OrganizationInvites",
+                column: "InviteCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrganizationInvites_OrganizationId",
+                table: "OrganizationInvites",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrganizationPermissions_LastModifiedById",
                 table: "OrganizationPermissions",
                 column: "LastModifiedById");
@@ -437,6 +494,11 @@ namespace BusinessSearch.Migrations
                 name: "IX_Organizations_CreatedById",
                 table: "Organizations",
                 column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrganizationSearchUsage_OrganizationId_Date",
+                table: "OrganizationSearchUsage",
+                columns: new[] { "OrganizationId", "Date" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -557,6 +619,14 @@ namespace BusinessSearch.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_OrganizationInvites_Organizations_OrganizationId",
+                table: "OrganizationInvites",
+                column: "OrganizationId",
+                principalTable: "Organizations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_OrganizationPermissions_Organizations_OrganizationId",
                 table: "OrganizationPermissions",
                 column: "OrganizationId",
@@ -604,7 +674,13 @@ namespace BusinessSearch.Migrations
                 name: "CrmEntryLists");
 
             migrationBuilder.DropTable(
+                name: "OrganizationInvites");
+
+            migrationBuilder.DropTable(
                 name: "OrganizationPermissions");
+
+            migrationBuilder.DropTable(
+                name: "OrganizationSearchUsage");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");

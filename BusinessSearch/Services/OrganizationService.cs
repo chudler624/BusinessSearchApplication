@@ -61,7 +61,9 @@ namespace BusinessSearch.Services
                 {
                     Name = name,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedById = owner.Id
+                    CreatedById = owner.Id,
+                    Plan = OrganizationPlan.Bronze,
+                    NextSearchReset = DateTime.UtcNow.Date.AddDays(1)
                 };
 
                 var strategy = _context.Database.CreateExecutionStrategy();
@@ -195,6 +197,33 @@ namespace BusinessSearch.Services
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             return user?.Organization;
+        }
+
+        public async Task<bool> UpdateOrganizationPlanAsync(int organizationId, OrganizationPlan newPlan, string promoCode)
+        {
+            var organization = await _context.Organizations.FindAsync(organizationId);
+            if (organization == null)
+                return false;
+
+            // Validate promo code for unlimited plan
+            if (newPlan == OrganizationPlan.Unlimited &&
+                (!string.Equals(promoCode, "PATRIOT", StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
+            organization.Plan = newPlan;
+            organization.PromoCode = promoCode;
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
+        public async Task<bool> UpdateOrganizationAsync(OrganizationEntity organization)
+        {
+            _context.Organizations.Update(organization);
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
     }
 }

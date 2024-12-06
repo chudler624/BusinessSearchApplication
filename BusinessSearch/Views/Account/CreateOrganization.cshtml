@@ -1,4 +1,4 @@
-﻿@model CreateOrganizationViewModel
+﻿@model BusinessSearch.Models.ViewModels.CreateOrganizationViewModel
 @{
     ViewData["Title"] = "Create Organization";
 }
@@ -13,9 +13,6 @@
                 <div class="card-body">
                     <form asp-action="CreateOrganization" method="post">
                         @Html.AntiForgeryToken()
-                        @* Remove this line since ReturnUrl is now optional *@
-                        @* <input type="hidden" asp-for="ReturnUrl" /> *@
-
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
@@ -23,6 +20,21 @@
                             <input asp-for="OrganizationName" class="form-control" />
                             <span asp-validation-for="OrganizationName" class="text-danger"></span>
                             <div class="form-text">This will be your organization's display name.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Plan" class="form-label">Select Plan</label>
+                            <select asp-for="Plan" class="form-select">
+                                <option value="Bronze">Bronze Plan (100 daily searches)</option>
+                                <option value="Silver">Silver Plan (300 daily searches)</option>
+                                <option value="Gold">Gold Plan (500 daily searches)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PromoCode" class="form-label">Promo Code (Optional)</label>
+                            <input asp-for="PromoCode" class="form-control" />
+                            <div class="form-text">If you have a promo code, enter it here.</div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -42,7 +54,6 @@
         $(document).ready(function() {
             $('form').on('submit', function(e) {
                 e.preventDefault();
-                console.log('Form submitted');
                 
                 var formData = $(this).serializeArray();
                 console.log('Form data:', formData);

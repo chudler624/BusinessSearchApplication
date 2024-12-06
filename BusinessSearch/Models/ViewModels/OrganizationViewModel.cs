@@ -15,6 +15,8 @@ namespace BusinessSearch.Models.ViewModels
         public List<OrganizationInviteViewModel> ActiveInvites { get; set; } = new();
         public bool IsCurrentUserAdmin { get; set; }
         public string? CurrentUserId { get; set; }
+        public OrganizationPlan Plan { get; set; }
+        public SearchUsageStatus SearchUsage { get; set; }
     }
 
     public class OrganizationSettingsViewModel
@@ -31,11 +33,20 @@ namespace BusinessSearch.Models.ViewModels
         [Display(Name = "Created By")]
         public string? CreatedByName { get; set; }
 
+        [Display(Name = "Current Plan")]
+        public OrganizationPlan Plan { get; set; }
+
+        [Display(Name = "Promo Code")]
+        public string? PromoCode { get; set; }
+
         [Display(Name = "Require Approval for New Members")]
         public bool RequireApprovalForNewMembers { get; set; }
 
         [Display(Name = "Restrict Data Access by Team")]
         public bool RestrictDataAccess { get; set; }
+
+        [Display(Name = "Organization Status")]
+        public bool IsActive { get; set; }
     }
 
     public class OrganizationMemberViewModel
@@ -65,6 +76,13 @@ namespace BusinessSearch.Models.ViewModels
         [Required]
         [Display(Name = "Organization Name")]
         public string OrganizationName { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Plan")]
+        public OrganizationPlan Plan { get; set; }
+
+        [Display(Name = "Promo Code")]
+        public string? PromoCode { get; set; }
 
         public string? ReturnUrl { get; set; }
     }
