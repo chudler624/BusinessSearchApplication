@@ -1,0 +1,157 @@
+﻿@model BusinessSearch.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="row g-0">
+                    <!-- Left Side - Registration Form -->
+                    <div class="col-md-6">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-plus text-primary" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h3 class="fw-bold">Create Account</h3>
+                                <p class="text-muted small">Already have an account? <a asp-action="Login" class="text-decoration-none">Sign in</a></p>
+                            </div>
+
+                            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                            {
+                                <div class="alert alert-danger small py-2">
+                                    <div asp-validation-summary="All" class="mb-0"></div>
+                                </div>
+                            }
+
+                            <form asp-action="Register" asp-controller="Account" method="post">
+                                @Html.AntiForgeryToken()
+
+                                <div class="mb-3">
+                                    <input asp-for="Name" class="form-control form-control-lg border-0 bg-light" placeholder="Full Name" aria-required="true" />
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <input asp-for="Email" class="form-control form-control-lg border-0 bg-light" placeholder="Email Address" autocomplete="username" aria-required="true" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3 position-relative">
+                                    <input asp-for="Password" class="form-control form-control-lg border-0 bg-light" placeholder="Password" autocomplete="new-password" aria-required="true" />
+                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" style="cursor: pointer;">
+                                        <i class="far fa-eye-slash toggle-password"></i>
+                                    </span>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3 position-relative">
+                                    <input asp-for="ConfirmPassword" class="form-control form-control-lg border-0 bg-light" placeholder="Confirm Password" autocomplete="new-password" aria-required="true" />
+                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" style="cursor: pointer;">
+                                        <i class="far fa-eye-slash toggle-password"></i>
+                                    </span>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <input asp-for="InviteCode" class="form-control form-control-lg border-0 bg-light" placeholder="Organization Invite Code (Optional)" />
+                                    <span asp-validation-for="InviteCode" class="text-danger small"></span>
+                                    <small class="form-text text-muted small">Leave blank if you want to create a new organization later</small>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">Create Account</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Pattern Design -->
+                    <div class="col-md-6 d-none d-md-block">
+                        <div class="bg-primary h-100 d-flex align-items-center justify-content-center p-4">
+                            <div class="pattern-grid">
+                                <!-- Pattern of blue shapes as in the login page -->
+                                @for (int i = 0; i < 15; i++)
+                                {
+                                    <div class="pattern-item"></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary {
+        background-color: #041e42 !important;
+    }
+
+    .text-primary {
+        color: #2563EB !important;
+    }
+
+    .btn-primary {
+        background-color: #2563EB;
+        border-color: #2563EB;
+    }
+
+        .btn-primary:hover {
+            background-color: #1e40af;
+            border-color: #1e40af;
+        }
+
+    .form-control:focus {
+        border-color: #2563EB;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    }
+
+    /* Pattern grid styling */
+    .pattern-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 10px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .pattern-item {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+        .pattern-item::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #2563EB;
+            border-radius: 0 0 100% 0;
+        }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Enable client-side validation
+            $("form").validate();
+
+            // Toggle password visibility
+            $('.toggle-password').click(function() {
+                let input = $(this).closest('.position-relative').find('input');
+                let type = input.attr('type') === 'password' ? 'text' : 'password';
+                input.attr('type', type);
+
+                // Toggle eye icon
+                $(this).toggleClass('fa-eye-slash fa-eye');
+            });
+        });
+    </script>
+}

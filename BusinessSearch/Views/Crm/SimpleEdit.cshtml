@@ -1,0 +1,17 @@
+﻿@model BusinessSearch.Models.CrmList
+
+<h1>Simple Edit Form</h1>
+
+<p>Debug: Model ID = @Model.Id</p>
+
+<form method="post" action="/Crm/SimpleUpdate">
+    <div>
+        ID: <input type="text" name="id" value="@Model.Id" />
+    </div>
+    <div>
+        Name: <input type="text" name="name" value="@Model.Name" />
+    </div>
+    <div>
+        <input type="submit" value="Submit Simple Form" />
+    </div>
+</form>

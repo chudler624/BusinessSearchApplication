@@ -1,0 +1,271 @@
+﻿@model BusinessSearch.DTOs.CreateCrmEntryDto
+
+<div class="container">
+    <h2>Add New CRM Entry</h2>
+
+    <div id="validationSummary" class="alert alert-danger" style="display:none;">
+        <ul id="validationList">
+        </ul>
+    </div>
+
+    <form id="createForm" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.BusinessName" class="control-label">Business Name</label>
+                    <input asp-for="Entry.BusinessName" class="form-control" required />
+                    <span asp-validation-for="Entry.BusinessName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Phone" class="control-label">Phone (Optional)</label>
+                    <input asp-for="Entry.Phone" class="form-control" />
+                    <span asp-validation-for="Entry.Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Email" class="control-label">Email (Optional)</label>
+                    <input asp-for="Entry.Email" class="form-control" type="email" />
+                    <span asp-validation-for="Entry.Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Website" class="control-label">Website (Optional)</label>
+                    <input asp-for="Entry.Website" class="form-control" />
+                    <span asp-validation-for="Entry.Website" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Industry" class="control-label">Industry (Optional)</label>
+                    <input asp-for="Entry.Industry" class="form-control" />
+                    <span asp-validation-for="Entry.Industry" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Disposition" class="control-label">Disposition</label>
+                    <select asp-for="Entry.Disposition" class="form-select">
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                    <span asp-validation-for="Entry.Disposition" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.GoogleRating" class="control-label">Google Rating (Optional)</label>
+                    <input asp-for="Entry.GoogleRating" class="form-control" type="number" step="0.1" min="0" max="5" />
+                    <span asp-validation-for="Entry.GoogleRating" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Notes" class="control-label">Notes (Optional)</label>
+                    <textarea asp-for="Entry.Notes" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="SelectedListId" class="control-label">Add to List</label>
+                    <select id="SelectedListId" name="SelectedListId" class="form-select" required>
+                        <option value="">Select a list...</option>
+                        @foreach (var list in Model.AvailableLists)
+                        {
+                            <option value="@list.Id" selected="@(list.Id == Model.SelectedListId)">
+                                @list.Name
+                            </option>
+                        }
+                    </select>
+                    <span class="text-danger field-validation-valid" data-valmsg-for="SelectedListId"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Create</button>
+            @if (Model.SelectedListId.HasValue)
+            {
+                <a asp-action="ListView" asp-route-id="@Model.SelectedListId" class="btn btn-secondary">Back to List</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-secondary">Back to Lists</a>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Initialize selected list from model
+            var initialListId = @Html.Raw(Json.Serialize(Model.SelectedListId));
+            if (initialListId) {
+                $('#SelectedListId').val(initialListId);
+            }
+
+            function showErrors(errors) {
+                var $summary = $('#validationSummary');
+                var $list = $('#validationList');
+                $list.empty();
+                
+                if (typeof errors === 'string') {
+                    $list.append($('<li>').text(errors));
+                } else if (Array.isArray(errors)) {
+                    errors.forEach(function(error) {
+                        $list.append($('<li>').text(error));
+                    });
+                }
+                
+                $summary.show();
+            }
+
+            function hideErrors() {
+                $('#validationSummary').hide();
+            }
+
+            $('#createForm').on('submit', function(e) {
+                e.preventDefault();
+                hideErrors();
+
+                var selectedListId = $('#SelectedListId').val();
+                if (!selectedListId) {
+                    showErrors(['Please select a list']);
+                    return;
+                }
+
+                if (!$(this).valid()) {
+                    showErrors('Please correct the validation errors below.');
+                    return;
+                }
+                
+                var formData = {
+                    entry: {
+                        businessName: $('#Entry_BusinessName').val(),
+                        phone: $('#Entry_Phone').val() || null,
+                        email: $('#Entry_Email').val() || null,
+                        website: $('#Entry_Website').val() || null,
+                        industry: $('#Entry_Industry').val() || null,
+                        disposition: $('#Entry_Disposition').val(),
+                        googleRating: parseFloat($('#Entry_GoogleRating').val()) || null,
+                        notes: $('#Entry_Notes').val() || null,
+                        dateAdded: new Date().toISOString()
+                    },
+                    selectedListId: parseInt(selectedListId)
+                };
+
+                console.log('Sending data:', formData);
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Crm")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        console.log('Response:', response);
+                        if (response.success) {
+                            window.location.href = '@Url.Action("ListView", "Crm")?id=' + selectedListId;
+                        } else {
+                            showErrors(response.errors || [response.message]);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error details:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        showErrors('An error occurred while creating the entry. Please try again.');
+                    }
+                });
+            });
+
+            // Add client-side validation
+            $.validator.addMethod("validUrl", function(value, element) {
+                if (!value) return true; // Allow empty values
+                try {
+                    new URL(value);
+                    return true;
+                } catch (_) {
+                    return false;
+                }
+            }, "Please enter a valid URL (include http:// or https://)");
+
+            $('#createForm').validate({
+                rules: {
+                    'Entry.BusinessName': {
+                        required: true,
+                        maxlength: 100
+                    },
+                    'Entry.Email': {
+                        email: true,
+                        maxlength: 100
+                    },
+                    'Entry.Phone': {
+                        maxlength: 20
+                    },
+                    'Entry.Website': {
+                        validUrl: true,
+                        maxlength: 255
+                    },
+                    'Entry.GoogleRating': {
+                        number: true,
+                        min: 0,
+                        max: 5
+                    },
+                    'SelectedListId': {
+                        required: true
+                    }
+                },
+                messages: {
+                    'Entry.BusinessName': {
+                        required: "Business name is required",
+                        maxlength: "Business name cannot exceed 100 characters"
+                    },
+                    'Entry.Email': {
+                        email: "Please enter a valid email address format"
+                    },
+                    'SelectedListId': {
+                        required: "Please select a list"
+                    },
+                    'Entry.Website': {
+                        validUrl: "Please enter a valid URL including http:// or https://"
+                    }
+                },
+                errorElement: 'span',
+                errorClass: 'text-danger',
+                highlight: function(element) {
+                    $(element).addClass('is-invalid');
+                },
+                unhighlight: function(element) {
+                    $(element).removeClass('is-invalid');
+                }
+            });
+
+            // Clear validation errors when inputs change
+            $('input, select, textarea').on('change', function() {
+                $(this).removeClass('is-invalid');
+                hideErrors();
+            });
+
+            // Auto-format website input
+            $('#Entry_Website').on('blur', function() {
+                var value = $(this).val().trim();
+                if (value && !value.match(/^https?:\/\//)) {
+                    $(this).val('https://' + value);
+                }
+            });
+        });
+    </script>
+}

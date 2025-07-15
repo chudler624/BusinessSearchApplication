@@ -1,0 +1,210 @@
+﻿@model BusinessSearch.Models.ViewModels.RecentSearchesViewModel
+@using BusinessSearch.Models.Organization
+@{
+    ViewData["Title"] = "Business Search";
+}
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <!-- Search Usage Alert -->
+            @if (Model.SearchUsage.Remaining <= 20)
+            {
+                <div class="alert @(Model.SearchUsage.Remaining == 0 ? "alert-danger" : "alert-warning") alert-dismissible fade show mb-4 rounded-pill px-4 py-3 border-0" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-@(Model.SearchUsage.Remaining == 0 ? "exclamation-circle" : "exclamation-triangle") me-3"></i>
+                        <div>
+                            @if (Model.SearchUsage.Remaining == 0)
+                            {
+                                <span>Daily search results limit reached! Your results quota will reset at @Model.SearchUsage.NextReset.ToString("HH:mm") UTC. </span>
+                                <a href="@Url.Action("Settings", "Organization")" class="alert-link">Upgrade your plan</a>
+                                <span> for more search results.</span>
+                            }
+                            else
+                            {
+                                <span>Running low on search results! You have @Model.SearchUsage.Remaining results remaining today. </span>
+                                <span>Resets at @Model.SearchUsage.NextReset.ToString("HH:mm") UTC.</span>
+                            }
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">Business Search</h2>
+                <div class="text-end">
+                    <div class="badge bg-primary rounded-pill px-3 py-2 mb-2">@Model.OrganizationPlan</div>
+                    <div class="small text-muted">
+                        Remaining Results: <span class="fw-medium">@Model.SearchUsage.Remaining / @Model.SearchUsage.DailyLimit</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card bg-light border-0 rounded-3 h-100">
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold mb-4">Find Businesses</h4>
+                            <form asp-action="Search" method="post">
+                                <div class="mb-3">
+                                    <label for="industry" class="form-label fw-medium">Industry:</label>
+                                    <input type="text" id="industry" name="industry" class="form-control form-control-lg border-0 bg-white rounded-pill" placeholder="Ex: Restaurants, Plumbers, Web Design" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="zipcode" class="form-label fw-medium">Zip Code:</label>
+                                    <input type="text" id="zipcode" name="zipcode" class="form-control form-control-lg border-0 bg-white rounded-pill" placeholder="Enter a ZIP code" required>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="limit" class="form-label fw-medium">Results Limit:</label>
+                                    <select id="limit" name="limit" class="form-select form-control-lg border-0 bg-white rounded-pill">
+                                        <option value="1">1 result</option>
+                                        <option value="5" selected>5 results</option>
+                                        <option value="10">10 results</option>
+                                        <option value="25">25 results</option>
+                                        <option value="100">Unlimited</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-grid mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill"
+                                    @(Model.SearchUsage.Remaining == 0 ? "disabled" : "")>
+                                        <i class="fas fa-search me-2"></i>Search
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="fw-bold mb-0">Recent Searches</h4>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 dropdown-toggle" type="button" id="displayCountDropdown" data-bs-toggle="dropdown">
+                                        <i class="fas fa-list me-1"></i> Show: @Model.DisplayCount
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="@Url.Action("Index", new { displayCount = 5 })">Show 5</a></li>
+                                        <li><a class="dropdown-item" href="@Url.Action("Index", new { displayCount = 10 })">Show 10</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (Model.RecentSearches.Any())
+                            {
+                                <div class="list-group list-group-flush">
+                                    @foreach (var search in Model.RecentSearches)
+                                    {
+                                        <div class="list-group-item list-group-item-action border-0 p-3">
+                                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                                <h6 class="fw-bold mb-1">@search.Industry in @search.ZipCode</h6>
+                                                <small class="text-muted">@search.SearchDate.ToString("MM/dd/yyyy HH:mm")</small>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <span class="badge bg-light text-dark rounded-pill px-3">
+                                                    <i class="fas fa-search me-1"></i> Results: @search.TotalResults
+                                                </span>
+                                                <a href="@Url.Action("ViewHistoricalResults", new { id = search.Id })"
+                                                   class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    <i class="fas fa-eye me-1"></i> View Results
+                                                </a>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <div class="text-muted mb-3">
+                                        <i class="fas fa-history fa-3x opacity-50"></i>
+                                    </div>
+                                    <p class="mb-0">No recent searches</p>
+                                    <p class="small text-muted">Your searches will appear here</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-white border-0 text-center py-3">
+                            <a href="@Url.Action("History")" class="btn btn-outline-primary rounded-pill px-4">
+                                <i class="fas fa-history me-2"></i>View All Search History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips if available
+            if (typeof bootstrap !== 'undefined' && typeof bootstrap.Tooltip !== 'undefined') {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                });
+            }
+        });
+    </script>
+
+    <style>
+        /* Transition styles for hover effects */
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* List group hover animation */
+        .list-group-item-action {
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+            .list-group-item-action:hover {
+                transform: translateX(3px);
+            }
+
+        /* Button hover effects */
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        /* Custom styles for alerts */
+        .alert {
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+        }
+
+        /* Form controls */
+        .form-control:focus, .form-select:focus {
+            border-color: #2563EB;
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+        }
+
+        /* Ensure all Font Awesome icons display properly */
+        .fa, .fas, .far, .fab {
+            font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+        }
+
+        .fa, .fas {
+            font-weight: 900 !important;
+        }
+
+        .far {
+            font-weight: 400 !important;
+        }
+
+        .fab {
+            font-family: "Font Awesome 5 Brands" !important;
+        }
+    </style>
+}

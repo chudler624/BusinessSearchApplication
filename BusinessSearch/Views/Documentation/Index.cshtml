@@ -1,0 +1,994 @@
+﻿
+}
+@{
+    ViewData["Title"] = "Documentation";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <!-- Left sidebar navigation -->
+                <div class="col-md-3">
+                    <div class="sticky-top" style="top: 20px;">
+                        <div class="card bg-light border-0 rounded-3">
+                            <div class="card-header bg-light border-0 py-3">
+                                <h3 class="fw-bold mb-0">Documentation</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush rounded-3">
+                                    <!-- Business Search -->
+                                    <a href="#business-search" class="list-group-item list-group-item-action border-0 fw-medium py-3">
+                                        <i class="fas fa-search me-2"></i>Business Search
+                                    </a>
+                                    <a href="#search-features" class="list-group-item list-group-item-action border-0 py-2 ps-4">Search Features</a>
+                                    <a href="#search-results" class="list-group-item list-group-item-action border-0 py-2 ps-4">Search Results</a>
+                                    <a href="#adding-to-crm" class="list-group-item list-group-item-action border-0 py-2 ps-4">Adding to CRM</a>
+
+                                    <!-- CRM System -->
+                                    <a href="#crm-system" class="list-group-item list-group-item-action border-0 fw-medium py-3">
+                                        <i class="fas fa-address-card me-2"></i>CRM System
+                                    </a>
+                                    <a href="#crm-overview" class="list-group-item list-group-item-action border-0 py-2 ps-4">Overview</a>
+                                    <a href="#adding-entries" class="list-group-item list-group-item-action border-0 py-2 ps-4">Adding Entries</a>
+                                    <a href="#managing-entries" class="list-group-item list-group-item-action border-0 py-2 ps-4">Managing Entries</a>
+                                    <a href="#dispositions" class="list-group-item list-group-item-action border-0 py-2 ps-4">Dispositions</a>
+                                    <a href="#entry-editing" class="list-group-item list-group-item-action border-0 py-2 ps-4">Editing Entries</a>
+                                    <a href="#crm-best-practices" class="list-group-item list-group-item-action border-0 py-2 ps-4">Best Practices</a>
+
+                                    <!-- Website Analysis -->
+                                    <a href="#website-analysis" class="list-group-item list-group-item-action border-0 fw-medium py-3">
+                                        <i class="fas fa-globe me-2"></i>Website Analysis
+                                    </a>
+                                    <a href="#analysis-overview" class="list-group-item list-group-item-action border-0 py-2 ps-4">Overview</a>
+                                    <a href="#responsiveness" class="list-group-item list-group-item-action border-0 py-2 ps-4">Mobile Responsiveness</a>
+                                    <a href="#gdpr" class="list-group-item list-group-item-action border-0 py-2 ps-4">GDPR Compliance</a>
+                                    <a href="#page-speed" class="list-group-item list-group-item-action border-0 py-2 ps-4">Page Speed</a>
+                                    <a href="#accessibility" class="list-group-item list-group-item-action border-0 py-2 ps-4">Accessibility</a>
+                                    <a href="#localseo" class="list-group-item list-group-item-action border-0 py-2 ps-4">Local SEO Analysis</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main content -->
+                <div class="col-md-9">
+                    <!-- Business Search Section -->
+                    <section id="business-search" class="mb-5">
+                        <h3 class="fw-bold mb-4">Business Search</h3>
+
+                        <section id="search-features" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Search Features</h4>
+                                    <p>Find potential business opportunities using our search tools:</p>
+                                    <ul class="mb-4">
+                                        <li><span class="fw-medium">Industry Search:</span> Filter businesses by industry type</li>
+                                        <li><span class="fw-medium">Location Search:</span> Find businesses by zip code</li>
+                                    </ul>
+
+                                    <h5 class="fw-medium mb-3">How to Search:</h5>
+                                    <ol>
+                                        <li>Navigate to the Business Search page</li>
+                                        <li>Enter the industry type (e.g., "Restaurant", "Retail")</li>
+                                        <li>Enter the target zip code</li>
+                                        <li>Click "Search" to view results</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="search-results" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Understanding Search Results</h4>
+                                    <p>Each business result shows:</p>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <ul class="mb-0">
+                                                <li>Business name</li>
+                                                <li>Phone number</li>
+                                                <li>Email address</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="mb-0">
+                                                <li>Physical address</li>
+                                                <li>Business type</li>
+                                                <li>Website URL</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="adding-to-crm" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Adding to CRM from Search</h4>
+                                    <p>Easily add businesses to your CRM:</p>
+                                    <ol>
+                                        <li>Find a business in the search results</li>
+                                        <li>Click the "Add to CRM" button</li>
+                                        <li>Information is automatically transferred</li>
+                                        <li>Entry is created with "New" status</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                    <!-- CRM System Section -->
+                    <section id="crm-system" class="mb-5">
+                        <h3 class="fw-bold mb-4">CRM System</h3>
+
+                        <section id="crm-overview" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">CRM Overview</h4>
+                                    <p>The CRM system helps manage business relationships and track interactions with potential clients.</p>
+                                    <h5 class="fw-medium mb-3">Key Features:</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="mb-0">
+                                                <li>Contact management</li>
+                                                <li>Interaction tracking</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="mb-0">
+                                                <li>Disposition status updates</li>
+                                                <li>Notes and comments</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="adding-entries" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Adding Entries to CRM</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">Method 1: From Business Search</h5>
+                                        <ol>
+                                            <li>Search for businesses</li>
+                                            <li>Click "Add to CRM" on desired business</li>
+                                            <li>Information auto-populates</li>
+                                            <li>Review and save</li>
+                                        </ol>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="fw-medium mb-3">Method 2: Manual Entry</h5>
+                                        <ol>
+                                            <li>Click "Create New" on CRM page</li>
+                                            <li>
+                                                Fill in business details:
+                                                <div class="row mt-2">
+                                                    <div class="col-md-6">
+                                                        <ul>
+                                                            <li>Business Name</li>
+                                                            <li>Phone</li>
+                                                            <li>Email</li>
+                                                            <li>Website</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <ul>
+                                                            <li>Industry</li>
+                                                            <li>Google Rating</li>
+                                                            <li>Initial Notes</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>Set initial disposition</li>
+                                            <li>Save the entry</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="managing-entries" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Managing CRM Entries</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">Basic Management:</h5>
+                                        <ul>
+                                            <li>View all entries in list format</li>
+                                            <li>Filter by disposition status</li>
+                                            <li>Quick-update dispositions</li>
+                                            <li>Add or update notes</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="fw-medium mb-3">Entry Actions:</h5>
+                                        <ul>
+                                            <li>Edit business information</li>
+                                            <li>Update contact details</li>
+                                            <li>Change disposition status</li>
+                                            <li>Delete entries</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="dispositions" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Understanding Dispositions</h4>
+                                    <p>Track interaction status with these dispositions:</p>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="fw-medium">Status</th>
+                                                    <th class="fw-medium">Description</th>
+                                                    <th class="fw-medium">When to Use</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark rounded-pill px-3">New</span></td>
+                                                    <td>Recently added to CRM</td>
+                                                    <td>Default for new entries</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark rounded-pill px-3">Called Once</span></td>
+                                                    <td>First contact made</td>
+                                                    <td>After initial outreach</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark rounded-pill px-3">Called Twice</span></td>
+                                                    <td>Second contact made</td>
+                                                    <td>After follow-up call</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark rounded-pill px-3">Call Back</span></td>
+                                                    <td>Requires follow-up</td>
+                                                    <td>When business requests callback</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark rounded-pill px-3">Do Not Call</span></td>
+                                                    <td>Remove from contact list</td>
+                                                    <td>When business declines contact</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">Wants Demo</span></td>
+                                                    <td>Interested in product</td>
+                                                    <td>When demo is requested</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Sale Closed</span></td>
+                                                    <td>Successfully converted</td>
+                                                    <td>When business becomes customer</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="entry-editing" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Editing Entries</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">How to Edit:</h5>
+                                        <ol>
+                                            <li>Locate entry in CRM list</li>
+                                            <li>Click "Edit" button</li>
+                                            <li>
+                                                Update information:
+                                                <div class="row mt-2">
+                                                    <div class="col-md-6">
+                                                        <ul>
+                                                            <li>Business details</li>
+                                                            <li>Contact information</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <ul>
+                                                            <li>Disposition status</li>
+                                                            <li>Notes and comments</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>Save changes</li>
+                                        </ol>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="fw-medium mb-3">Quick Updates:</h5>
+                                        <ul>
+                                            <li>Change disposition directly from list view</li>
+                                            <li>Updates save automatically</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="crm-best-practices" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">CRM Best Practices</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Update dispositions immediately after contact</li>
+                                                <li>Add detailed notes for each interaction</li>
+                                                <li>Use filters to manage large lists</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Regular review of older entries</li>
+                                                <li>Document key conversation points</li>
+                                                <li>Keep contact information current</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                    <!-- Website Analysis Section -->
+                    <section id="website-analysis" class="mb-5">
+                        <h3 class="fw-bold mb-4">Website Analysis</h3>
+
+                        <section id="analysis-overview" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Analysis Overview</h4>
+                                    <p>Comprehensive website evaluation covering four key areas:</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Mobile responsiveness</li>
+                                                <li>GDPR compliance</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul>
+                                                <li>Page speed performance</li>
+                                                <li>Accessibility standards</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="responsiveness" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Mobile Responsiveness Analysis</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">What We Check:</h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Viewport Configuration</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Meta viewport tag presence</li>
+                                                            <li>Scale settings</li>
+                                                            <li>Width configurations</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Media Queries</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Breakpoint implementation</li>
+                                                            <li>Mobile-first approach</li>
+                                                            <li>Screen adaptability</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Touch Targets</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Button sizing</li>
+                                                            <li>Link spacing</li>
+                                                            <li>Interactive elements</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="fw-medium mb-3">Score Interpretation:</h5>
+                                        <ul>
+                                            <li><span class="text-success fw-medium">90-100:</span> Excellent mobile optimization</li>
+                                            <li><span class="text-warning fw-medium">70-89:</span> Good, needs minor improvements</li>
+                                            <li><span class="text-danger fw-medium">Below 70:</span> Requires significant optimization</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="gdpr" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">GDPR Compliance Analysis</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">Key Compliance Checks:</h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Cookie Consent</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Banner visibility</li>
+                                                            <li>Opt-in mechanisms</li>
+                                                            <li>Granular choices</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Privacy Policy</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Accessibility</li>
+                                                            <li>Content completeness</li>
+                                                            <li>Data processing transparency</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Data Collection</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Form notifications</li>
+                                                            <li>Purpose declarations</li>
+                                                            <li>User rights information</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info rounded-3 border-0 mt-4">
+                                        <div class="d-flex">
+                                            <div class="me-3">
+                                                <i class="fas fa-info-circle fa-lg"></i>
+                                            </div>
+                                            <div>
+                                                <strong>Note:</strong> This analysis provides guidance but should not be considered legal advice.
+                                                Consult with legal professionals for complete GDPR compliance assessment.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="page-speed" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Page Speed Analysis</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">Core Web Vitals:</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="fw-medium">Metric</th>
+                                                        <th class="fw-medium text-success">Good</th>
+                                                        <th class="fw-medium text-warning">Needs Improvement</th>
+                                                        <th class="fw-medium text-danger">Poor</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Largest Contentful Paint (LCP)</td>
+                                                        <td class="text-success">≤ 2.5s</td>
+                                                        <td class="text-warning">2.5s - 4s</td>
+                                                        <td class="text-danger">> 4s</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Cumulative Layout Shift (CLS)</td>
+                                                        <td class="text-success">≤ 0.1</td>
+                                                        <td class="text-warning">0.1 - 0.25</td>
+                                                        <td class="text-danger">> 0.25</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Time to First Byte (TTFB)</td>
+                                                        <td class="text-success">< 200ms</td>
+                                                        <td class="text-warning">200ms - 600ms</td>
+                                                        <td class="text-danger">> 600ms</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h5 class="fw-medium mb-3">Resource Analysis:</h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Page Weight</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Total page size</li>
+                                                            <li>Resource counts</li>
+                                                            <li>Compression usage</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Asset Optimization</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Image compression</li>
+                                                            <li>Script minification</li>
+                                                            <li>CSS optimization</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-light border-0 rounded-3 h-100">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="fw-medium mb-2">Caching Implementation</h6>
+                                                        <ul class="mb-0 small">
+                                                            <li>Browser cache settings</li>
+                                                            <li>Cache durations</li>
+                                                            <li>Cache-Control headers</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="accessibility" class="mb-4">
+                            <div class="card border-0 shadow-sm rounded-3">
+                                <div class="card-body p-4">
+                                    <h4 class="fw-bold mb-3">Accessibility Analysis</h4>
+
+                                    <div class="mb-4">
+                                        <h5 class="fw-medium mb-3">WCAG 2.1 Compliance Levels:</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="fw-medium">Level</th>
+                                                        <th class="fw-medium">Requirements</th>
+                                                        <th class="fw-medium">Impact</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <tr>
+    <td><span class="badge bg-danger bg-opacity-10 text-danger px-3 rounded-pill">Level A (Essential)</span></td>
+    <td>
+        <ul class="mb-0">
+            <li>Alt text for images</li>
+            <li>Keyboard navigation</li>
+            <li>Basic structure</li>
+        </ul>
+    </td>
+    <td>Critical for basic accessibility</td>
+</tr>
+<tr>
+    <td><span class="badge bg-warning bg-opacity-10 text-warning px-3 rounded-pill">Level AA (Enhanced)</span></td>
+    <td>
+        <ul class="mb-0">
+            <li>Color contrast (4.5:1)</li>
+            <li>Text resizing</li>
+            <li>Navigation consistency</li>
+        </ul>
+    </td>
+    <td>Standard for most websites</td>
+</tr>
+<tr>
+    <td><span class="badge bg-success bg-opacity-10 text-success px-3 rounded-pill">Level AAA (Optimal)</span></td>
+    <td>
+        <ul class="mb-0">
+            <li>High contrast (7:1)</li>
+            <li>Sign language</li>
+            <li>Extended audio description</li>
+        </ul>
+    </td>
+    <td>Highest level of accessibility</td>
+</tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+<div class="mt-4">
+    <h5 class="fw-medium mb-3">Key Checks:</h5>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                <div class="card-body p-3">
+                    <h6 class="fw-medium mb-2">Text Alternatives</h6>
+                    <ul class="mb-0 small">
+                        <li>Image alt text</li>
+                        <li>Button labels</li>
+                        <li>Form input descriptions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-md-0">
+                <div class="card-body p-3">
+                    <h6 class="fw-medium mb-2">Navigation</h6>
+                    <ul class="mb-0 small">
+                        <li>Keyboard accessibility</li>
+                        <li>Skip links</li>
+                        <li>Focus indicators</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light border-0 rounded-3 h-100">
+                <div class="card-body p-3">
+                    <h6 class="fw-medium mb-2">Content Structure</h6>
+                    <ul class="mb-0 small">
+                        <li>Heading hierarchy</li>
+                        <li>Landmarks and regions</li>
+                        <li>List formatting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5 class="fw-medium mb-3">Score Interpretation:</h5>
+    <ul>
+        <li><span class="text-success fw-medium">90-100:</span> Excellent accessibility implementation</li>
+        <li><span class="text-warning fw-medium">70-89:</span> Good accessibility with minor issues</li>
+        <li><span class="text-danger fw-medium">Below 70:</span> Significant accessibility barriers</li>
+    </ul>
+</div>
+
+<div class="alert alert-info rounded-3 border-0 mt-4">
+    <div class="d-flex">
+        <div class="me-3">
+            <i class="fas fa-lightbulb fa-lg"></i>
+        </div>
+        <div>
+            <strong>Recommendation:</strong> Address Level A and AA issues first, as these provide the most essential accessibility features for most users.
+        </div>
+    </div>
+</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+<section id="localseo" class="mb-4">
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+            <h4 class="fw-bold mb-3">Local SEO Analysis</h4>
+
+            <div class="mb-4">
+                <h5 class="fw-medium mb-3">NAP Consistency</h5>
+                <p>NAP (Name, Address, Phone) consistency is crucial for local search visibility:</p>
+                <div class="bg-light rounded-3 p-3 mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2 mb-md-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div>Business name format</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2 mb-md-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>Address formatting</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>Phone number presentation</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="fw-medium mb-3">Local Business Schema</h5>
+                <p>Schema markup is structured data that helps search engines understand your business information:</p>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="fw-medium">Component</th>
+                                <th class="fw-medium">Purpose</th>
+                                <th class="fw-medium">Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>type</td>
+                                <td>Defines business type</td>
+                                <td><code class="bg-light px-2 py-1 rounded">"LocalBusiness"</code>, <code class="bg-light px-2 py-1 rounded">"Restaurant"</code></td>
+                            </tr>
+                            <tr>
+                                <td>name</td>
+                                <td>Business name</td>
+                                <td><code class="bg-light px-2 py-1 rounded">"name": "Business Name"</code></td>
+                            </tr>
+                            <tr>
+                                <td>address</td>
+                                <td>Physical location</td>
+                                <td><code class="bg-light px-2 py-1 rounded">"address": { "type": "PostalAddress" }</code></td>
+                            </tr>
+                            <tr>
+                                <td>geo</td>
+                                <td>Geographic coordinates</td>
+                                <td><code class="bg-light px-2 py-1 rounded">"geo": { "type": "GeoCoordinates" }</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="fw-medium mb-3">Location Keyword Analysis</h5>
+                <p>Evaluates the presence and distribution of location-specific terms:</p>
+
+                <div class="row mb-4">
+                    <div class="col-lg-4">
+                        <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-lg-0">
+                            <div class="card-body p-3">
+                                <h6 class="fw-medium mb-2">Density Calculation</h6>
+                                <ul class="mb-0 small">
+                                    <li>City name occurrences</li>
+                                    <li>Region/state mentions</li>
+                                    <li>Local landmark references</li>
+                                    <li>Neighborhood names</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card bg-light border-0 rounded-3 h-100 mb-3 mb-lg-0">
+                            <div class="card-body p-3">
+                                <h6 class="fw-medium mb-2">Placement Analysis</h6>
+                                <ul class="mb-0 small">
+                                    <li>URL structure</li>
+                                    <li>Title tags</li>
+                                    <li>Meta descriptions</li>
+                                    <li>Heading tags (H1-H6)</li>
+                                    <li>Content body</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card bg-light border-0 rounded-3 h-100">
+                            <div class="card-body p-3">
+                                <h6 class="fw-medium mb-2">Optimal Density Ranges</h6>
+                                <ul class="mb-0 small">
+                                    <li>Primary location: 2-3%</li>
+                                    <li>Secondary locations: 1-2%</li>
+                                    <li>Natural distribution throughout content</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="fw-medium mb-3">Score Components:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li>
+                                <strong>NAP Consistency (30%)</strong>
+                                <ul>
+                                    <li>Exact match across pages</li>
+                                    <li>Proper formatting</li>
+                                    <li>Schema implementation</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Schema Markup (25%)</strong>
+                                <ul>
+                                    <li>Required properties presence</li>
+                                    <li>Validation status</li>
+                                    <li>Completeness</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li>
+                                <strong>Location Keywords (25%)</strong>
+                                <ul>
+                                    <li>Keyword density</li>
+                                    <li>Strategic placement</li>
+                                    <li>Natural usage</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Supporting Elements (20%)</strong>
+                                <ul>
+                                    <li>Google Maps integration</li>
+                                    <li>Local content relevance</li>
+                                    <li>Image geo-tagging</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info rounded-3 border-0 mt-4">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-lightbulb fa-lg"></i>
+                    </div>
+                    <div>
+                        <strong>Best Practice:</strong> Location keywords should be incorporated naturally and strategically,
+                        maintaining a balance between SEO optimization and readability. Over-optimization can negatively impact
+                        both user experience and search rankings.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for sticky sidebar */
+    @@media (min-width: 768px) {
+        .sticky-top
+
+    {
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+
+    /* Custom scrollbar for sidebar */
+    .sticky-top::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sticky-top::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+    }
+
+    .sticky-top::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+
+        .sticky-top::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+    }
+
+    /* Active state for sidebar links */
+    .list-group-item.active {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+        color: white !important;
+    }
+
+    /* Smooth transitions */
+    .list-group-item {
+        transition: all 0.2s ease;
+    }
+
+    /* Card hover effects */
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    section .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Smooth scrolling for anchor links
+            $('a[href^="#"]').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this.getAttribute('href'));
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 20
+                    }, 500);
+
+                    // Update active class in sidebar
+                    $('.list-group-item').removeClass('active');
+                    $(this).addClass('active');
+                }
+            });
+
+            // Highlight active section based on scroll position
+            $(window).scroll(function() {
+                var scrollPosition = $(window).scrollTop() + 100; // Offset for better highlighting
+
+                $('section[id]').each(function() {
+                    var sectionTop = $(this).offset().top;
+                    var sectionBottom = sectionTop + $(this).outerHeight();
+
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                        var currentId = $(this).attr('id');
+                        $('.list-group-item').removeClass('active');
+                        $('.list-group-item[href="#' + currentId + '"]').addClass('active');
+
+                        // Also activate parent category if this is a subsection
+                        if (currentId.includes('-')) {
+                            var parentId = currentId.split('-')[0];
+                            $('.list-group-item[href="#' + parentId + '"]').addClass('active');
+                        }
+                    }
+                });
+            });
+
+            // Trigger scroll event on page load to highlight initial section
+            $(window).trigger('scroll');
+        });
+    </script>
+}

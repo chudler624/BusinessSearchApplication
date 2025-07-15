@@ -1,0 +1,78 @@
+﻿@model BusinessSearch.Models.ViewModels.OrganizationDetailsViewModel
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Organization Invites</h5>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateInviteModal">
+            Generate New Invite
+        </button>
+    </div>
+    <div class="card-body">
+        @if (!Model.ActiveInvites.Any())
+        {
+            <p class="text-muted">No active invites</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Invite Code</th>
+                            <th>Role</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var invite in Model.ActiveInvites)
+                        {
+                            <tr>
+                                <td><code>@invite.InviteCode</code></td>
+                                <td>@invite.Role</td>
+                                <td>@invite.ExpiryDate.ToString("g")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" 
+                                            onclick="deactivateInvite('@invite.InviteCode')">
+                                        Deactivate
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Generate Invite Modal -->
+<div class="modal fade" id="generateInviteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate New Invite</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="roleSelect" class="form-label">Select Role</label>
+                    <select class="form-select" id="roleSelect">
+                        <option value="Member">Member</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div id="inviteCodeResult" class="d-none">
+                    <div class="alert alert-success">
+                        <p class="mb-1">Invite Code Generated:</p>
+                        <code class="fs-4" id="generatedInviteCode"></code>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="generateInvite()">Generate</button>
+            </div>
+        </div>
+    </div>
+</div>

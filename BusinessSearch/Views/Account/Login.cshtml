@@ -1,0 +1,144 @@
+﻿@model BusinessSearch.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="row g-0">
+                    <!-- Left Side - Login Form -->
+                    <div class="col-md-6">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-circle text-primary" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <h3 class="fw-bold">Welcome back!</h3>
+                                <p class="text-muted small">Don't have an account yet? <a asp-action="Register" class="text-decoration-none">Sign up now</a></p>
+                            </div>
+
+                            <form asp-action="Login" asp-controller="Account" method="post">
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small"></div>
+                                <input type="hidden" asp-for="ReturnUrl" />
+
+                                <div class="mb-4">
+                                    <input asp-for="Email" class="form-control form-control-lg border-0 bg-light" placeholder="Email address" autocomplete="username" aria-required="true" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-4 position-relative">
+                                    <input asp-for="Password" class="form-control form-control-lg border-0 bg-light" placeholder="Password" autocomplete="current-password" aria-required="true" />
+                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted" style="cursor: pointer;">
+                                        <i class="far fa-eye-slash toggle-password"></i>
+                                    </span>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-4 d-flex justify-content-between align-items-center">
+                                    <div class="form-check">
+                                        <input asp-for="RememberMe" class="form-check-input" />
+                                        <label asp-for="RememberMe" class="form-check-label small">Remember me</label>
+                                    </div>
+                                    <a asp-controller="PasswordReset" asp-action="ForgotPassword">Forgot your password?</a>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">Log in</button>
+                                </div>
+
+                                <div class="text-center mt-4">
+                                    <div class="text-muted small mb-2">or</div>
+                                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-pill px-4 w-100">
+                                        Log in with SSO
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Pattern Design -->
+                    <div class="col-md-6 d-none d-md-block">
+                        <div class="bg-primary h-100 d-flex align-items-center justify-content-center p-4">
+                            <div class="pattern-grid">
+                                <!-- Pattern of blue shapes as in the reference image -->
+                                @for (int i = 0; i < 15; i++)
+                                {
+                                    <div class="pattern-item"></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary {
+        background-color: #041e42 !important;
+    }
+
+    .text-primary {
+        color: #2563EB !important;
+    }
+
+    .btn-primary {
+        background-color: #2563EB;
+        border-color: #2563EB;
+    }
+
+        .btn-primary:hover {
+            background-color: #1e40af;
+            border-color: #1e40af;
+        }
+
+    .form-control:focus {
+        border-color: #2563EB;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    }
+
+    /* Pattern grid styling */
+    .pattern-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 10px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .pattern-item {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+        .pattern-item::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #2563EB;
+            border-radius: 0 0 100% 0;
+        }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Toggle password visibility
+            $('.toggle-password').click(function() {
+                let input = $(this).closest('.position-relative').find('input');
+                let type = input.attr('type') === 'password' ? 'text' : 'password';
+                input.attr('type', type);
+
+                // Toggle eye icon
+                $(this).toggleClass('fa-eye-slash fa-eye');
+            });
+        });
+    </script>
+}

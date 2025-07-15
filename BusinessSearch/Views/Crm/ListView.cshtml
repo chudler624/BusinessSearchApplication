@@ -1,0 +1,1170 @@
+﻿@model BusinessSearch.Models.ViewModels.CrmListViewModel
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">@Model.List.Name</h2>
+                    <div class="text-muted">
+                        @if (!string.IsNullOrEmpty(Model.List.Industry))
+                        {
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 me-2">@Model.List.Industry</span>
+                        }
+                        <span class="me-3">@Model.Entries.Count() Entries</span>
+                        @if (Model.List.AssignedTo != null)
+                        {
+                            <span class="me-3">
+                                <i class="fas fa-user me-1"></i> @Model.List.AssignedTo.Name
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="Create" asp-route-listId="@Model.List.Id" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-plus me-2"></i>Add New Entry
+                    </a>
+                    
+                    <!-- Add import/export dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-light rounded-pill px-4 dropdown-toggle" type="button" id="importExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-file-import me-2"></i>Import/Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3" aria-labelledby="importExportDropdown">
+                            <li>
+                                <a class="dropdown-item py-2" asp-controller="ImportExport" asp-action="Import" asp-route-listId="@Model.List.Id">
+                                    <i class="fas fa-file-upload me-2"></i>Import from CSV/Excel
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" asp-controller="ImportExport" asp-action="ExportCsv" asp-route-listId="@Model.List.Id">
+                                    <i class="fas fa-file-csv me-2"></i>Export to CSV
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" asp-controller="ImportExport" asp-action="ExportExcel" asp-route-listId="@Model.List.Id">
+                                    <i class="fas fa-file-excel me-2"></i>Export to Excel
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <a asp-action="Index" class="btn btn-light rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Lists
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text border-0 bg-light rounded-start-pill">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control form-control-lg border-0 bg-light rounded-end-pill" placeholder="Search entries...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="dispositionFilter" class="form-select form-control-lg border-0 bg-light rounded-pill">
+                        <option value="">All Dispositions</option>
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="bulkAction" class="form-select form-control-lg border-0 bg-light rounded-pill">
+                        <option value="">Bulk Actions...</option>
+                        <option value="move">Move to Another List</option>
+                        <option value="copy">Copy to Another List</option>
+                        <option value="delete">Delete Selected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="scrollable-table-container">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40" class="px-4 py-3">
+                                        <input type="checkbox" class="form-check-input" id="selectAll">
+                                    </th>
+                                    <th class="py-3">Business Name</th>
+                                    <th class="py-3">Industry</th>
+                                    <th class="py-3">Email</th>
+                                    <th class="py-3">Phone</th>
+                                    <th class="py-3">Website</th>
+                                    <th class="py-3">Social Media</th>
+                                    <th class="py-3">Rating</th>
+                                    <th class="py-3">Disposition</th>
+                                    <th class="py-3">Notes</th>
+                                    <th class="text-end pe-4 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Entries)
+                                {
+                                    <tr data-disposition="@item.Disposition">
+                                        <td class="px-4 py-3">
+                                            <input type="checkbox" class="form-check-input entry-checkbox"
+                                                   name="selectedEntries" value="@item.Id">
+                                        </td>
+                                        <td class="py-3">
+                                            <a asp-action="BusinessView" asp-route-id="@item.Id" class="fw-medium text-dark text-decoration-none">
+                                                @item.BusinessName
+                                            </a>
+                                            @if (item.IsInMultipleLists)
+                                            {
+                                                <span class="ms-1 text-primary"
+                                                      title="This entry appears in multiple lists"
+                                                      data-bs-toggle="tooltip">
+                                                    <i class="fas fa-layer-group"></i>
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            @if (!string.IsNullOrEmpty(item.Industry))
+                                            {
+                                                <span class="badge bg-light text-dark rounded-pill px-3">@item.Industry</span>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            @if (!string.IsNullOrEmpty(item.Email))
+                                            {
+                                                <a href="mailto:@item.Email" class="text-dark text-decoration-none">
+                                                    <i class="fas fa-envelope me-1"></i>@item.Email
+                                                </a>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            @if (!string.IsNullOrEmpty(item.Phone))
+                                            {
+                                                <a href="tel:@item.Phone" class="text-dark text-decoration-none">
+                                                    <i class="fas fa-phone me-1"></i>@item.Phone
+                                                </a>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            @if (!string.IsNullOrEmpty(item.Website))
+                                            {
+                                                <a href="@item.Website" target="_blank" class="text-dark text-decoration-none">
+                                                    <i class="fas fa-globe me-1"></i>@item.Website
+                                                </a>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="social-media-links">
+                                                @if (!string.IsNullOrEmpty(item.Facebook))
+                                                {
+                                                    <a href="@item.Facebook" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2" title="Facebook">
+                                                        <i class="fab fa-facebook-f"></i>
+                                                    </a>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Instagram))
+                                                {
+                                                    <a href="@item.Instagram" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 me-2" title="Instagram">
+                                                        <i class="fab fa-instagram"></i>
+                                                    </a>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.YelpUrl))
+                                                {
+                                                    <a href="@item.YelpUrl" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 me-2" title="Yelp">
+                                                        <i class="fab fa-yelp"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            @if (item.GoogleRating > 0)
+                                            {
+                                                <span class="rating-display">
+                                                    <span class="stars text-warning">
+                                                        @for (var i = 0; i < (int)Math.Floor((decimal)item.GoogleRating); i++)
+                                                        {
+                                                            <i class="fas fa-star"></i>
+                                                        }
+                                                        @if (item.GoogleRating % 1 >= 0.5)
+                                                        {
+                                                            <i class="fas fa-star-half-alt"></i>
+                                                        }
+                                                    </span>
+                                                    <span class="rating-number ms-1">
+                                                        @item.GoogleRating
+                                                    </span>
+                                                    <span class="review-count ms-1">
+                                                        (@item.ReviewCount)
+                                                    </span>
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="py-3">
+                                            <select class="form-select form-select-sm border-0 bg-light rounded-pill disposition-select"
+                                                    data-id="@item.Id"
+                                                    onchange="updateDisposition(this)">
+                                                @foreach (var disposition in new[] {
+                                            "New", "Called Once", "Called Twice", "Call Back",
+                                            "Do Not Call", "Not Interested", "Wants Demo", "Sale Closed"
+                                            })
+                                                {
+                                                    <option value="@disposition" selected="@(item.Disposition == disposition)">
+                                                        @disposition
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td class="py-3">
+                                            <div class="notes-cell">
+                                                @item.Notes
+                                            </div>
+                                        </td>
+                                        <td class="text-end pe-4 py-3">
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                                   class="btn btn-sm btn-outline-warning rounded-pill px-3"
+                                                   title="Edit Entry">
+                                                    <i class="fas fa-edit me-1"></i>Edit
+                                                </a>
+                                                <div class="dropdown dropdown-fixed">
+                                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                                            type="button"
+                                                            data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                                                        @if (!string.IsNullOrEmpty(item.Website))
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item py-2" href="@item.Website" target="_blank">
+                                                                    <i class="fas fa-external-link-alt me-2"></i>Visit Website
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(item.Email))
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item py-2" href="mailto:@item.Email">
+                                                                    <i class="fas fa-envelope me-2"></i>Send Email
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(item.Phone))
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item py-2" href="tel:@item.Phone">
+                                                                    <i class="fas fa-phone me-2"></i>Call
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <button class="dropdown-item py-2" onclick="copyEntry(@item.Id)">
+                                                                <i class="fas fa-copy me-2"></i>Copy to List
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button class="dropdown-item py-2" onclick="moveEntry(@item.Id)">
+                                                                <i class="fas fa-share me-2"></i>Move to List
+                                                            </button>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <button class="dropdown-item text-danger py-2"
+                                                                    onclick="deleteEntry(@item.Id)">
+                                                                <i class="fas fa-trash me-2"></i>Delete Entry
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-4">
+                        <div>
+                            <select id="pageSizeSelect" class="form-select form-select-sm border-0 bg-light rounded-pill" onchange="changePageSize(this.value)">
+                                @foreach (var size in new[] { 25, 50, 100 })
+                                {
+                                    <option value="@size" selected="@(Model.PageSize == size)">
+                                        @size entries per page
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-md mb-0">
+                                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link rounded-start-pill border-0" href="@Url.Action("ListView", new { id = Model.List.Id, page = Model.CurrentPage - 1, pageSize = Model.PageSize })">
+                                        <i class="fas fa-chevron-left small"></i>
+                                    </a>
+                                </li>
+                                @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link border-0" href="@Url.Action("ListView", new { id = Model.List.Id, page = i, pageSize = Model.PageSize })">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link rounded-end-pill border-0" href="@Url.Action("ListView", new { id = Model.List.Id, page = Model.CurrentPage + 1, pageSize = Model.PageSize })">
+                                        <i class="fas fa-chevron-right small"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden input for list ID -->
+    <input type="hidden" id="currentListId" value="@Model.List.Id">
+    @Html.AntiForgeryToken()
+
+    <!-- Move Entries Modal -->
+    <div class="modal fade" id="moveEntriesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Move Entries to Another List</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="moveToList" class="form-label fw-medium">Select Destination List</label>
+                        <select id="moveToList" class="form-select form-control-lg border-0 bg-light rounded-pill" required>
+                            <option value="">Select a list...</option>
+                            @foreach (var list in Model.AvailableLists.Where(l => l.Id != Model.List.Id))
+                            {
+                                <option value="@list.Id">@list.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <p class="text-muted">
+                        Selected entries will be moved to the chosen list and removed from the current list.
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="confirmMoveBtn">
+                        <i class="fas fa-share me-2"></i>Move Entries
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Entries Modal -->
+    <div class="modal fade" id="copyEntriesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Copy Entries to Another List</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="copyToList" class="form-label fw-medium">Select Destination List</label>
+                        <select id="copyToList" class="form-select form-control-lg border-0 bg-light rounded-pill" required>
+                            <option value="">Select a list...</option>
+                            @foreach (var list in Model.AvailableLists.Where(l => l.Id != Model.List.Id))
+                            {
+                                <option value="@list.Id">@list.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <p class="text-muted">
+                        Selected entries will be copied to the chosen list while remaining in the current list.
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="confirmCopyBtn">
+                        <i class="fas fa-copy me-2"></i>Copy Entries
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteEntriesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Delete Selected Entries</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-3">
+                        <div class="text-danger mb-3">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        </div>
+                        <p class="text-danger">
+                            Are you sure you want to delete the selected entries? This action cannot be undone.
+                        </p>
+                        <p id="deleteEntriesCount" class="fw-bold"></p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-2"></i>Delete Entries
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* Modern table styling */
+        .scrollable-table-container {
+            width: 100%;
+            overflow-x: auto;
+            position: relative;
+            border-radius: 0.5rem;
+        }
+
+        /* Set clean table styling */
+        .table {
+            margin-bottom: 0;
+        }
+
+            /* Table header styling */
+            .table thead {
+                background-color: #f8f9fa;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+        /* Ensure all Font Awesome icons display properly */
+        .fa, .fas, .far, .fab {
+            font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+        }
+
+        .fa, .fas {
+            font-weight: 900 !important;
+        }
+
+        .far {
+            font-weight: 400 !important;
+        }
+
+        .fab {
+            font-family: "Font Awesome 5 Brands" !important;
+        }
+
+        /* Set minimum widths for columns to prevent squishing and add padding */
+        th, td {
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        /* Specific column sizing */
+        table th:first-child,
+        table td:first-child {
+            min-width: 40px;
+            width: 40px;
+        }
+
+        /* Social media links styling */
+        .social-media-links {
+            display: flex;
+            white-space: nowrap;
+            gap: 0.5rem;
+        }
+
+        /* Notes cell */
+        .notes-cell {
+            max-width: 300px;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* Make sure stars display properly */
+        .stars {
+            display: inline-block;
+            letter-spacing: -2px;
+        }
+
+        /* Make links black instead of blue */
+        a.text-dark:hover {
+            color: #495057 !important;
+            text-decoration: underline;
+        }
+
+        /* Nice pagination styling */
+        .pagination .page-link {
+            color: #2563EB;
+            background-color: transparent;
+            border-color: transparent;
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+        }
+
+        .pagination .page-item.active .page-link {
+            color: #fff;
+            background-color: #2563EB;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            opacity: 0.5;
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 0.5rem;
+        }
+
+        .dropdown-item {
+            border-radius: 0.3rem;
+            margin: 0.1rem 0.5rem;
+            width: auto;
+        }
+
+            .dropdown-item:hover {
+                background-color: #f8f9fa;
+            }
+
+        /* Alert styling */
+        .alert {
+            border-radius: 1rem;
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form element focus states */
+        .form-control:focus, .form-select:focus {
+            border-color: #2563EB;
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+        }
+
+        /* Hover effects */
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        /* Dropdown fixed positioning */
+        .dropdown-fixed .dropdown-menu {
+            position: fixed !important;
+            z-index: 9999 !important;
+        }
+    </style>
+
+    <script>
+                // Global variable to store selected entry IDs
+                let selectedEntryIds = [];
+
+                // Initialize everything when the document is ready
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log("DOM loaded - initializing bulk actions");
+
+                    // Initialize the "Select All" checkbox
+                    const selectAllCheckbox = document.getElementById('selectAll');
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.addEventListener('change', function() {
+                            const checkboxes = document.querySelectorAll('.entry-checkbox');
+                            checkboxes.forEach(cb => cb.checked = this.checked);
+                            updateBulkActionState();
+                        });
+                    }
+
+                    // Add event listeners to all entry checkboxes
+                    const checkboxes = document.querySelectorAll('.entry-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', updateBulkActionState);
+                    });
+
+                    // Handle bulk action dropdown selection
+                    const bulkActionDropdown = document.getElementById('bulkAction');
+                    if (bulkActionDropdown) {
+                        bulkActionDropdown.addEventListener('change', function() {
+                            handleBulkAction(this.value);
+                        });
+                    }
+
+                    // Add event listeners to modal confirmation buttons
+                    const confirmMoveBtn = document.getElementById('confirmMoveBtn');
+                    if (confirmMoveBtn) {
+                        confirmMoveBtn.addEventListener('click', confirmMoveEntries);
+                    }
+
+                    const confirmCopyBtn = document.getElementById('confirmCopyBtn');
+                    if (confirmCopyBtn) {
+                        confirmCopyBtn.addEventListener('click', confirmCopyEntries);
+                    }
+
+                    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+                    if (confirmDeleteBtn) {
+                        confirmDeleteBtn.addEventListener('click', confirmDeleteEntries);
+                    }
+
+                    // Add event listeners to filter controls
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) {
+                        searchInput.addEventListener('keyup', debounce(filterTable, 300));
+                    }
+
+                    const dispositionFilter = document.getElementById('dispositionFilter');
+                    if (dispositionFilter) {
+                        dispositionFilter.addEventListener('change', filterTable);
+                    }
+
+                    // Try to load Font Awesome if needed
+                    if (typeof FontAwesome === 'undefined' &&
+                        !document.querySelector('link[href*="font-awesome"]') &&
+                        !document.querySelector('link[href*="fontawesome"]')) {
+
+                        const fontAwesomeLink = document.createElement('link');
+                        fontAwesomeLink.rel = 'stylesheet';
+                        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+                        document.head.appendChild(fontAwesomeLink);
+
+                        console.log("Font Awesome was automatically added to the page");
+                    }
+
+                    // Initialize Bootstrap tooltips
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                        tooltipTriggerList.map(function(tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl);
+                        });
+                    }
+
+                    // Fix dropdown menus in scrollable containers
+                    document.querySelectorAll('.dropdown-fixed [data-bs-toggle="dropdown"]').forEach(button => {
+                        button.addEventListener('click', function(event) {
+                            event.stopPropagation();
+
+                            // Get reference to dropdown menu
+                            const dropdownMenu = this.nextElementSibling;
+
+                            // Toggle show class manually
+                            if (dropdownMenu.classList.contains('show')) {
+                                dropdownMenu.classList.remove('show');
+                            } else {
+                                // Close any other open dropdowns
+                                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                                    menu.classList.remove('show');
+                                });
+
+                                // Show this dropdown
+                                dropdownMenu.classList.add('show');
+
+                                // Position the dropdown
+                                const buttonRect = this.getBoundingClientRect();
+                                dropdownMenu.style.top = (buttonRect.bottom + 5) + 'px';
+
+                                // Check if dropdown would go off right edge of screen
+                                const viewportWidth = window.innerWidth;
+                                if (buttonRect.right + 180 > viewportWidth) {
+                                    // Position to the left
+                                    dropdownMenu.style.right = (viewportWidth - buttonRect.right) + 'px';
+                                    dropdownMenu.style.left = 'auto';
+                                } else {
+                                    // Position to the right
+                                    dropdownMenu.style.left = (buttonRect.left - 5) + 'px';
+                                    dropdownMenu.style.right = 'auto';
+                                }
+                            }
+                        });
+                    });
+
+                    // Close dropdowns when clicking outside
+                    document.addEventListener('click', function(event) {
+                        if (!event.target.matches('[data-bs-toggle="dropdown"]') &&
+                            !event.target.closest('.dropdown-menu')) {
+                            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                                menu.classList.remove('show');
+                            });
+                        }
+                    });
+
+                    // Update dropdown positions when scrolling
+                    const tableContainer = document.querySelector('.scrollable-table-container');
+                    if (tableContainer) {
+                        tableContainer.addEventListener('scroll', function() {
+                            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                                // Find the associated button
+                                const button = menu.closest('.dropdown-fixed').querySelector('button');
+                                if (button) {
+                                    const buttonRect = button.getBoundingClientRect();
+                                    menu.style.top = (buttonRect.bottom + 5) + 'px';
+
+                                    // Check if dropdown would go off right edge of screen
+                                    const viewportWidth = window.innerWidth;
+                                    if (buttonRect.right + 180 > viewportWidth) {
+                                        // Position to the left
+                                        menu.style.right = (viewportWidth - buttonRect.right) + 'px';
+                                        menu.style.left = 'auto';
+                                    } else {
+                                        // Position to the right
+                                        menu.style.left = (buttonRect.left - 5) + 'px';
+                                        menu.style.right = 'auto';
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    // Initialize bulk action state
+                    updateBulkActionState();
+
+                    console.log("Bulk actions initialized");
+                });
+
+                // Update bulk action dropdown state based on selected entries
+                function updateBulkActionState() {
+                    const checkedBoxes = document.querySelectorAll('.entry-checkbox:checked');
+                    const bulkActionDropdown = document.getElementById('bulkAction');
+
+                    if (bulkActionDropdown) {
+                        bulkActionDropdown.disabled = checkedBoxes.length === 0;
+                    }
+
+                    // Update the global selected IDs
+                    selectedEntryIds = Array.from(checkedBoxes).map(cb => cb.value);
+                    console.log("Selected entries updated:", selectedEntryIds);
+                }
+
+                // Handle the selected bulk action
+                function handleBulkAction(action) {
+                    console.log(`Bulk action selected: ${action}`);
+                    if (!action) return;
+
+                    // Get the latest selected IDs
+                    const checkedBoxes = document.querySelectorAll('.entry-checkbox:checked');
+                    selectedEntryIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+                    if (selectedEntryIds.length === 0) {
+                        showMessage('Please select entries first', 'warning');
+                        return;
+                    }
+
+                    switch (action) {
+                        case 'move':
+                            showModal('moveEntriesModal');
+                            break;
+                        case 'copy':
+                            showModal('copyEntriesModal');
+                            break;
+                        case 'delete':
+                            showDeleteModal();
+                            break;
+                        default:
+                            console.warn(`Unknown bulk action: ${action}`);
+                    }
+
+                    // Reset the dropdown after action is triggered
+                    const bulkActionDropdown = document.getElementById('bulkAction');
+                    if (bulkActionDropdown) {
+                        bulkActionDropdown.value = '';
+                    }
+                }
+
+                // Helper function to show a modal by ID
+                function showModal(modalId) {
+                    console.log(`Showing modal: ${modalId}`);
+                    const modalElement = document.getElementById(modalId);
+                    if (modalElement) {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            const modal = new bootstrap.Modal(modalElement);
+                            modal.show();
+                        } else {
+                            console.error("Bootstrap Modal not available");
+                            // Fallback if bootstrap.Modal is not available
+                            modalElement.style.display = 'block';
+                            modalElement.classList.add('show');
+                        }
+                    } else {
+                        console.error(`Modal not found: ${modalId}`);
+                    }
+                }
+
+                // Show delete confirmation modal
+                function showDeleteModal() {
+                    const countElement = document.getElementById('deleteEntriesCount');
+                    if (countElement) {
+                        countElement.textContent = `Number of entries to delete: ${selectedEntryIds.length}`;
+                    }
+
+                    showModal('deleteEntriesModal');
+                }
+
+                // Confirm move entries action
+                function confirmMoveEntries() {
+                    console.log("Confirming move entries");
+
+                    // Find the destination list select element - handle different modal structures
+                    const destinationList = document.getElementById('moveToList') ||
+                                          document.querySelector('select[id*="Destination"]') ||
+                                          document.querySelector('#moveEntriesModal select');
+
+                    if (!destinationList || !destinationList.value) {
+                        showMessage('Please select a destination list', 'warning');
+                        return;
+                    }
+
+                    // Get the source list ID (current list)
+                    let sourceListId;
+                    const listIdInput = document.getElementById('currentListId');
+                    if (listIdInput) {
+                        sourceListId = listIdInput.value;
+                    } else {
+                        // Try to extract from URL
+                        const pathParts = window.location.pathname.split('/');
+                        sourceListId = pathParts[pathParts.length - 1];
+                    }
+
+                    // Find the anti-forgery token
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (!token) {
+                        console.error("Anti-forgery token not found");
+                        showMessage('Security token not found', 'error');
+                        return;
+                    }
+
+                    // Make sure selected IDs are valid integers
+                    const validIds = selectedEntryIds.filter(id => !isNaN(parseInt(id))).map(id => parseInt(id));
+
+                    if (validIds.length === 0) {
+                        showMessage('No valid entries selected', 'warning');
+                        return;
+                    }
+
+                    // Check if source and destination are the same
+                    if (sourceListId == destinationList.value) {
+                        showMessage('Source and destination lists cannot be the same', 'warning');
+                        return;
+                    }
+
+                    // Create the request payload
+                    const payload = {
+                        sourceListId: parseInt(sourceListId),
+                        destinationListId: parseInt(destinationList.value),
+                        entryIds: validIds
+                    };
+
+                    console.log(`Moving ${validIds.length} entries from list ${sourceListId} to list ${destinationList.value}`);
+                    console.log("Move payload:", JSON.stringify(payload));
+
+                    // Show loading message
+                    showMessage('Moving entries, please wait...', 'info');
+
+                    // Close the modal if it exists
+                    try {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('moveEntriesModal'));
+                        if (modal) modal.hide();
+                    } catch (e) {
+                        // Modal might not exist or bootstrap might not be available
+                        console.log("Could not close modal:", e);
+                    }
+
+                    // Execute the move operation
+                    fetch('/Crm/MoveEntries', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(response => {
+                        // Check if response is OK before parsing JSON
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error(`HTTP error! Status: ${response.status}, Response: ${text}`);
+                                throw new Error(`Server error: ${response.status}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message before reload
+                            showMessage('Entries moved successfully', 'success');
+
+                            // Reload the page after a short delay
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            console.error("Server returned error:", data);
+
+                            // Handle different error formats
+                            let errorMessage = 'Failed to move entries';
+
+                            if (typeof data.message === 'string') {
+                                errorMessage = data.message;
+                            } else if (data.error) {
+                                errorMessage = data.error;
+                            }
+
+                            showMessage(errorMessage, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error moving entries:', error);
+                        showMessage(`Error: ${error.message}`, 'error');
+                    });
+                }
+
+                // Confirm copy entries action
+                function confirmCopyEntries() {
+                    console.log("Confirming copy entries");
+                    const destinationList = document.getElementById('copyToList');
+                    if (!destinationList || !destinationList.value) {
+                        showMessage('Please select a destination list', 'warning');
+                        return;
+                    }
+
+                    const sourceListId = document.getElementById('currentListId').value;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (!token) {
+                        console.error("Anti-forgery token not found");
+                        showMessage('Security token not found', 'error');
+                        return;
+                    }
+
+                    console.log(`Copying ${selectedEntryIds.length} entries from list ${sourceListId} to list ${destinationList.value}`);
+
+                    // Execute the copy operation
+                    fetch('/Crm/CopyEntries', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            sourceListId: parseInt(sourceListId),
+                            destinationListId: parseInt(destinationList.value),
+                            entryIds: selectedEntryIds.map(id => parseInt(id))
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Hide the modal
+                            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                const modalElement = document.getElementById('copyEntriesModal');
+                                const modal = bootstrap.Modal.getInstance(modalElement);
+                                if (modal) modal.hide();
+                            }
+
+                            // Show success message
+                            showMessage('Entries copied successfully', 'success');
+                        } else {
+                            showMessage(data.message || 'Failed to copy entries', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error copying entries:', error);
+                        showMessage('An error occurred while copying entries', 'error');
+                    });
+                }
+
+                // Confirm delete entries action
+                function confirmDeleteEntries() {
+                    console.log("Confirming delete entries");
+
+                    const listId = document.getElementById('currentListId').value;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (!token) {
+                        console.error("Anti-forgery token not found");
+                        showMessage('Security token not found', 'error');
+                        return;
+                    }
+
+                    console.log(`Deleting ${selectedEntryIds.length} entries from list ${listId}`);
+
+                    // Execute the delete operation
+                    fetch('/Crm/DeleteEntries', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            listId: parseInt(listId),
+                            entryIds: selectedEntryIds.map(id => parseInt(id))
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Reload the page to show the updated list
+                            location.reload();
+                        } else {
+                            showMessage(data.message || 'Failed to delete entries', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting entries:', error);
+                        showMessage('An error occurred while deleting entries', 'error');
+                    });
+                }
+
+                // Filter table based on search text and disposition filter
+                function filterTable() {
+                    const filter = document.getElementById('dispositionFilter')?.value || '';
+                    const searchText = document.getElementById('searchInput')?.value.toLowerCase() || '';
+                    const rows = document.querySelectorAll('table tbody tr');
+
+                    rows.forEach(row => {
+                        const disposition = row.dataset.disposition || '';
+                        const text = row.textContent.toLowerCase();
+
+                        const matchesDisposition = !filter || disposition === filter;
+                        const matchesSearch = !searchText || text.includes(searchText);
+
+                        row.style.display = matchesDisposition && matchesSearch ? '' : 'none';
+                    });
+                }
+
+                // Show notification message
+                function showMessage(message, type) {
+                    console.log(`Showing message: ${message} (${type})`);
+                    const alertDiv = document.createElement('div');
+                    alertDiv.classList.add('alert', `alert-${type === 'error' ? 'danger' : type}`, 'alert-dismissible', 'fade', 'show', 'position-fixed', 'top-0', 'end-0', 'm-3', 'rounded-3');
+                    alertDiv.style.zIndex = '9999';
+
+                    const icon = type === 'success' ? 'check-circle' :
+                              type === 'warning' ? 'exclamation-circle' : 'times-circle';
+
+                    alertDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${icon} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+
+                    document.body.appendChild(alertDiv);
+
+                    // Auto-remove the message after 5 seconds
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.parentNode.removeChild(alertDiv);
+                        }
+                    }, 5000);
+                }
+
+                // Utility function to debounce event handlers
+                function debounce(func, wait) {
+                    let timeout;
+                    return function(...args) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, args), wait);
+                    };
+                }
+
+                // Single entry actions
+                function moveEntry(id) {
+                    selectedEntryIds = [id];
+                    showModal('moveEntriesModal');
+                }
+
+                function copyEntry(id) {
+                    selectedEntryIds = [id];
+                    showModal('copyEntriesModal');
+                }
+
+                function deleteEntry(id) {
+                    if (!confirm('Are you sure you want to delete this entry?')) {
+                        return;
+                    }
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (!token) {
+                        console.error("Anti-forgery token not found");
+                        showMessage('Security token not found', 'error');
+                        return;
+                    }
+
+                    fetch(`/Crm/Delete/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const row = document.querySelector(`input[value="${id}"]`).closest('tr');
+                            row.remove();
+                            showMessage('Entry deleted successfully', 'success');
+                        } else {
+                            showMessage('Failed to delete entry', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('Failed to delete entry', 'error');
+                    });
+                }
+
+                // Function to update disposition
+                function updateDisposition(select) {
+                    const id = select.dataset.id;
+                    const newDisposition = select.value;
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (!token) {
+                        console.error("Anti-forgery token not found");
+                        showMessage('Security token not found', 'error');
+                        return;
+                    }
+
+                    fetch('/Crm/UpdateDisposition', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ id: parseInt(id), disposition: newDisposition })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const row = select.closest('tr');
+                            row.dataset.disposition = newDisposition;
+                            showMessage('Disposition updated successfully', 'success');
+                        } else {
+                            showMessage('Failed to update disposition', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('Failed to update disposition', 'error');
+                    });
+                }
+
+                // Function to change page size
+                function changePageSize(size) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('pageSize', size);
+                    window.location.href = url.toString();
+                }
+    </script>
+}

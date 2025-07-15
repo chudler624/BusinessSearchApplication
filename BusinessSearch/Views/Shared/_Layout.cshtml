@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Business Search</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #2563EB;
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .initials {
+            font-size: 16px;
+        }
+
+        .dropdown-item-text {
+            padding: 0.5rem 1rem;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+    @Html.AntiForgeryToken()
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="Home" asp-action="Index">Business Search</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-lg-inline-flex">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="BusinessSearch" asp-action="Index">Search</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="BusinessSearch" asp-action="History">Search History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="Crm" asp-action="Index">CRM</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="WebsiteOpportunities" asp-action="Index">Website Opportunities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-controller="Organization" asp-action="Index">Organization</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" asp-area="" asp-controller="Documentation" asp-action="Index">Documentation</a>
+                        </li>
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container py-4">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted py-4 mt-5">
+        <div class="container">
+            &copy; 2023 - Business Search
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Setup AJAX antiforgery token
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                xhr.setRequestHeader("RequestVerificationToken", token);
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

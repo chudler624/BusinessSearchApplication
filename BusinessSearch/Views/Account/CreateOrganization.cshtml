@@ -1,0 +1,82 @@
+﻿@model BusinessSearch.Models.ViewModels.CreateOrganizationViewModel
+@{
+    ViewData["Title"] = "Create Organization";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">Create New Organization</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateOrganization" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="OrganizationName" class="form-label"></label>
+                            <input asp-for="OrganizationName" class="form-control" />
+                            <span asp-validation-for="OrganizationName" class="text-danger"></span>
+                            <div class="form-text">This will be your organization's display name.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Plan" class="form-label">Select Plan</label>
+                            <select asp-for="Plan" class="form-select">
+                                <option value="Bronze">Bronze Plan (100 daily searches)</option>
+                                <option value="Silver">Silver Plan (300 daily searches)</option>
+                                <option value="Gold">Gold Plan (500 daily searches)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PromoCode" class="form-label">Promo Code (Optional)</label>
+                            <input asp-for="PromoCode" class="form-control" />
+                            <div class="form-text">If you have a promo code, enter it here.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Organization</button>
+                            <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = $(this).serializeArray();
+                console.log('Form data:', formData);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        console.log('Server response:', response);
+                        if (response.success) {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        } else {
+                            $('.alert-danger').html(response.message).show();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Ajax error:', error);
+                        console.error('Response:', xhr.responseText);
+                        $('.alert-danger').html('Error creating organization: ' + error).show();
+                    }
+                });
+            });
+        });
+    </script>
+}

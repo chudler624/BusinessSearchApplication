@@ -1,0 +1,178 @@
+﻿@model BusinessSearch.Models.CrmEntry
+
+<tr data-disposition="@Model.Disposition">
+    <td>
+        <input type="checkbox" class="form-check-input entry-checkbox"
+               name="selectedEntries" value="@Model.Id"
+               onchange="updateBulkActionState()">
+    </td>
+    <td>
+        <div class="d-flex align-items-center">
+            <a asp-action="BusinessView" asp-route-id="@Model.Id" class="text-decoration-none">
+                @Model.BusinessName
+            </a>
+            @if (Model.IsInMultipleLists)
+            {
+                <span class="ms-1 text-primary"
+                      title="This entry appears in multiple lists"
+                      data-bs-toggle="tooltip">
+                    <i class="fas fa-layer-group"></i>
+                </span>
+            }
+            @if (Model.GoogleRating > 0)
+            {
+                <span class="badge bg-warning text-dark ms-2">
+                    <i class="fas fa-star me-1"></i>@Model.GoogleRating/5 (@Model.ReviewCount)
+                </span>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Company))
+        {
+            <small class="text-muted d-block">@Model.Company</small>
+        }
+    </td>
+    <td>
+        @if (!string.IsNullOrEmpty(Model.Industry))
+        {
+            <span class="badge bg-secondary">@Model.Industry</span>
+        }
+    </td>
+    <td>
+        <div class="business-details-scroll">
+            <div class="d-flex flex-nowrap">
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <div class="detail-item">
+                        <a href="mailto:@Model.Email" class="text-decoration-none btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Phone))
+                {
+                    <div class="detail-item">
+                        <a href="tel:@Model.Phone" class="text-decoration-none btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-phone"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Website))
+                {
+                    <div class="detail-item">
+                        <a href="@Model.Website" target="_blank" class="text-decoration-none btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Facebook))
+                {
+                    <div class="detail-item">
+                        <a href="@Model.Facebook" target="_blank" class="text-decoration-none btn btn-sm btn-outline-primary me-1">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Instagram))
+                {
+                    <div class="detail-item">
+                        <a href="@Model.Instagram" target="_blank" class="text-decoration-none btn btn-sm btn-outline-danger me-1">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.YelpUrl))
+                {
+                    <div class="detail-item">
+                        <a href="@Model.YelpUrl" target="_blank" class="text-decoration-none btn btn-sm btn-outline-danger me-1">
+                            <i class="fab fa-yelp"></i>
+                        </a>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.FullAddress))
+                {
+                    <div class="detail-item">
+                        <a href="https://maps.google.com/?q=@Model.FullAddress" target="_blank" class="text-decoration-none btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </td>
+    <td>
+        <select class="form-select form-select-sm disposition-select"
+                data-id="@Model.Id"
+                onchange="updateDisposition(this)">
+            @foreach (var disposition in new[] {
+            "New", "Called Once", "Called Twice", "Call Back",
+            "Do Not Call", "Not Interested", "Wants Demo", "Sale Closed"
+            })
+            {
+                <option value="@disposition" selected="@(Model.Disposition == disposition)">
+                    @disposition
+                </option>
+            }
+        </select>
+    </td>
+    <td>
+        <div class="text-truncate" style="max-width: 200px;" title="@Model.Notes">
+            @Model.Notes
+        </div>
+    </td>
+    <td>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id"
+               class="btn btn-sm btn-warning action-btn"
+               title="Edit Entry">
+                <i class="fas fa-edit"></i>
+            </a>
+            <button type="button"
+                    onclick="deleteEntry(@Model.Id)"
+                    class="btn btn-sm btn-danger action-btn"
+                    title="Delete Entry">
+                <i class="fas fa-trash"></i>
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-secondary dropdown-toggle action-btn"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="@Model.Website" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>Visit Website
+                        </a>
+                    </li>
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <li>
+                            <a class="dropdown-item" href="mailto:@Model.Email">
+                                <i class="fas fa-envelope me-2"></i>Send Email
+                            </a>
+                        </li>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <li>
+                            <a class="dropdown-item" href="tel:@Model.Phone">
+                                <i class="fas fa-phone me-2"></i>Call
+                            </a>
+                        </li>
+                    }
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item" onclick="copyEntry(@Model.Id)">
+                            <i class="fas fa-copy me-2"></i>Copy to List
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" onclick="moveEntry(@Model.Id)">
+                            <i class="fas fa-share me-2"></i>Move to List
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </td>
+</tr>

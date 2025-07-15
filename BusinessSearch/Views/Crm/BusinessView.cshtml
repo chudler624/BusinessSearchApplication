@@ -1,0 +1,390 @@
+﻿@model BusinessSearch.Models.ViewModels.BusinessViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@{
+    var token = Xsrf.GetAndStoreTokens(Context).RequestToken;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Business Image and Basic Info -->
+        <div class="col-md-4">
+            <div class="business-image-container mb-3">
+                @if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                {
+                    <img src="@(Model.PhotoUrl.StartsWith("http") ? Model.PhotoUrl : "https://" + Model.PhotoUrl)"
+                         alt="@Model.Name"
+                         class="business-profile-image img-fluid rounded shadow"
+                         onerror="this.onerror=null; this.src='/api/placeholder/400/300'; console.error('Failed to load image:', this.src);" />
+                }
+                else
+                {
+                    <img src="/api/placeholder/400/300" alt="@Model.Name" class="business-profile-image img-fluid rounded shadow" />
+                }
+            </div>
+            <h3 class="mb-3 fw-bold">@Model.Name</h3>
+            <div class="mb-3">
+                @if (Model.Rating > 0)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <strong>Google Rating:</strong>
+                            <div class="mt-1">
+                                <span class="text-warning">
+                                    @for (var i = 0; i < Math.Floor(Model.Rating); i++)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    @if (Model.Rating % 1 >= 0.5)
+                                    {
+                                        <i class="fas fa-star-half-alt"></i>
+                                    }
+                                </span>
+                                <span class="ms-2">@Model.Rating/5</span>
+                                <br />
+                                <small class="text-muted">(@Model.ReviewCount reviews)</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.PriceLevel))
+                {
+                    <div class="mb-2">
+                        <strong><i class="fas fa-dollar-sign me-2"></i>Price Level:</strong>
+                        <span class="ms-2">@Model.PriceLevel</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.BusinessStatus))
+                {
+                    <div class="mb-2">
+                        <strong><i class="fas fa-info-circle me-2"></i>Status:</strong>
+                        <span class="ms-2 @(Model.BusinessStatus?.ToLower() == "operational" ? "text-success" : "text-warning")">
+                            @Model.BusinessStatus
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-md-8">
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-address-card me-2"></i>Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Website))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fas fa-globe me-2"></i>Website:</strong>
+                            <a href="@Model.Website" target="_blank" class="ms-2 text-decoration-none">@Model.Website</a>
+                            <button class="btn btn-sm btn-primary ms-2" onclick="analyzeWebsite('@Model.Website')">
+                                <i class="fas fa-chart-line me-1"></i>Analyze
+                            </button>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fas fa-phone me-2"></i>Phone:</strong>
+                            <a href="tel:@Model.PhoneNumber" class="ms-2 text-decoration-none">@Model.PhoneNumber</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fas fa-envelope me-2"></i>Email:</strong>
+                            <a href="mailto:@Model.Email" class="ms-2 text-decoration-none">@Model.Email</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.FullAddress))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fas fa-map-marker-alt me-2"></i>Address:</strong>
+                            <span class="ms-2">@Model.FullAddress</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Type))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fas fa-industry me-2"></i>Industry:</strong>
+                            <span class="ms-2">@Model.Type</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.OpeningStatus))
+                    {
+                        <div class="mb-3">
+                            <strong><i class="fas fa-clock me-2"></i>Current Status:</strong>
+                            <span class="ms-2 @(Model.OpeningStatus?.ToLower() == "open" ? "text-success" : "text-danger")">
+                                @Model.OpeningStatus
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Social Media & Reviews</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Facebook))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fab fa-facebook me-2"></i>Facebook:</strong>
+                            <a href="@Model.Facebook" target="_blank" class="ms-2 text-decoration-none">Visit Facebook Page</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Instagram))
+                    {
+                        <div class="mb-3 pb-3 border-bottom">
+                            <strong><i class="fab fa-instagram me-2"></i>Instagram:</strong>
+                            <a href="@Model.Instagram" target="_blank" class="ms-2 text-decoration-none">Visit Instagram Page</a>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.YelpUrl))
+                    {
+                        <div class="mb-3">
+                            <strong><i class="fab fa-yelp me-2"></i>Yelp:</strong>
+                            <a href="@Model.YelpUrl" target="_blank" class="ms-2 text-decoration-none">View on Yelp</a>
+                        </div>
+                    }
+                    @if (string.IsNullOrEmpty(Model.Facebook) && string.IsNullOrEmpty(Model.Instagram) && string.IsNullOrEmpty(Model.YelpUrl))
+                    {
+                        <div class="text-muted">
+                            <i class="fas fa-info-circle me-2"></i>No social media links available
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Notes</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateNotesOnly" method="post" class="direct-notes-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <textarea name="notes" class="form-control" rows="4">@Model.Notes</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Notes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Website Analysis Results (Initially Hidden) -->
+            <div id="analysisResults" class="card mb-4 shadow d-none">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Website Analysis Results</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Analysis results will be populated via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mb-4">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i> Edit Business
+                </a>
+                <a asp-action="Index" class="btn btn-secondary ms-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" name="__RequestVerificationToken" value="@token" />
+
+@section Scripts {
+    <script>
+        function analyzeWebsite(website) {
+            if (!website) {
+                showMessage('No website URL available to analyze', 'warning');
+                return;
+            }
+
+            // Show loading state
+            const analysisDiv = document.getElementById('analysisResults');
+            analysisDiv.classList.remove('d-none');
+            analysisDiv.querySelector('.card-body').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing website...</p>
+                </div>
+            `;
+
+            // Make API call
+            fetch('/WebsiteOpportunities/AnalyzeWebsite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `url=${encodeURIComponent(website)}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) {
+                    throw new Error('No data received from analysis');
+                }
+
+                // Display basic analysis results
+                const resultsHtml = `
+                    <div class="row g-3">
+                        ${data.responsivenessResult ? `
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">
+                                        ${data.responsivenessResult.isResponsive ?
+                                            '<i class="fas fa-check-circle text-success fa-lg"></i>' :
+                                            '<i class="fas fa-times-circle text-danger fa-lg"></i>'}
+                                    </span>
+                                    <div>
+                                        <strong>Mobile Responsiveness:</strong>
+                                        <span class="badge bg-${getProgressBarColor(data.responsivenessResult.score)} ms-2">
+                                            ${data.responsivenessResult.score}/100
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${data.pageSpeedResult ? `
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">
+                                        ${data.pageSpeedResult.isFast ?
+                                            '<i class="fas fa-check-circle text-success fa-lg"></i>' :
+                                            '<i class="fas fa-times-circle text-danger fa-lg"></i>'}
+                                    </span>
+                                    <div>
+                                        <strong>Page Speed:</strong>
+                                        <span class="badge bg-${getProgressBarColor(data.pageSpeedResult.score)} ms-2">
+                                            ${data.pageSpeedResult.score.toFixed(1)}/100
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${data.gdprComplianceResult ? `
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">
+                                        ${(data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy) ?
+                                            '<i class="fas fa-check-circle text-success fa-lg"></i>' :
+                                            '<i class="fas fa-times-circle text-danger fa-lg"></i>'}
+                                    </span>
+                                    <div>
+                                        <strong>GDPR Compliance:</strong>
+                                        <span class="badge bg-${data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy ? 'success' : 'danger'} ms-2">
+                                            ${data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy ? 'Compliant' : 'Non-Compliant'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${data.accessibilityResult ? `
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">
+                                        ${data.accessibilityResult.complianceScore >= 90 ?
+                                            '<i class="fas fa-check-circle text-success fa-lg"></i>' :
+                                            data.accessibilityResult.complianceScore >= 70 ?
+                                                '<i class="fas fa-exclamation-circle text-warning fa-lg"></i>' :
+                                                '<i class="fas fa-times-circle text-danger fa-lg"></i>'}
+                                    </span>
+                                    <div>
+                                        <strong>Accessibility:</strong>
+                                        <span class="badge bg-${getProgressBarColor(data.accessibilityResult.complianceScore)} ms-2">
+                                            ${data.accessibilityResult.complianceScore.toFixed(1)}/100
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                analysisDiv.querySelector('.card-body').innerHTML = resultsHtml;
+            })
+            .catch(error => {
+                console.error('Analysis error:', error);
+                analysisDiv.querySelector('.card-body').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Error analyzing website: ${error.message}
+                    </div>
+                `;
+            });
+        }
+
+        function getProgressBarColor(score) {
+            if (score >= 90) return 'success';
+            if (score >= 70) return 'info';
+            if (score >= 50) return 'warning';
+            return 'danger';
+        }
+
+        function showMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('JS Error:', message, 'at', source, 'line', lineno);
+            return false;
+        };
+
+        // Track form submissions
+        $(document).ready(function() {
+            $(document).on('submit', 'form', function() {
+                console.log('Form submitting:', this.action);
+            });
+        });
+    </script>
+}
+
+<style>
+    /* Standardized business image container */
+    .business-image-container {
+        width: 100%;
+        height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+    }
+
+    /* Standardized business profile image */
+    .business-profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.3s ease;
+    }
+
+        /* Optional hover effect */
+        .business-profile-image:hover {
+            transform: scale(1.05);
+        }
+</style>

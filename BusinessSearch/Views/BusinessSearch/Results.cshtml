@@ -1,0 +1,796 @@
+﻿@model IEnumerable<BusinessSearch.Models.Business>
+@using BusinessSearch.Models.Organization
+
+<!-- Batch selection toolbar -->
+<div id="batchSelectionToolbar" class="position-fixed bottom-0 start-0 end-0 bg-dark text-white py-3 px-4 d-none" style="z-index: 1030;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span id="selectedCount" class="badge bg-primary rounded-pill px-3 py-2 me-2">0</span> 
+                <span>businesses selected</span>
+            </div>
+            <div>
+                <button type="button" id="batchAddToCrmBtn" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-plus-circle me-2"></i>Add Selected to CRM
+                </button>
+                <button type="button" id="clearSelectionBtn" class="btn btn-light rounded-pill px-4 ms-2">
+                    <i class="fas fa-times me-2"></i>Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Search Results (@Model.Count() results found)</h2>
+            @if (ViewBag.SearchDate != null)
+            {
+                <div class="alert alert-info mb-0">
+                    Results from search performed on @(((DateTime)ViewBag.SearchDate).ToString("MM/dd/yyyy HH:mm"))
+                </div>
+            }
+            @if (ViewBag.CombinedResults == true)
+            {
+                <div class="alert alert-info mb-0 mt-2">
+                    Combined results from @ViewBag.NumberOfSearches searches
+                </div>
+            }
+        </div>
+        <div class="text-end">
+            <div class="badge bg-primary mb-2">@ViewBag.OrganizationPlan</div>
+            <div class="small text-muted">
+                Remaining Results: @ViewBag.SearchUsage.Remaining / @ViewBag.SearchUsage.DailyLimit
+            </div>
+        </div>
+    </div>
+
+    <!-- Add a "Select All" checkbox at the top -->
+    <div class="mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="selectAllBusinesses">
+            <label class="form-check-label fw-medium" for="selectAllBusinesses">
+                Select All
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        @foreach (var business in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <!-- Add checkbox to the top-right corner of each card -->
+                    <div class="position-absolute top-0 end-0 p-3">
+                        <div class="form-check">
+                            <input class="form-check-input business-checkbox" 
+                                   type="checkbox" 
+                                   id="business-@business.BusinessId" 
+                                   data-business-id="@business.BusinessId"
+                                   data-name="@business.Name"
+                                   data-phone="@business.PhoneNumber"
+                                   data-email="@business.Email"
+                                   data-website="@business.Website"
+                                   data-type="@business.Type"
+                                   data-address="@business.FullAddress"
+                                   data-rating="@business.Rating"
+                                   data-review-count="@business.ReviewCount"
+                                   data-photo-url="@business.PhotoUrl"
+                                   data-business-status="@business.BusinessStatus"
+                                   data-opening-status="@business.OpeningStatus"
+                                   data-facebook="@business.Facebook"
+                                   data-instagram="@business.Instagram"
+                                   data-yelp="@business.YelpUrl">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@business.Name</h5>
+                        <p class="card-text">
+                            <strong>Phone:</strong> @business.PhoneNumber<br />
+                            <strong>Email:</strong> <a href="mailto:@business.Email">@business.Email</a><br />
+                            <strong>Address:</strong> @business.FullAddress<br />
+                            <strong>Type:</strong> @business.Type<br />
+                            <strong>Website:</strong> <a href="@business.Website" target="_blank" rel="noopener noreferrer">@business.Website</a>
+                        </p>
+                        <button type="button" class="btn btn-primary add-to-crm-btn"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addToCrmModal"
+                            onclick="showAddToCrmModal(this)"
+                            data-name="@business.Name"
+                            data-phone="@business.PhoneNumber"
+                            data-email="@business.Email"
+                            data-website="@business.Website"
+                            data-type="@business.Type"
+                            data-address="@business.FullAddress"
+                            data-rating="@business.Rating"
+                            data-review-count="@business.ReviewCount"
+                            data-photo-url="@business.PhotoUrl"
+                            data-business-status="@business.BusinessStatus"
+                            data-opening-status="@business.OpeningStatus"
+                            data-facebook="@business.Facebook"
+                            data-instagram="@business.Instagram"
+                            data-yelp="@business.YelpUrl">
+                            Add to CRM
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Back to Search</a>
+        @if (ViewBag.SearchDate != null)
+        {
+            <a asp-action="History" class="btn btn-outline-primary">Back to History</a>
+        }
+    </div>
+</div>
+
+<!-- Add to CRM Modal -->
+<div class="modal fade" id="addToCrmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add to CRM</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Business Name</label>
+                    <input type="text" class="form-control" id="businessName" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label required">Select List</label>
+                    <select class="form-select" id="targetList" required>
+                        <option value="">Choose a list...</option>
+                        <option value="new">+ Create New List</option>
+                    </select>
+                </div>
+
+                <!-- New List Form (initially hidden) -->
+                <div id="newListForm" class="d-none">
+                    <div class="mb-3">
+                        <label class="form-label required">List Name</label>
+                        <input type="text" class="form-control" id="newListName" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="newListDescription" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Industry</label>
+                        <input type="text" class="form-control" id="newListIndustry" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign To</label>
+                        <select class="form-select" id="newListAssignedTo">
+                            <option value="">Select team member...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Initial Disposition</label>
+                    <select class="form-select" id="initialDisposition">
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" id="notes" rows="3" maxlength="1000"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addToCrm()">
+                    <i class="fas fa-plus me-2"></i>Add to CRM
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Add to CRM Modal -->
+<div class="modal fade" id="batchAddToCrmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Multiple Businesses to CRM</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><span id="batchSelectedCount">0</span> businesses selected</p>
+                
+                <div class="mb-3">
+                    <label class="form-label required">Select List</label>
+                    <select class="form-select" id="batchTargetList" required>
+                        <option value="">Choose a list...</option>
+                        <option value="new">+ Create New List</option>
+                    </select>
+                </div>
+
+                <!-- New List Form (initially hidden) -->
+                <div id="batchNewListForm" class="d-none">
+                    <div class="mb-3">
+                        <label class="form-label required">List Name</label>
+                        <input type="text" class="form-control" id="batchNewListName" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="batchNewListDescription" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Industry</label>
+                        <input type="text" class="form-control" id="batchNewListIndustry" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign To</label>
+                        <select class="form-select" id="batchNewListAssignedTo">
+                            <option value="">Select team member...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Initial Disposition</label>
+                    <select class="form-select" id="batchInitialDisposition">
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" id="batchNotes" rows="3" maxlength="1000"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addBatchToCrm()">
+                    <i class="fas fa-plus me-2"></i>Add All to CRM
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        
+        /* Styles for batch selection mode */
+        .business-checkbox {
+            transform: scale(1.25);
+            cursor: pointer;
+        }
+
+        #batchSelectionToolbar {
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #batchSelectionToolbar.show {
+            transform: translateY(0);
+        }
+
+        /* Selected card styling */
+        .card.selected {
+            border: 2px solid #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let currentBusinessData = null;
+        let availableLists = [];
+        let teamMembers = [];
+        let selectedBusinesses = new Set();
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([
+                fetchLists(),
+                fetchTeamMembers()
+            ]);
+            
+            // Set up business checkboxes
+            setupCheckboxes();
+        });
+
+        async function fetchLists() {
+            try {
+                const response = await fetch('/Crm/GetAvailableLists', {
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    availableLists = data.lists;
+                    populateListDropdown();
+                    populateBatchListDropdown();
+                } else {
+                    console.error('Failed to load lists:', data.message);
+                    showAlert('error', 'Failed to load lists');
+                }
+            } catch (error) {
+                console.error('Error fetching lists:', error);
+                showAlert('error', 'Failed to load lists');
+            }
+        }
+
+        async function fetchTeamMembers() {
+            try {
+                const response = await fetch('/Team/GetTeamMembers', {
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    teamMembers = data.teamMembers;
+                    populateTeamMembersDropdown();
+                    populateBatchTeamMembersDropdown();
+                }
+            } catch (error) {
+                console.error('Error fetching team members:', error);
+            }
+        }
+
+        function populateListDropdown() {
+            const select = document.getElementById('targetList');
+
+            // Preserve the first two options
+            const defaultOptions = Array.from(select.options).slice(0, 2);
+            select.innerHTML = '';
+            defaultOptions.forEach(option => select.add(option));
+
+            // Add available lists
+            availableLists.forEach(list => {
+                const option = new Option(list.name, list.id);
+                select.add(option);
+            });
+        }
+        
+        function populateBatchListDropdown() {
+            const select = document.getElementById('batchTargetList');
+
+            // Preserve the first two options
+            const defaultOptions = Array.from(select.options).slice(0, 2);
+            select.innerHTML = '';
+            defaultOptions.forEach(option => select.add(option));
+
+            // Add available lists
+            availableLists.forEach(list => {
+                const option = new Option(list.name, list.id);
+                select.add(option);
+            });
+        }
+
+        function populateTeamMembersDropdown() {
+            const select = document.getElementById('newListAssignedTo');
+            select.innerHTML = '<option value="">Select team member...</option>';
+
+            teamMembers.forEach(member => {
+                const option = new Option(member.name, member.id);
+                select.add(option);
+            });
+        }
+        
+        function populateBatchTeamMembersDropdown() {
+            const select = document.getElementById('batchNewListAssignedTo');
+            select.innerHTML = '<option value="">Select team member...</option>';
+
+            teamMembers.forEach(member => {
+                const option = new Option(member.name, member.id);
+                select.add(option);
+            });
+        }
+
+        function showAddToCrmModal(button) {
+            currentBusinessData = {
+                name: button.dataset.name,
+                phoneNumber: button.dataset.phone,
+                email: button.dataset.email,
+                website: button.dataset.website,
+                type: button.dataset.type,
+                fullAddress: button.dataset.address,
+                rating: parseFloat(button.dataset.rating) || 0,
+                reviewCount: parseInt(button.dataset.reviewCount) || 0,
+                photoUrl: button.dataset.photoUrl || null,
+                businessStatus: button.dataset.businessStatus || null,
+                openingStatus: button.dataset.openingStatus || null,
+                facebook: button.dataset.facebook || null,
+                instagram: button.dataset.instagram || null,
+                yelpUrl: button.dataset.yelp || null
+            };
+
+            document.getElementById('businessName').value = currentBusinessData.name || '';
+            document.getElementById('targetList').value = '';
+            document.getElementById('notes').value = '';
+            document.getElementById('initialDisposition').value = 'New';
+        }
+
+        // Handle list selection change for individual modal
+        document.getElementById('targetList').addEventListener('change', function() {
+            const newListForm = document.getElementById('newListForm');
+            const isNewList = this.value === 'new';
+            newListForm.classList.toggle('d-none', !isNewList);
+
+            if (!isNewList) {
+                document.getElementById('newListName').value = '';
+                document.getElementById('newListDescription').value = '';
+                document.getElementById('newListIndustry').value = '';
+                document.getElementById('newListAssignedTo').value = '';
+            }
+        });
+        
+        // Handle list selection change for batch modal
+        document.getElementById('batchTargetList').addEventListener('change', function() {
+            const newListForm = document.getElementById('batchNewListForm');
+            const isNewList = this.value === 'new';
+            newListForm.classList.toggle('d-none', !isNewList);
+
+            if (!isNewList) {
+                document.getElementById('batchNewListName').value = '';
+                document.getElementById('batchNewListDescription').value = '';
+                document.getElementById('batchNewListIndustry').value = '';
+                document.getElementById('batchNewListAssignedTo').value = '';
+            }
+        });
+        
+        // Setup for batch selection functionality
+        function setupCheckboxes() {
+            // Select All checkbox handler
+            const selectAllCheckbox = document.getElementById('selectAllBusinesses');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.business-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                        
+                        // Update the selected businesses set and UI
+                        const businessId = checkbox.dataset.businessId;
+                        const card = checkbox.closest('.card');
+                        
+                        if (this.checked) {
+                            selectedBusinesses.add(businessId);
+                            card.classList.add('selected');
+                        } else {
+                            selectedBusinesses.delete(businessId);
+                            card.classList.remove('selected');
+                        }
+                    });
+                    
+                    updateSelectionUI();
+                });
+            }
+            
+            // Individual checkboxes handler
+            const checkboxes = document.querySelectorAll('.business-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const businessId = this.dataset.businessId;
+                    const card = this.closest('.card');
+                    
+                    if (this.checked) {
+                        selectedBusinesses.add(businessId);
+                        card.classList.add('selected');
+                    } else {
+                        selectedBusinesses.delete(businessId);
+                        card.classList.remove('selected');
+                        
+                        // Update select all checkbox
+                        document.getElementById('selectAllBusinesses').checked = false;
+                    }
+                    
+                    updateSelectionUI();
+                });
+            });
+            
+            // Add event handlers for batch action buttons
+            document.getElementById('batchAddToCrmBtn').addEventListener('click', showBatchAddToCrmModal);
+            document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+        }
+        
+        function updateSelectionUI() {
+            const selectionCount = selectedBusinesses.size;
+            const toolbar = document.getElementById('batchSelectionToolbar');
+            const countDisplay = document.getElementById('selectedCount');
+            
+            // Update counts
+            countDisplay.textContent = selectionCount;
+            
+            // Show/hide toolbar
+            if (selectionCount > 0) {
+                toolbar.classList.remove('d-none');
+                toolbar.classList.add('show');
+            } else {
+                toolbar.classList.remove('show');
+                setTimeout(() => {
+                    if (selectedBusinesses.size === 0) {
+                        toolbar.classList.add('d-none');
+                    }
+                }, 300);
+            }
+        }
+        
+        function clearSelection() {
+            selectedBusinesses.clear();
+            
+            // Uncheck all checkboxes
+            document.querySelectorAll('.business-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.card').classList.remove('selected');
+            });
+            
+            // Uncheck select all
+            document.getElementById('selectAllBusinesses').checked = false;
+            
+            // Update UI
+            updateSelectionUI();
+        }
+        
+        function showBatchAddToCrmModal() {
+            // Update the count in the modal
+            document.getElementById('batchSelectedCount').textContent = selectedBusinesses.size;
+            
+            // Reset form fields
+            document.getElementById('batchTargetList').value = '';
+            document.getElementById('batchNotes').value = '';
+            document.getElementById('batchInitialDisposition').value = 'New';
+            
+            // Show the modal
+            const batchModal = new bootstrap.Modal(document.getElementById('batchAddToCrmModal'));
+            batchModal.show();
+        }
+
+        async function createList(isBatch = false) {
+            try {
+                const prefix = isBatch ? 'batch' : '';
+                const listName = document.getElementById(`${prefix}NewListName`).value.trim();
+                if (!listName) {
+                    showAlert('error', 'Please enter a list name');
+                    return null;
+                }
+
+                const newList = {
+                    name: listName,
+                    description: document.getElementById(`${prefix}NewListDescription`).value.trim(),
+                    industry: document.getElementById(`${prefix}NewListIndustry`).value.trim(),
+                    assignedToId: document.getElementById(`${prefix}NewListAssignedTo`).value || null
+                };
+
+                const response = await fetch('/Crm/CreateList', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(newList)
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to create list');
+                }
+
+                // Update available lists
+                availableLists.push({
+                    id: result.listId,
+                    name: result.listName
+                });
+                populateListDropdown();
+                populateBatchListDropdown();
+
+                // Reset form
+                document.getElementById(`${prefix}NewListName`).value = '';
+                document.getElementById(`${prefix}NewListDescription`).value = '';
+                document.getElementById(`${prefix}NewListIndustry`).value = '';
+                document.getElementById(`${prefix}NewListAssignedTo`).value = '';
+
+                showAlert('success', 'List created successfully');
+                return result.listId;
+            } catch (error) {
+                console.error('Error creating list:', error);
+                showAlert('error', error.message || 'An error occurred while creating the list');
+                return null;
+            }
+        }
+
+        async function addToCrm() {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const targetListSelect = document.getElementById('targetList');
+                let listId;
+
+                // Create new list if needed
+                if (targetListSelect.value === 'new') {
+                    listId = await createList();
+                    if (!listId) {
+                        return; // List creation failed
+                    }
+                } else {
+                    if (!targetListSelect.value) {
+                        showAlert('error', 'Please select a list');
+                        return;
+                    }
+                    listId = parseInt(targetListSelect.value);
+                }
+
+                const formData = {
+                    Name: currentBusinessData.name || '',
+                    PhoneNumber: currentBusinessData.phoneNumber || null,
+                    Email: currentBusinessData.email || null,
+                    Website: currentBusinessData.website || null,
+                    Type: currentBusinessData.type || null,
+                    Rating: parseFloat(currentBusinessData.rating) || null,
+                    Disposition: document.getElementById('initialDisposition').value,
+                    Notes: document.getElementById('notes').value || null,
+                    FullAddress: currentBusinessData.fullAddress || null,
+                    ReviewCount: parseInt(currentBusinessData.reviewCount) || null,
+                    BusinessStatus: currentBusinessData.businessStatus || null,
+                    OpeningStatus: currentBusinessData.openingStatus || null,
+                    PhotoUrl: currentBusinessData.photoUrl || null,
+                    Facebook: currentBusinessData.facebook || null,
+                    Instagram: currentBusinessData.instagram || null,
+                    YelpUrl: currentBusinessData.yelpUrl || null,
+                    ListId: listId
+                };
+
+                const response = await fetch('/BusinessSearch/AddToCrm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', 'Successfully added to CRM');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addToCrmModal'));
+                    modal.hide();
+                } else {
+                    throw new Error(result.message || 'Failed to add to CRM');
+                }
+            } catch (error) {
+                console.error('Error in addToCrm:', error);
+                showAlert('error', error.message || 'An error occurred while processing your request');
+            }
+        }
+        
+        async function addBatchToCrm() {
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const targetListSelect = document.getElementById('batchTargetList');
+                let listId;
+
+                // Create new list if needed
+                if (targetListSelect.value === 'new') {
+                    listId = await createList(true);
+                    if (!listId) {
+                        return; // List creation failed
+                    }
+                } else {
+                    if (!targetListSelect.value) {
+                        showAlert('error', 'Please select a list');
+                        return;
+                    }
+                    listId = parseInt(targetListSelect.value);
+                }
+                
+                // Gather common data for all selected businesses
+                const disposition = document.getElementById('batchInitialDisposition').value;
+                const notes = document.getElementById('batchNotes').value || null;
+                
+                // Collect all selected business data
+                const selectedBusinessesData = [];
+                document.querySelectorAll('.business-checkbox:checked').forEach(checkbox => {
+                    selectedBusinessesData.push({
+                        Name: checkbox.dataset.name,
+                        PhoneNumber: checkbox.dataset.phone,
+                        Email: checkbox.dataset.email,
+                        Website: checkbox.dataset.website,
+                        Type: checkbox.dataset.type,
+                        FullAddress: checkbox.dataset.address,
+                        Rating: parseFloat(checkbox.dataset.rating) || 0,
+                        ReviewCount: parseInt(checkbox.dataset.reviewCount) || 0,
+                        PhotoUrl: checkbox.dataset.photoUrl || null,
+                        BusinessStatus: checkbox.dataset.businessStatus || null,
+                        OpeningStatus: checkbox.dataset.openingStatus || null,
+                        Facebook: checkbox.dataset.facebook || null,
+                        Instagram: checkbox.dataset.instagram || null,
+                        YelpUrl: checkbox.dataset.yelp || null
+                    });
+                });
+                
+                // Create request payload
+                const formData = {
+                    Businesses: selectedBusinessesData,
+                    CommonData: {
+                        Disposition: disposition,
+                        Notes: notes,
+                        DateAdded: new Date().toISOString()
+                    },
+                    SelectedListId: listId
+                };
+
+                // Make API call to add multiple businesses
+                const response = await fetch('/BusinessSearch/AddMultipleToCrm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', `Successfully added ${selectedBusinessesData.length} businesses to CRM`);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('batchAddToCrmModal'));
+                    modal.hide();
+                    
+                    // Clear selection after successful add
+                    clearSelection();
+                } else {
+                    throw new Error(result.message || 'Failed to add businesses to CRM');
+                }
+            } catch (error) {
+                console.error('Error in addBatchToCrm:', error);
+                showAlert('error', error.message || 'An error occurred while processing your request');
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show',
+            'position-fixed', 'top-0',
+            'end-0', 'm-3');
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    </script>
+}

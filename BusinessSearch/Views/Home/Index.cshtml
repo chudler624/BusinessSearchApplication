@@ -1,0 +1,58 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="hero-section text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">
+            The <img src="/images/luke-chesser-JKUTrJ4vK00-unsplash.jpg" alt="Analytics Dashboard" class="img-fluid mx-2" style="max-width: 120px;"> All-in-One Growth Toolkit
+            for Digital Marketers, Designers,
+            and <img src="/images/carlos-muza-hpjSkU2UYSU-unsplash.jpg" alt="Professional User" class="img-fluid mx-2" style="max-width: 120px;"> Developers
+        </h1>
+        <p class="lead mb-5">
+            Find businesses that need better websites and SEO, analyze their performance in seconds, and generate data-driven insights to boost rankings and conversions. Work smarter, close more deals, and deliver results.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="BusinessSearch" asp-action="Index" class="btn btn-dark btn-lg px-4 py-2">Start Free Analysis</a>
+            <a href="#demo" class="btn btn-outline-dark btn-lg px-4 py-2">Watch Demo</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background-color: #F8FAFC;
+        padding: 80px 0;
+    }
+
+    .hero-section h1 {
+        font-family: 'Montserrat', sans-serif;
+        color: #0F172A;
+        line-height: 1.2;
+        font-weight: 800;
+    }
+
+    .hero-section p {
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .btn-dark {
+        background-color: #2563EB;
+        border-color: #2563EB;
+    }
+
+    .btn-outline-dark {
+        color: #2563EB;
+        border-color: #2563EB;
+    }
+
+    .btn-outline-dark:hover {
+        background-color: #2563EB;
+        color: white;
+    }
+</style>
+
+

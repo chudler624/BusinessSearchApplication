@@ -1,0 +1,929 @@
+﻿@*@{
+    ViewData["Title"] = "Website Opportunities";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-6">
+        <form id="websiteForm">
+            <div class="form-group">
+                <label for="websiteUrl">Website URL:</label>
+                <input type="url" class="form-control" id="websiteUrl" name="url" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze Website</button>
+        </form>
+    </div>
+</div>
+<div id="results" class="mt-4">
+    <div class="accordion" id="analysisAccordion"></div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('#websiteForm').submit(function(e) {
+                e.preventDefault();
+                var url = $('#websiteUrl').val();
+                $.post('/WebsiteOpportunities/AnalyzeWebsite', { url: url }, function(data) {
+                    var accordionHtml = '<h3>Analysis Results:</h3>';
+
+                    // Responsiveness Section
+                    var responsivenessIcon = data.responsivenessResult.isResponsive ?
+                        '<i class="fas fa-check-circle text-success"></i>' :
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="responsivenessHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#responsivenessCollapse" aria-expanded="false"
+                                                aria-controls="responsivenessCollapse">
+                                            Mobile Responsiveness ${responsivenessIcon}
+                                        </button>
+                                    </h2>
+                                    <div id="responsivenessCollapse" class="accordion-collapse collapse"
+                                         aria-labelledby="responsivenessHeading" data-bs-parent="#analysisAccordion">
+                                        <div class="accordion-body">
+                                            <p>Score: ${data.responsivenessResult.score}/100</p>
+                                            <h6>Details:</h6>
+                                            <ul>`;
+                    data.responsivenessResult.details.forEach(function(detail) {
+                        accordionHtml += `<li>${detail}</li>`;
+                    });
+                    accordionHtml += `
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                    // GDPR Compliance Section
+                    var gdprIcon = (data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy) ?
+                        '<i class="fas fa-check-circle text-success"></i>' :
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="gdprHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#gdprCollapse" aria-expanded="false"
+                                                aria-controls="gdprCollapse">
+                                            GDPR Compliance ${gdprIcon}
+                                        </button>
+                                    </h2>
+                                    <div id="gdprCollapse" class="accordion-collapse collapse"
+                                         aria-labelledby="gdprHeading" data-bs-parent="#analysisAccordion">
+                                        <div class="accordion-body">
+                                            <p>Cookie Consent: ${data.gdprComplianceResult.hasCookieConsent ? 'Yes' : 'No'}</p>
+                                            <p>Privacy Policy: ${data.gdprComplianceResult.hasPrivacyPolicy ? 'Yes' : 'No'}</p>
+                                            <h6>Other Compliance Indicators:</h6>
+                                            <ul>`;
+                    data.gdprComplianceResult.otherComplianceIndicators.forEach(function(indicator) {
+                        accordionHtml += `<li>${indicator}</li>`;
+                    });
+                    accordionHtml += `
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                    // Page Speed Section
+                    var pageSpeedIcon = data.pageSpeedResult.isFast ?
+                        '<i class="fas fa-check-circle text-success"></i>' :
+                        '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="pageSpeedHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#pageSpeedCollapse" aria-expanded="false"
+                                                aria-controls="pageSpeedCollapse">
+                                            Page Speed ${pageSpeedIcon}
+                                        </button>
+                                    </h2>
+                                    <div id="pageSpeedCollapse" class="accordion-collapse collapse"
+                                         aria-labelledby="pageSpeedHeading" data-bs-parent="#analysisAccordion">
+                                        <div class="accordion-body">
+                                            <p>Score: ${data.pageSpeedResult.score.toFixed(1)}/100</p>
+
+                                            <h6>Core Web Vitals:</h6>
+                                            <ul>
+                                                <li>Time to First Byte: ${data.pageSpeedResult.webVitals.timeToFirstByte.toFixed(0)}ms</li>
+                                                <li>Largest Contentful Paint: ${data.pageSpeedResult.webVitals.largestContentfulPaint.toFixed(1)}s</li>
+                                                <li>Cumulative Layout Shift: ${data.pageSpeedResult.webVitals.cumulativeLayoutShift.toFixed(2)}</li>
+                                            </ul>
+
+                                            <h6>Resource Usage:</h6>
+                                            <ul>
+                                                <li>Total Requests: ${data.pageSpeedResult.resourceMetrics.totalRequests}</li>
+                                                <li>Page Size: ${(data.pageSpeedResult.resourceMetrics.totalPageSize / (1024 * 1024)).toFixed(2)}MB</li>
+                                                <li>Scripts: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Scripts}</li>
+                                                <li>Stylesheets: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Stylesheets}</li>
+                                                <li>Images: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Images}</li>
+                                            </ul>
+
+                                            <h6>Performance Insights:</h6>
+                                            <ul>`;
+                    data.pageSpeedResult.details.forEach(function(detail) {
+                        accordionHtml += `<li>${detail}</li>`;
+                    });
+                    accordionHtml += `
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                    // Accessibility Section
+                    var accessibilityIcon = data.accessibilityResult.complianceScore >= 90 ?
+                        '<i class="fas fa-check-circle text-success"></i>' :
+                        data.accessibilityResult.complianceScore >= 70 ?
+                            '<i class="fas fa-exclamation-circle text-warning"></i>' :
+                            '<i class="fas fa-times-circle text-danger"></i>';
+                    accordionHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="accessibilityHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#accessibilityCollapse" aria-expanded="false"
+                                                aria-controls="accessibilityCollapse">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <span>
+                                                    <i class="bi bi-universal-access me-2"></i>
+                                                    Accessibility Analysis ${accessibilityIcon}
+                                                </span>
+                                                <div class="ms-auto d-flex align-items-center">
+                                                    <div class="compliance-score me-3">
+                                                        <span class="badge rounded-pill bg-${data.accessibilityResult.complianceScore >= 90 ?
+                            'success' : data.accessibilityResult.complianceScore >= 70 ? 'warning' : 'danger'}">
+                                                            Score: ${data.accessibilityResult.complianceScore.toFixed(1)}%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="accessibilityCollapse" class="accordion-collapse collapse"
+                                         aria-labelledby="accessibilityHeading" data-bs-parent="#analysisAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-4">
+                                                <h5>WCAG Level Issues:</h5>
+                                                <div class="d-flex gap-2 mb-3">`;
+
+                    ['A', 'AA', 'AAA'].forEach(level => {
+                        if (data.accessibilityResult.issueCountByLevel[level]) {
+                            accordionHtml += `
+                                        <span class="badge bg-${level === 'A' ? 'danger' :
+                                    level === 'AA' ? 'warning' : 'info'}">
+                                            Level ${level}: ${data.accessibilityResult.issueCountByLevel[level]}
+                                        </span>`;
+                        }
+                    });
+
+                    accordionHtml += `
+                                                </div>
+                                            </div>
+
+                                            <div class="accessibility-issues">`;
+
+                    data.accessibilityResult.issues.forEach(function(issue) {
+                        accordionHtml += `
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <strong>${issue.criterion}</strong>
+                                                <span class="badge bg-${issue.level === 'A' ? 'danger' :
+                                issue.level === 'AA' ? 'warning' : 'info'}">
+                                                    Level ${issue.level}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-2"><strong>Issue:</strong> ${issue.description}</p>
+                                            <p class="mb-2"><strong>Impact:</strong> ${issue.impact}</p>
+                                            <p class="mb-2"><strong>Recommendation:</strong> ${issue.recommendation}</p>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <strong>Element:</strong>
+                                                    <code class="ms-2">${issue.element}</code>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                    });
+
+                    accordionHtml += `
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                    // Local SEO Section
+                    var localSeoIcon = data.localSeoResult.overallScore >= 90 ?
+                        '<i class="fas fa-check-circle text-success"></i>' :
+                        data.localSeoResult.overallScore >= 70 ?
+                            '<i class="fas fa-exclamation-circle text-warning"></i>' :
+                            '<i class="fas fa-times-circle text-danger"></i>';
+
+                    accordionHtml += `
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="localSeoHeading">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#localSeoCollapse" aria-expanded="false"
+                                                aria-controls="localSeoCollapse">
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <span>
+                                                    <i class="bi bi-geo-alt me-2"></i>
+                                                    Local SEO Analysis ${localSeoIcon}
+                                                </span>
+                                                <div class="ms-auto d-flex align-items-center">
+                                                    <div class="score me-3">
+                                                        <span class="badge rounded-pill bg-${data.localSeoResult.overallScore >= 90 ?
+                            'success' : data.localSeoResult.overallScore >= 70 ? 'warning' : 'danger'}">
+                                                            Score: ${data.localSeoResult.overallScore}/100
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="localSeoCollapse" class="accordion-collapse collapse"
+                                         aria-labelledby="localSeoHeading" data-bs-parent="#analysisAccordion">
+                                        <div class="accordion-body">
+                                            <!-- NAP Information -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">NAP Consistency Check</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>Business Name:</strong> ${data.localSeoResult.napDetails.businessName}</p>
+                                                            <p><strong>Address:</strong> ${data.localSeoResult.napDetails.address}</p>
+                                                            <p><strong>Phone:</strong> ${data.localSeoResult.napDetails.phone}</p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>NAP Consistency:</strong>
+                                                                <span class="badge bg-${data.localSeoResult.napDetails.isNapConsistent ? 'success' : 'danger'}">
+                                                                    ${data.localSeoResult.napDetails.isNapConsistent ? 'Consistent' : 'Inconsistent'}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    ${data.localSeoResult.napDetails.inconsistenciesFound.length > 0 ? `
+                                                        <div class="mt-3">
+                                                            <h6>Inconsistencies Found:</h6>
+                                                            <ul>
+                                                                ${data.localSeoResult.napDetails.inconsistenciesFound.map(item => `<li>${item}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
+                                                    </div>
+                                            </div>
+
+                                            <!-- Schema Markup -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Schema Markup Analysis</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Local Business Schema:</strong>
+                                                        <span class="badge bg-${data.localSeoResult.schemaMarkup.hasLocalBusinessSchema ? 'success' : 'danger'}">
+                                                            ${data.localSeoResult.schemaMarkup.hasLocalBusinessSchema ? 'Present' : 'Missing'}
+                                                        </span>
+                                                    </p>
+                                                    <p><strong>Schema Type:</strong> ${data.localSeoResult.schemaMarkup.schemaType || 'N/A'}</p>
+                                                    ${data.localSeoResult.schemaMarkup.missingRequiredProperties.length > 0 ? `
+                                                        <div class="mt-3">
+                                                            <h6>Missing Required Properties:</h6>
+                                                            <ul>
+                                                                ${data.localSeoResult.schemaMarkup.missingRequiredProperties.map(prop => `<li>${prop}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+
+                                            <!-- Location Keywords -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Location Keywords Analysis</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Location Keywords Present:</strong>
+                                                        <span class="badge bg-${data.localSeoResult.keywordsAnalysis.hasSufficientLocationKeywords ? 'success' : 'warning'}">
+                                                            ${data.localSeoResult.keywordsAnalysis.hasSufficientLocationKeywords ? 'Sufficient' : 'Insufficient'}
+                                                        </span>
+                                                    </p>
+                                                    <div class="mt-3">
+                                                        <h6>Keyword Density:</h6>
+                                                        <ul>
+                                                            ${Object.entries(data.localSeoResult.keywordsAnalysis.keywordDensity)
+                            .map(([keyword, density]) => `
+                                                                    <li>${keyword}: ${density}%</li>
+                                                                `).join('')}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Google Maps -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Google Maps Integration</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Google Maps Embedded:</strong>
+                                                        <span class="badge bg-${data.localSeoResult.hasGoogleMapsEmbedded ? 'success' : 'danger'}">
+                                                            ${data.localSeoResult.hasGoogleMapsEmbedded ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Meta Information -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Meta Information</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>Location in Title:</strong>
+                                                                <span class="badge bg-${data.localSeoResult.metaInformation.hasLocationInTitle ? 'success' : 'danger'}">
+                                                                    ${data.localSeoResult.metaInformation.hasLocationInTitle ? 'Present' : 'Missing'}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>Location in Description:</strong>
+                                                                <span class="badge bg-${data.localSeoResult.metaInformation.hasLocationInDescription ? 'success' : 'danger'}">
+                                                                    ${data.localSeoResult.metaInformation.hasLocationInDescription ? 'Present' : 'Missing'}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <h6>Meta Title:</h6>
+                                                        <p class="text-muted">${data.localSeoResult.metaInformation.metaTitle}</p>
+                                                        <h6>Meta Description:</h6>
+                                                        <p class="text-muted">${data.localSeoResult.metaInformation.metaDescription}</p>
+                                                    </div>
+                                                    ${data.localSeoResult.metaInformation.suggestions.length > 0 ? `
+                                                        <div class="mt-3">
+                                                            <h6>Suggestions:</h6>
+                                                            <ul>
+                                                                ${data.localSeoResult.metaInformation.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+
+                                            <!-- URL Structure -->
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">URL Structure Analysis</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Current URL Structure:</strong></p>
+                                                    <code>${data.localSeoResult.urlStructure.currentUrlStructure}</code>
+                                                    <p class="mt-3"><strong>Location in URL:</strong>
+                                                        <span class="badge bg-${data.localSeoResult.urlStructure.hasLocationInUrl ? 'success' : 'danger'}">
+                                                            ${data.localSeoResult.urlStructure.hasLocationInUrl ? 'Present' : 'Missing'}
+                                                        </span>
+                                                    </p>
+                                                    ${data.localSeoResult.urlStructure.optimizationSuggestions.length > 0 ? `
+                                                        <div class="mt-3">
+                                                            <h6>Optimization Suggestions:</h6>
+                                                            <ul>
+                                                                ${data.localSeoResult.urlStructure.optimizationSuggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+
+                                            <!-- Recommendations -->
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Overall Recommendations</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul class="list-group">
+                                                        ${data.localSeoResult.recommendations.map(recommendation => `
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                                                ${recommendation}
+                                                            </li>
+                                                        `).join('')}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                    $('#analysisAccordion').html(accordionHtml);
+                });
+            });
+        });
+    </script>
+}*@
+
+@{
+    ViewData["Title"] = "Website Opportunities";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-6">
+        <form id="websiteForm">
+            <div class="form-group">
+                <label for="websiteUrl">Website URL:</label>
+                <input type="url" class="form-control" id="websiteUrl" name="url" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze Website</button>
+        </form>
+    </div>
+</div>
+<div id="results" class="mt-4">
+    <div id="analysisErrors" class="alert alert-danger d-none mb-3"></div>
+    <div class="accordion" id="analysisAccordion"></div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('#websiteForm').submit(function(e) {
+                e.preventDefault();
+                var url = $('#websiteUrl').val();
+
+                // Clear previous errors and results
+                $('#analysisErrors').addClass('d-none').empty();
+                $('#analysisAccordion').empty();
+
+                // Show loading indicator
+                var loadingHtml = '<div class="text-center"><div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Loading...</span></div><p class="mt-2">Analyzing website...</p></div>';
+                $('#analysisAccordion').html(loadingHtml);
+
+                // Track individual analysis results
+                var analysisStatus = {
+                    responsiveness: false,
+                    gdpr: false,
+                    pageSpeed: false,
+                    accessibility: false,
+                    localSeo: false
+                };
+
+                $.ajax({
+                    url: '/WebsiteOpportunities/AnalyzeWebsite',
+                    type: 'POST',
+                    data: { url: url },
+                    success: function(data) {
+                        // Check each analysis result
+                        if (data.responsivenessResult) analysisStatus.responsiveness = true;
+                        if (data.gdprComplianceResult) analysisStatus.gdpr = true;
+                        if (data.pageSpeedResult) analysisStatus.pageSpeed = true;
+                        if (data.accessibilityResult) analysisStatus.accessibility = true;
+                        if (data.localSeoResult) analysisStatus.localSeo = true;
+
+                        // Display any failed analyses
+                        var failedAnalyses = [];
+                        if (!analysisStatus.responsiveness) failedAnalyses.push("Responsiveness Analysis");
+                        if (!analysisStatus.gdpr) failedAnalyses.push("GDPR Compliance Analysis");
+                        if (!analysisStatus.pageSpeed) failedAnalyses.push("Page Speed Analysis");
+                        if (!analysisStatus.accessibility) failedAnalyses.push("Accessibility Analysis");
+                        if (!analysisStatus.localSeo) failedAnalyses.push("Local SEO Analysis");
+
+                        if (failedAnalyses.length > 0) {
+                            var errorHtml = '<strong>Failed analyses:</strong><ul>';
+                            failedAnalyses.forEach(function(analysis) {
+                                errorHtml += '<li>' + analysis + '</li>';
+                            });
+                            errorHtml += '</ul>';
+                            $('#analysisErrors').html(errorHtml).removeClass('d-none');
+                        }
+
+                        var accordionHtml = '<h3>Analysis Results:</h3>';
+
+                        // Responsiveness Section
+                        if (data.responsivenessResult) {
+                            var responsivenessIcon = data.responsivenessResult.isResponsive ?
+                                '<i class="fas fa-check-circle text-success"></i>' :
+                                '<i class="fas fa-times-circle text-danger"></i>';
+                            accordionHtml += `
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="responsivenessHeading">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#responsivenessCollapse" aria-expanded="false"
+                                                                aria-controls="responsivenessCollapse">
+                                                            Mobile Responsiveness ${responsivenessIcon}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="responsivenessCollapse" class="accordion-collapse collapse"
+                                                         aria-labelledby="responsivenessHeading" data-bs-parent="#analysisAccordion">
+                                                        <div class="accordion-body">
+                                                            <p>Score: ${data.responsivenessResult.score}/100</p>
+                                                            <h6>Details:</h6>
+                                                            <ul>`;
+                            data.responsivenessResult.details.forEach(function(detail) {
+                                accordionHtml += `<li>${detail}</li>`;
+                            });
+                            accordionHtml += `
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                        }
+
+                        // GDPR Compliance Section
+                        if (data.gdprComplianceResult) {
+                            var gdprIcon = (data.gdprComplianceResult.hasCookieConsent && data.gdprComplianceResult.hasPrivacyPolicy) ?
+                                '<i class="fas fa-check-circle text-success"></i>' :
+                                '<i class="fas fa-times-circle text-danger"></i>';
+                            accordionHtml += `
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="gdprHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#gdprCollapse" aria-expanded="false"
+                                        aria-controls="gdprCollapse">
+                                    GDPR Compliance ${gdprIcon}
+                                </button>
+                            </h2>
+                            <div id="gdprCollapse" class="accordion-collapse collapse"
+                                 aria-labelledby="gdprHeading" data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
+                                    <p>Cookie Consent: ${data.gdprComplianceResult.hasCookieConsent ? 'Yes' : 'No'}</p>
+                                    <p>Privacy Policy: ${data.gdprComplianceResult.hasPrivacyPolicy ? 'Yes' : 'No'}</p>
+                                    <h6>Compliance Indicators:</h6>
+                                    <ul>`;
+                            data.gdprComplianceResult.complianceIndicators.forEach(function(indicator) {
+                                accordionHtml += `<li>${indicator}</li>`;
+                            });
+                            accordionHtml += `
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>`;
+                        }
+
+                        // Page Speed Section
+                        if (data.pageSpeedResult) {
+                            var pageSpeedIcon = data.pageSpeedResult.isFast ?
+                                '<i class="fas fa-check-circle text-success"></i>' :
+                                '<i class="fas fa-times-circle text-danger"></i>';
+                            accordionHtml += `
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="pageSpeedHeading">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#pageSpeedCollapse" aria-expanded="false"
+                                                                aria-controls="pageSpeedCollapse">
+                                                            Page Speed ${pageSpeedIcon}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="pageSpeedCollapse" class="accordion-collapse collapse"
+                                                         aria-labelledby="pageSpeedHeading" data-bs-parent="#analysisAccordion">
+                                                        <div class="accordion-body">
+                                                            <p>Score: ${data.pageSpeedResult.score.toFixed(1)}/100</p>
+
+                                                            <h6>Core Web Vitals:</h6>
+                                                            <ul>
+                                                                <li>Time to First Byte: ${data.pageSpeedResult.webVitals.timeToFirstByte.toFixed(0)}ms</li>
+                                                                <li>Largest Contentful Paint: ${data.pageSpeedResult.webVitals.largestContentfulPaint.toFixed(1)}s</li>
+                                                                <li>Cumulative Layout Shift: ${data.pageSpeedResult.webVitals.cumulativeLayoutShift.toFixed(2)}</li>
+                                                            </ul>
+
+                                                            <h6>Resource Usage:</h6>
+                                                            <ul>
+                                                                <li>Total Requests: ${data.pageSpeedResult.resourceMetrics.totalRequests}</li>
+                                                                <li>Page Size: ${(data.pageSpeedResult.resourceMetrics.totalPageSize / (1024 * 1024)).toFixed(2)}MB</li>
+                                                                <li>Scripts: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Scripts}</li>
+                                                                <li>Stylesheets: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Stylesheets}</li>
+                                                                <li>Images: ${data.pageSpeedResult.resourceMetrics.resourceCounts.Images}</li>
+                                                            </ul>
+
+                                                            <h6>Performance Insights:</h6>
+                                                            <ul>`;
+                            data.pageSpeedResult.details.forEach(function(detail) {
+                                accordionHtml += `<li>${detail}</li>`;
+                            });
+                            accordionHtml += `
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                        }
+
+                        // Accessibility Section
+                        if (data.accessibilityResult) {
+                            var accessibilityIcon = data.accessibilityResult.complianceScore >= 90 ?
+                                '<i class="fas fa-check-circle text-success"></i>' :
+                                data.accessibilityResult.complianceScore >= 70 ?
+                                    '<i class="fas fa-exclamation-circle text-warning"></i>' :
+                                    '<i class="fas fa-times-circle text-danger"></i>';
+                            accordionHtml += `
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="accessibilityHeading">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#accessibilityCollapse" aria-expanded="false"
+                                                                aria-controls="accessibilityCollapse">
+                                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                                <span>
+                                                                    <i class="bi bi-universal-access me-2"></i>
+                                                                    Accessibility Analysis ${accessibilityIcon}
+                                                                </span>
+                                                                <div class="ms-auto d-flex align-items-center">
+                                                                    <div class="compliance-score me-3">
+                                                                        <span class="badge rounded-pill bg-${data.accessibilityResult.complianceScore >= 90 ?
+                                    'success' : data.accessibilityResult.complianceScore >= 70 ? 'warning' : 'danger'}">
+                                                                            Score: ${data.accessibilityResult.complianceScore.toFixed(1)}%
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="accessibilityCollapse" class="accordion-collapse collapse"
+                                                         aria-labelledby="accessibilityHeading" data-bs-parent="#analysisAccordion">
+                                                        <div class="accordion-body">
+                                                            <div class="mb-4">
+                                                                <h5>WCAG Level Issues:</h5>
+                                                                <div class="d-flex gap-2 mb-3">`;
+
+                            ['A', 'AA', 'AAA'].forEach(level => {
+                                if (data.accessibilityResult.issueCountByLevel[level]) {
+                                    accordionHtml += `
+                                                            <span class="badge bg-${level === 'A' ? 'danger' :
+                                            level === 'AA' ? 'warning' : 'info'}">
+                                                                Level ${level}: ${data.accessibilityResult.issueCountByLevel[level]}
+                                                            </span>`;
+                                }
+                            });
+
+                            accordionHtml += `
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="accessibility-issues">`;
+
+                            data.accessibilityResult.issues.forEach(function(issue) {
+                                accordionHtml += `
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-light">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <strong>${issue.criterion}</strong>
+                                                                    <span class="badge bg-${issue.level === 'A' ? 'danger' :
+                                        issue.level === 'AA' ? 'warning' : 'info'}">
+                                                                        Level ${issue.level}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="mb-2"><strong>Issue:</strong> ${issue.description}</p>
+                                                                <p class="mb-2"><strong>Impact:</strong> ${issue.impact}</p>
+                                                                <p class="mb-2"><strong>Recommendation:</strong> ${issue.recommendation}</p>
+                                                                <div class="mt-2">
+                                                                    <small class="text-muted">
+                                                                        <strong>Element:</strong>
+                                                                        <code class="ms-2">${issue.element}</code>
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </div>`;
+                            });
+
+                            accordionHtml += `
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                        }
+
+                        // Local SEO Section
+                        if (data.localSeoResult) {
+                            var localSeoIcon = data.localSeoResult.overallScore >= 90 ?
+                                '<i class="fas fa-check-circle text-success"></i>' :
+                                data.localSeoResult.overallScore >= 70 ?
+                                    '<i class="fas fa-exclamation-circle text-warning"></i>' :
+                                    '<i class="fas fa-times-circle text-danger"></i>';
+
+                            accordionHtml += `
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="localSeoHeading">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#localSeoCollapse" aria-expanded="false"
+                                                                aria-controls="localSeoCollapse">
+                                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                                <span>
+                                                                    <i class="bi bi-geo-alt me-2"></i>
+                                                                    Local SEO Analysis ${localSeoIcon}
+                                                                </span>
+                                                                <div class="ms
+                                                                <div class="ms-auto d-flex align-items-center">
+                                                                    <div class="score me-3">
+                                                                        <span class="badge rounded-pill bg-${data.localSeoResult.overallScore >= 90 ?
+                                    'success' : data.localSeoResult.overallScore >= 70 ? 'warning' : 'danger'}">
+                                                                            Score: ${data.localSeoResult.overallScore}/100
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="localSeoCollapse" class="accordion-collapse collapse"
+                                                         aria-labelledby="localSeoHeading" data-bs-parent="#analysisAccordion">
+                                                        <div class="accordion-body">
+                                                            <!-- NAP Information -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">NAP Consistency Check</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <p><strong>Business Name:</strong> ${data.localSeoResult.napDetails.businessName}</p>
+                                                                            <p><strong>Address:</strong> ${data.localSeoResult.napDetails.address}</p>
+                                                                            <p><strong>Phone:</strong> ${data.localSeoResult.napDetails.phone}</p>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <p><strong>NAP Consistency:</strong>
+                                                                                <span class="badge bg-${data.localSeoResult.napDetails.isNapConsistent ? 'success' : 'danger'}">
+                                                                                    ${data.localSeoResult.napDetails.isNapConsistent ? 'Consistent' : 'Inconsistent'}
+                                                                                </span>
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    ${data.localSeoResult.napDetails.inconsistenciesFound.length > 0 ? `
+                                                                        <div class="mt-3">
+                                                                            <h6>Inconsistencies Found:</h6>
+                                                                            <ul>
+                                                                                ${data.localSeoResult.napDetails.inconsistenciesFound.map(item => `<li>${item}</li>`).join('')}
+                                                                            </ul>
+                                                                        </div>
+                                                                    ` : ''}
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Schema Markup -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Schema Markup Analysis</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <p><strong>Local Business Schema:</strong>
+                                                                        <span class="badge bg-${data.localSeoResult.schemaMarkup.hasLocalBusinessSchema ? 'success' : 'danger'}">
+                                                                            ${data.localSeoResult.schemaMarkup.hasLocalBusinessSchema ? 'Present' : 'Missing'}
+                                                                        </span>
+                                                                    </p>
+                                                                    <p><strong>Schema Type:</strong> ${data.localSeoResult.schemaMarkup.schemaType || 'N/A'}</p>
+                                                                    ${data.localSeoResult.schemaMarkup.missingRequiredProperties.length > 0 ? `
+                                                                        <div class="mt-3">
+                                                                            <h6>Missing Required Properties:</h6>
+                                                                            <ul>
+                                                                                ${data.localSeoResult.schemaMarkup.missingRequiredProperties.map(prop => `<li>${prop}</li>`).join('')}
+                                                                            </ul>
+                                                                        </div>
+                                                                    ` : ''}
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Location Keywords -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Location Keywords Analysis</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <p><strong>Location Keywords Present:</strong>
+                                                                        <span class="badge bg-${data.localSeoResult.keywordsAnalysis.hasSufficientLocationKeywords ? 'success' : 'warning'}">
+                                                                            ${data.localSeoResult.keywordsAnalysis.hasSufficientLocationKeywords ? 'Sufficient' : 'Insufficient'}
+                                                                        </span>
+                                                                    </p>
+                                                                    <div class="mt-3">
+                                                                        <h6>Keyword Density:</h6>
+                                                                        <ul>
+                                                                            ${Object.entries(data.localSeoResult.keywordsAnalysis.keywordDensity)
+                                    .map(([keyword, density]) => `
+                                                                                    <li>${keyword}: ${density}%</li>
+                                                                                `).join('')}
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Google Maps -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Google Maps Integration</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <p><strong>Google Maps Embedded:</strong>
+                                                                        <span class="badge bg-${data.localSeoResult.hasGoogleMapsEmbedded ? 'success' : 'danger'}">
+                                                                            ${data.localSeoResult.hasGoogleMapsEmbedded ? 'Yes' : 'No'}
+                                                                        </span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Meta Information -->
+                                                            <div class="card mb-3">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Meta Information</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <p><strong>Location in Title:</strong>
+                                                                                <span class="badge bg-${data.localSeoResult.metaInformation.hasLocationInTitle ? 'success' : 'danger'}">
+                                                                                    ${data.localSeoResult.metaInformation.hasLocationInTitle ? 'Present' : 'Missing'}
+                                                                                </span>
+                                                                            </p>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <p><strong>Location in Description:</strong>
+                                                                                <span class="badge bg-${data.localSeoResult.metaInformation.hasLocationInDescription ? 'success' : 'danger'}">
+                                                                                    ${data.localSeoResult.metaInformation.hasLocationInDescription ? 'Present' : 'Missing'}
+                                                                                </span>
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="mt-3">
+                                                                        <h6>Meta Title:</h6>
+                                                                        <p class="text-muted">${data.localSeoResult.metaInformation.metaTitle}</p>
+                                                                        <h6>Meta Description:</h6>
+                                                                        <p class="text-muted">${data.localSeoResult.metaInformation.metaDescription}</p>
+                                                                    </div>
+                                                                    ${data.localSeoResult.metaInformation.suggestions.length > 0 ? `
+                                                                        <div class="mt-3">
+                                                                            <h6>Suggestions:</h6>
+                                                                            <ul>
+                                                                                ${data.localSeoResult.metaInformation.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                                                                            </ul>
+                                                                        </div>
+                                                                    ` : ''}
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Recommendations -->
+                                                            <div class="card">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">Overall Recommendations</h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <ul class="list-group">
+                                                                        ${data.localSeoResult.recommendations.map(recommendation => `
+                                                                            <li class="list-group-item">
+                                                                                <i class="fas fa-info-circle text-primary me-2"></i>
+                                                                                ${recommendation}
+                                                                            </li>
+                                                                        `).join('')}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+                        }
+
+                        $('#analysisAccordion').html(accordionHtml);
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMessage = 'An error occurred while analyzing the website.<br>';
+
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage += '<strong>Message:</strong> ' + xhr.responseJSON.message + '<br>';
+                            }
+
+                            if (xhr.responseJSON.error) {
+                                errorMessage += '<strong>Error:</strong> ' + xhr.responseJSON.error + '<br>';
+                            }
+
+                            if (xhr.responseJSON.errors && xhr.responseJSON.errors.length > 0) {
+                                errorMessage += '<strong>Details:</strong><ul>';
+                                xhr.responseJSON.errors.forEach(function(err) {
+                                    errorMessage += '<li>' + err + '</li>';
+                                });
+                                errorMessage += '</ul>';
+                            }
+
+                            if (xhr.responseJSON.details) {
+                                errorMessage += '<br><strong>Technical Details:</strong><br>' +
+                                    '<pre class="bg-light p-2 mt-2" style="font-size: 0.8em;">' +
+                                    xhr.responseJSON.details + '</pre>';
+                            }
+                        } else if (error) {
+                            errorMessage += '<br><strong>Error:</strong> ' + error;
+                        }
+
+                        $('#analysisErrors').html(errorMessage).removeClass('d-none');
+                        $('#analysisAccordion').empty();
+
+                        // Log to console for debugging
+                        console.error('Analysis Error:', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            responseText: xhr.responseText,
+                            error: error
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

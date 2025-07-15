@@ -1,0 +1,112 @@
+﻿<!-- Views/ImportExport/ImportResult.cshtml -->
+@{
+    ViewData["Title"] = "Import Results";
+    var result = ViewBag.ImportResult;
+}
+
+<div class="container">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Import Results for @ViewBag.ListName</h2>
+                    <div class="text-muted">
+                        <span class="me-3">Created: @result.created entries</span>
+                        <span class="me-3">Updated: @result.updated entries</span>
+                        <span class="me-3">Errors: @result.errors.Count</span>
+                    </div>
+                </div>
+                <div>
+                    <a asp-controller="Crm" asp-action="ListView" asp-route-id="@ViewBag.ListId" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+
+            @if (result.errors.Any())
+            {
+                <div class="alert alert-warning">
+                    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Import Completed with Warnings</h4>
+                    <p>The import process completed, but some entries could not be processed. See details below:</p>
+                </div>
+
+                <div class="card bg-light border-0 rounded-3 mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">Error Details</h5>
+                        <ul class="list-group">
+                            @foreach (var error in result.errors)
+                            {
+                                <li class="list-group-item border-0 bg-light text-danger">
+                                    <i class="fas fa-times-circle me-2"></i>@error
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success">
+                    <h4 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Import Completed Successfully</h4>
+                    <p>All entries were successfully imported to the list.</p>
+                </div>
+            }
+
+            <div class="mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-3">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">What's Next?</h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a asp-controller="ImportExport" asp-action="Import" asp-route-listId="@ViewBag.ListId" class="text-decoration-none">
+                                            <i class="fas fa-upload me-2"></i>Import another file
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a asp-controller="Crm" asp-action="ListView" asp-route-id="@ViewBag.ListId" class="text-decoration-none">
+                                            <i class="fas fa-list me-2"></i>View all entries in the list
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Crm" asp-action="Create" asp-route-listId="@ViewBag.ListId" class="text-decoration-none">
+                                            <i class="fas fa-plus me-2"></i>Add a new entry manually
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-3">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Import Summary</h5>
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="ps-0"><strong>Created:</strong></td>
+                                            <td class="text-end pe-0">@result.created entries</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ps-0"><strong>Updated:</strong></td>
+                                            <td class="text-end pe-0">@result.updated entries</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ps-0"><strong>Errors:</strong></td>
+                                            <td class="text-end pe-0">@result.errors.Count</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ps-0"><strong>Total Processed:</strong></td>
+                                            <td class="text-end pe-0">@(result.created + result.updated + result.errors.Count) entries</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

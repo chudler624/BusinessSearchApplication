@@ -1,0 +1,725 @@
+﻿@model BusinessSearch.Models.ViewModels.CrmListIndexViewModel
+
+<div class="container py-4" @Html.AntiForgeryToken()>
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">CRM Management</h2>
+                <button class="btn btn-primary rounded-pill px-4" onclick="showCreateListModal()">
+                    <i class="fas fa-plus me-2"></i>Create New List
+                </button>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="card bg-light border-0 rounded-3 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Filters</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Search Lists</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-0 bg-white rounded-start-pill">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control form-control-lg border-0 bg-white rounded-end-pill"
+                                       placeholder="List name, description..."
+                                       value="@Model.SearchTerm">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">Industry</label>
+                            <select id="industryFilter" class="form-select form-control-lg border-0 bg-white rounded-pill">
+                                <option value="">All Industries</option>
+                                @foreach (var industry in Model.Lists.Select(l => l.Industry).Distinct().Where(i => !string.IsNullOrEmpty(i)))
+                                {
+                                    <option value="@industry" selected="@(industry == Model.IndustryFilter)">@industry</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">Assigned To</label>
+                            <select id="assignedToFilter" class="form-select form-control-lg border-0 bg-white rounded-pill">
+                                <option value="">All Team Members</option>
+                                @foreach (var member in Model.TeamMembers)
+                                {
+                                    <option value="@member.Id" selected="@(member.Id == Model.AssignedToFilter)">@member.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary rounded-pill px-4 w-100" onclick="resetFilters()">
+                                <i class="fas fa-undo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lists Table -->
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="px-4 py-3 sortable" onclick="sortTable('name')">
+                                        <div class="d-flex align-items-center">
+                                            List Name
+                                            <i class="fas fa-sort ms-2 text-muted"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 sortable" onclick="sortTable('industry')">
+                                        <div class="d-flex align-items-center">
+                                            Industry
+                                            <i class="fas fa-sort ms-2 text-muted"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 sortable" onclick="sortTable('assignedto')">
+                                        <div class="d-flex align-items-center">
+                                            Assigned To
+                                            <i class="fas fa-sort ms-2 text-muted"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 sortable" onclick="sortTable('entrycount')">
+                                        <div class="d-flex align-items-center">
+                                            Entries
+                                            <i class="fas fa-sort ms-2 text-muted"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 sortable" onclick="sortTable('createddate')">
+                                        <div class="d-flex align-items-center">
+                                            Created
+                                            <i class="fas fa-sort ms-2 text-muted"></i>
+                                        </div>
+                                    </th>
+                                    <th class="text-end pe-4 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.Lists.Any())
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="text-muted mb-3">
+                                                <i class="fas fa-folder-open fa-3x opacity-50"></i>
+                                            </div>
+                                            <p class="mb-2">No lists found</p>
+                                            <small class="text-muted">Create your first list to get started</small>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var list in Model.Lists)
+                                    {
+                                        <tr>
+                                            <td class="px-4 py-3">
+                                                <a asp-action="ListView" asp-route-id="@list.Id" class="text-decoration-none fw-medium">
+                                                    @list.Name
+                                                </a>
+                                            </td>
+                                            <td class="py-3">
+                                                @if (!string.IsNullOrEmpty(list.Industry))
+                                                {
+                                                    <span class="badge bg-light text-dark rounded-pill px-3">@list.Industry</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td class="py-3">
+                                                @if (list.AssignedTo != null)
+                                                {
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">
+                                                            <i class="fas fa-user me-1"></i>@list.AssignedTo.Name
+                                                        </span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td class="py-3">
+                                                <span class="badge bg-light text-dark rounded-pill px-3">@list.EntryCount</span>
+                                            </td>
+                                            <td class="py-3">@list.CreatedDate.ToString("MM/dd/yyyy HH:mm")</td>
+                                            <td class="text-end pe-4 py-3">
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="ListView" asp-route-id="@list.Id"
+                                                       class="btn btn-sm btn-outline-primary rounded-start-pill px-3" title="View List">
+                                                        <i class="fas fa-eye me-1"></i> View
+                                                    </a>
+                                                    <button class="btn btn-sm btn-outline-warning px-3 edit-list-btn"
+                                                            onclick="editList(@list.Id)"
+                                                            title="Edit List">
+                                                        <i class="fas fa-edit me-1"></i> Edit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger rounded-end-pill px-3"
+                                                            onclick="confirmDeleteList(@list.Id, '@list.Name')"
+                                                            title="Delete List">
+                                                        <i class="fas fa-trash me-1"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (Model.Lists.Any())
+                    {
+                        <div class="card-footer bg-white border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <select id="pageSizeSelect" class="form-select form-select-sm rounded-pill border-0 bg-light" onchange="changePageSize(this.value)">
+                                        @foreach (var size in new[] { 25, 50, 100 })
+                                        {
+                                            <option value="@size" selected="@(Model.PageSize == size)">
+                                                @size entries per page
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination pagination-md mb-0">
+                                        <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                            <a class="page-link rounded-start-pill border-0" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, pageSize = Model.PageSize })">
+                                                <i class="fas fa-chevron-left small"></i>
+                                            </a>
+                                        </li>
+                                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                        {
+                                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                <a class="page-link border-0" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })">@i</a>
+                                            </li>
+                                        }
+                                        <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                            <a class="page-link rounded-end-pill border-0" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, pageSize = Model.PageSize })">
+                                                <i class="fas fa-chevron-right small"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create List Modal -->
+<div class="modal fade" id="createListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Create New List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="createListForm">
+                    <div class="mb-3">
+                        <label class="form-label required fw-medium">List Name</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-pill" id="listName" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Description</label>
+                        <textarea class="form-control border-0 bg-light rounded-3" id="listDescription" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Industry</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-pill" id="listIndustry" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Assign To</label>
+                        <select class="form-select form-control-lg border-0 bg-light rounded-pill" id="listAssignedTo">
+                            <option value="">Select team member...</option>
+                            @foreach (var member in Model.TeamMembers)
+                            {
+                                <option value="@member.Id">@member.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="createList()">
+                    <i class="fas fa-plus me-2"></i>Create List
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit List Modal -->
+<div class="modal fade" id="editListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Edit List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editListForm">
+                    <input type="hidden" id="editListId">
+                    <div class="mb-3">
+                        <label class="form-label required fw-medium">List Name</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-pill" id="editListName" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Description</label>
+                        <textarea class="form-control border-0 bg-light rounded-3" id="editListDescription" rows="2" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Industry</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-pill" id="editListIndustry" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Assign To</label>
+                        <select class="form-select form-control-lg border-0 bg-light rounded-pill" id="editListAssignedTo">
+                            <option value="">Select team member...</option>
+                            @foreach (var member in Model.TeamMembers)
+                            {
+                                <option value="@member.Id">@member.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>            
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>                
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveListChanges()">
+                    <i class="fas fa-save me-2"></i>Save All Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteListModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Delete List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <div class="text-danger mb-3">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                    <p class="text-danger mb-1">Are you sure you want to delete this list?</p>
+                    <p class="mb-3">This action cannot be undone.</p>
+                    <div class="bg-light p-3 rounded-3">
+                        <p class="mb-0 fw-bold" id="deleteListName"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="deleteList()">
+                    <i class="fas fa-trash me-2"></i>Delete List
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .required:after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+            .sortable:hover {
+                background-color: rgba(0, 0, 0, 0.03);
+            }
+
+        /* Card hover effect */
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .table-hover tbody tr {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+            .table-hover tbody tr:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+                z-index: 1;
+                position: relative;
+            }
+
+        /* Nice pagination styling */
+        .pagination .page-link {
+            color: #2563EB;
+            background-color: transparent;
+            border-color: transparent;
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+        }
+
+        .pagination .page-item.active .page-link {
+            color: #fff;
+            background-color: #2563EB;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            opacity: 0.5;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let currentListId = null;
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Show create list modal
+        function showCreateListModal() {
+            document.getElementById('createListForm').reset();
+            const modal = new bootstrap.Modal(document.getElementById('createListModal'));
+            modal.show();
+        }
+
+        // Create new list
+        async function createList() {
+            const name = document.getElementById('listName').value.trim();
+            if (!name) {
+                showAlert('error', 'List name is required');
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("CreateList", "Crm")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: document.getElementById('listDescription').value.trim(),
+                        industry: document.getElementById('listIndustry').value.trim(),
+                        assignedToId: document.getElementById('listAssignedTo').value || null
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', 'List created successfully');
+                    location.reload();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showAlert('error', error.message || 'Failed to create list');
+            }
+        }
+
+        // Edit list
+        async function editList(listId) {
+            try {
+                const response = await fetch(`@Url.Action("GetListDetails", "Crm")?id=${listId}`, {
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentListId = listId;
+                    document.getElementById('editListId').value = listId;
+                    document.getElementById('editListName').value = result.list.name;
+                    document.getElementById('editListDescription').value = result.list.description || '';
+                    document.getElementById('editListIndustry').value = result.list.industry || '';
+
+                    // Clear and rebuild the team members dropdown
+                    const assignedToSelect = document.getElementById('editListAssignedTo');
+                    assignedToSelect.innerHTML = '<option value="">Unassigned</option>';
+
+                    // Add all valid team members from the response
+                    if (result.teamMembers && result.teamMembers.length) {
+                        result.teamMembers.forEach(member => {
+                            const option = document.createElement('option');
+                            option.value = member.id;
+                            option.textContent = member.name;
+                            if (result.list.assignedToId === member.id) {
+                                option.selected = true;
+                            }
+                            assignedToSelect.appendChild(option);
+                        });
+                    }
+
+                    const modal = new bootstrap.Modal(document.getElementById('editListModal'));
+                    modal.show();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showAlert('error', error.message || 'Failed to load list details');
+            }
+        }
+
+        
+        // Update the saveListChanges function
+        async function saveListChanges() {
+            const name = document.getElementById('editListName').value.trim();
+            if (!name) {
+                showAlert('error', 'List name is required');
+                return;
+            }
+
+            // Get the selected assignedToId
+            const assignedToId = document.getElementById('editListAssignedTo').value;
+            console.log('Selected assignedToId for full save:', assignedToId);
+
+            try {
+                // First, make sure we have valid data
+                const id = document.getElementById('editListId').value;
+                const description = document.getElementById('editListDescription').value.trim();
+                const industry = document.getElementById('editListIndustry').value.trim();
+
+                // Log all the data we're about to send
+                console.log('Saving list with data:', {
+                    id,
+                    name,
+                    description,
+                    industry,
+                    assignedToId
+                });
+
+                // Create the request to save everything at once
+                const response = await fetch('@Url.Action("UpdateListFull", "Crm")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        // Add this to ensure the request is treated as form data
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        'id': id,
+                        'name': name,
+                        'description': description,
+                        'industry': industry,
+                        'assignedToId': assignedToId,
+                        '__RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', 'List updated successfully');
+                    location.reload();
+                } else {
+                    throw new Error(result.message || 'Failed to update list');
+                }
+            } catch (error) {
+                console.error('Error saving list:', error);
+                showAlert('error', error.message || 'Failed to update list');
+            }
+        }
+
+        // Update Assignment function
+        async function updateAssignment() {
+            const id = document.getElementById('editListId').value;
+            const assignedToId = document.getElementById('editListAssignedTo').value;
+
+            console.log('Updating assignment:', { id, assignedToId });
+
+            try {
+                const response = await fetch('@Url.Action("DirectAssign", "Crm")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        'id': id,
+                        'assignedToId': assignedToId,
+                        '__RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    })
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to update assignment');
+                }
+                return result;
+            } catch (error) {
+                console.error('Error updating assignment:', error);
+                throw error;
+            }
+        }
+
+        // Delete list
+        let deleteListId = null;
+
+        function confirmDeleteList(listId, listName) {
+            deleteListId = listId;
+            document.getElementById('deleteListName').textContent = listName;
+            const modal = new bootstrap.Modal(document.getElementById('deleteListModal'));
+            modal.show();
+        }
+
+        async function deleteList() {
+            try {
+                const response = await fetch(`@Url.Action("DeleteList", "Crm")/${deleteListId}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', 'List deleted successfully');
+                    location.reload();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showAlert('error', error.message || 'Failed to delete list');
+            }
+        }
+
+        // Filter handling
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            const industry = document.getElementById('industryFilter').value;
+            const assignedTo = document.getElementById('assignedToFilter').value;
+
+            let url = '@Url.Action("Index", "Crm")';
+            const params = new URLSearchParams();
+
+            if (searchTerm) params.append('searchTerm', searchTerm);
+            if (industry) params.append('industryFilter', industry);
+            if (assignedTo) params.append('assignedToFilter', assignedTo);
+
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+
+            window.location.href = url;
+        }
+
+        function resetFilters() {
+            window.location.href = '@Url.Action("Index", "Crm")';
+        }
+
+        // Change page size
+        function changePageSize(size) {
+            let url = new URL(window.location.href);
+            url.searchParams.set('pageSize', size);
+            url.searchParams.set('page', 1);
+            window.location.href = url.toString();
+        }
+
+        // Sort table
+        function sortTable(column) {
+            let url = new URL(window.location.href);
+            const currentSort = url.searchParams.get('sortColumn');
+            const currentDirection = url.searchParams.get('sortDirection');
+
+            if (currentSort === column) {
+                url.searchParams.set('sortDirection', currentDirection === 'asc' ? 'desc' : 'asc');
+            } else {
+                url.searchParams.set('sortColumn', column);
+                url.searchParams.set('sortDirection', 'asc');
+            }
+
+            window.location.href = url.toString();
+        }
+
+        // Show alerts
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', `alert-${type === 'error' ? 'danger' : type}`, 'alert-dismissible', 'fade', 'show', 'position-fixed', 'top-0', 'end-0', 'm-3', 'rounded-3');
+            alertDiv.style.zIndex = '9999';
+
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${icon} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const industryFilter = document.getElementById('industryFilter');
+            const assignedToFilter = document.getElementById('assignedToFilter');
+
+            // Add debounced search
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(applyFilters, 500);
+            });
+
+            // Add filter change handlers
+            industryFilter.addEventListener('change', applyFilters);
+            assignedToFilter.addEventListener('change', applyFilters);
+
+            // Add handler for Update Assignment Only button
+
+        document.getElementById('updateAssignmentBtn').addEventListener('click', async function() {
+            try {
+                const id = document.getElementById('editListId').value;
+                const assignedToId = document.getElementById('editListAssignedTo').value;
+
+                console.log('Updating assignment:', { id, assignedToId });
+
+                const response = await fetch('@Url.Action("DirectAssign", "Crm")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'id': id,
+                        'assignedToId': assignedToId,
+                        '__RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('success', 'Assignment updated successfully');
+                    location.reload();
+                } else {
+                    throw new Error(result.message || 'Failed to update assignment');
+                }
+            } catch (error) {
+                console.error('Error updating assignment:', error);
+                showAlert('error', error.message || 'Failed to update assignment');
+            }
+        });
+        });
+    </script>
+}

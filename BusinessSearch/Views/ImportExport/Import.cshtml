@@ -1,0 +1,155 @@
+﻿<!-- Views/ImportExport/Import.cshtml -->
+@{
+    ViewData["Title"] = "Import CRM Entries";
+}
+
+<div class="container">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Import Entries to @ViewBag.ListName</h2>
+                    <p class="text-muted">Upload a CSV or Excel file with your business entries</p>
+                </div>
+                <div>
+                    <a asp-controller="Crm" asp-action="ListView" asp-route-id="@ViewBag.ListId" class="btn btn-light rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">Upload File</h4>
+                            <form asp-action="Import" asp-controller="ImportExport" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="listId" value="@ViewBag.ListId" />
+
+                                <div class="mb-4">
+                                    <label for="file" class="form-label">Select CSV or Excel File</label>
+                                    <input type="file" name="file" id="file" class="form-control form-control-lg"
+                                           accept=".csv,.xlsx,.xls" required />
+                                    <div class="form-text">
+                                        Supported file formats: .csv, .xlsx, .xls
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                        <i class="fas fa-upload me-2"></i>Upload and Import
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card bg-light border-0 rounded-3">
+                        <div class="card-body p-4">
+                            <h4 class="mb-3">Import Guidelines</h4>
+                            <p>Your file should include the following columns:</p>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Column</th>
+                                            <th>Required</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>BusinessName</td>
+                                            <td><span class="badge bg-danger">Required</span></td>
+                                            <td>Name of the business</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Phone</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Business phone number</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Email</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Business email address</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Website</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Business website URL</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Industry</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Business industry/category</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Disposition</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Current status (e.g., "New", "Called Once")</td>
+                                        </tr>
+                                        <tr>
+                                            <td>GoogleRating</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Rating (0-5)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Notes</td>
+                                            <td><span class="badge bg-secondary">Optional</span></td>
+                                            <td>Additional notes about the business</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-3">
+                                <h5>Notes:</h5>
+                                <ul class="text-muted">
+                                    <li>The system will attempt to match existing entries by Business Name and Email (if provided)</li>
+                                    <li>Matched entries will be updated with the imported data</li>
+                                    <li>New entries will be created if no match is found</li>
+                                    <li>All imported entries will be added to the current list</li>
+                                </ul>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="#" class="btn btn-outline-secondary rounded-pill btn-sm" onclick="downloadSampleFile()">
+                                    <i class="fas fa-download me-2"></i>Download Sample Template
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function downloadSampleFile() {
+            // Create sample data
+            const csvContent =
+                "BusinessName,Phone,Email,Website,Industry,Disposition,GoogleRating,Notes\n" +
+                "ACME Corporation,(555) 123-4567,info@acme.com,https://acme.com,Technology,New,4.5,Sample notes\n" +
+                "XYZ Company,(555) 987-6543,contact@xyz.com,https://xyz.com,Retail,Called Once,3.8,Second sample";
+
+            // Create a Blob with the CSV data
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // Create a download link
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.href = url;
+            link.download = 'sample_crm_import.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}

@@ -1,0 +1,228 @@
+﻿@model BusinessSearch.Models.ViewModels.OrganizationSettingsViewModel
+@using BusinessSearch.Models.Organization
+@{
+    ViewData["Title"] = "Organization Settings";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0">Organization Settings</h4>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show rounded-pill py-2 px-4 d-flex align-items-center" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <div>@TempData["Success"]</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show rounded-pill py-2 px-4 d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>@TempData["Error"]</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="UpdateSettings" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3"></div>
+
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="IsActive" />
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Basic Information</h5>
+                            <div class="card bg-light border-0 rounded-3">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <label asp-for="Name" class="form-label fw-medium">Organization Name</label>
+                                        <input asp-for="Name" class="form-control form-control-lg border-0 bg-white rounded-pill" />
+                                        <span asp-validation-for="Name" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">Created By</label>
+                                                <input type="text" class="form-control form-control-lg border-0 bg-white rounded-pill" value="@Model.CreatedByName" disabled />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-medium">Created On</label>
+                                                <input type="text" class="form-control form-control-lg border-0 bg-white rounded-pill" value="@Model.CreatedAt.ToString("MMMM d, yyyy")" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Plan Settings</h5>
+                            <div class="card bg-light border-0 rounded-3">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <label asp-for="Plan" class="form-label fw-medium">Current Plan</label>
+                                        <select asp-for="Plan" class="form-select form-control-lg border-0 bg-white rounded-pill" id="planSelect">
+                                            <option value="@OrganizationPlan.Bronze" selected="@(Model.Plan == OrganizationPlan.Bronze)">
+                                                Bronze (100 searches/day) - Free
+                                            </option>
+                                            <option value="@OrganizationPlan.Silver" selected="@(Model.Plan == OrganizationPlan.Silver)">
+                                                Silver (300 searches/day) - $49/month
+                                            </option>
+                                            <option value="@OrganizationPlan.Gold" selected="@(Model.Plan == OrganizationPlan.Gold)">
+                                                Gold (500 searches/day) - $99/month
+                                            </option>
+                                            <option value="@OrganizationPlan.Unlimited" selected="@(Model.Plan == OrganizationPlan.Unlimited)">
+                                                Unlimited Searches (Requires Promo Code)
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div id="promoCodeSection" class="mb-3 @(Model.Plan == OrganizationPlan.Unlimited ? "" : "d-none")">
+                                        <label asp-for="PromoCode" class="form-label fw-medium">Promo Code</label>
+                                        <input asp-for="PromoCode" class="form-control form-control-lg border-0 bg-white rounded-pill" maxlength="50"
+                                               placeholder="Enter promo code for unlimited plan" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Security Settings</h5>
+                            <div class="card bg-light border-0 rounded-3">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="requireApproval"
+                                                   asp-for="RequireApprovalForNewMembers">
+                                            <label class="form-check-label" for="requireApproval">
+                                                Require approval for new members
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="restrictDataAccess"
+                                                   asp-for="RestrictDataAccess">
+                                            <label class="form-check-label" for="restrictDataAccess">
+                                                Restrict data access by team
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Danger Zone</h5>
+                            <div class="card border-danger border-opacity-25 rounded-3">
+                                <div class="card-body p-4">
+                                    <h6 class="card-title text-danger fw-bold">Delete Organization</h6>
+                                    <p class="card-text">
+                                        Once you delete an organization, there is no going back. Please be certain.
+                                    </p>
+                                    <button type="button" class="btn btn-outline-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="fas fa-trash-alt me-2"></i>Delete Organization
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Organization Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Delete Organization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="text-danger mb-3">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                    <p>This action cannot be undone. This will permanently delete the organization <strong>@Model.Name</strong> and remove all associated data.</p>
+                </div>
+
+                <div class="alert alert-danger rounded-3 border-0">
+                    <ul class="mb-0">
+                        <li>All team members will be removed</li>
+                        <li>All organization data will be deleted</li>
+                        <li>All settings and configurations will be lost</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirmDelete" class="form-label fw-medium">Please type <strong>@Model.Name</strong> to confirm:</label>
+                    <input type="text" class="form-control form-control-lg border-0 bg-light rounded-pill" id="confirmDelete">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn" disabled>
+                    <i class="fas fa-trash-alt me-2"></i>I understand, delete this organization
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Plan selection handler
+            $('#planSelect').on('change', function() {
+                const promoSection = document.getElementById('promoCodeSection');
+                promoSection.classList.toggle('d-none', this.value !== '@OrganizationPlan.Unlimited.ToString()');
+
+                if (this.value !== '@OrganizationPlan.Unlimited.ToString()') {
+                    document.getElementById('PromoCode').value = '';
+                }
+            });
+
+            // Delete confirmation handler
+            $('#confirmDelete').on('input', function() {
+                var confirmText = $(this).val();
+                var organizationName = '@Model.Name';
+                $('#confirmDeleteBtn').prop('disabled', confirmText !== organizationName);
+            });
+
+            $('#confirmDeleteBtn').click(function() {
+                $.post('@Url.Action("DeleteOrganization")', {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                })
+                .done(function() {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                })
+                .fail(function() {
+                    alert('Failed to delete organization');
+                });
+            });
+        });
+    </script>
+}

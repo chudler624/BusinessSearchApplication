@@ -1,0 +1,151 @@
+﻿@model BusinessSearch.Models.ViewModels.EditCrmEntryViewModel
+
+<div class="container">
+    <h2>Edit CRM Entry</h2>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Entry.Id" />
+        <input type="hidden" asp-for="Entry.DateAdded" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.BusinessName" class="control-label">Business Name</label>
+                    <input asp-for="Entry.BusinessName" class="form-control" />
+                    <span asp-validation-for="Entry.BusinessName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Phone" class="control-label">Phone</label>
+                    <input asp-for="Entry.Phone" class="form-control" />
+                    <span asp-validation-for="Entry.Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Email" class="control-label">Email (Optional)</label>
+                    <input asp-for="Entry.Email" class="form-control" />
+                    <span asp-validation-for="Entry.Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Website" class="control-label">Website</label>
+                    <input asp-for="Entry.Website" class="form-control" />
+                    <span asp-validation-for="Entry.Website" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Industry" class="control-label">Industry</label>
+                    <input asp-for="Entry.Industry" class="form-control" />
+                    <span asp-validation-for="Entry.Industry" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Disposition" class="control-label">Disposition</label>
+                    <select asp-for="Entry.Disposition" class="form-select">
+                        <option value="New">New</option>
+                        <option value="Called Once">Called Once</option>
+                        <option value="Called Twice">Called Twice</option>
+                        <option value="Call Back">Call Back</option>
+                        <option value="Do Not Call">Do Not Call</option>
+                        <option value="Not Interested">Not Interested</option>
+                        <option value="Wants Demo">Wants Demo</option>
+                        <option value="Sale Closed">Sale Closed</option>
+                    </select>
+                    <span asp-validation-for="Entry.Disposition" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.GoogleRating" class="control-label">Google Rating</label>
+                    <input asp-for="Entry.GoogleRating" class="form-control" type="number" step="0.1" min="0" max="5" />
+                    <span asp-validation-for="Entry.GoogleRating" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Entry.Notes" class="control-label">Notes</label>
+                    <textarea asp-for="Entry.Notes" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="control-label">Lists</label>
+                    <div class="list-group">
+                        @foreach (var list in Model.AvailableLists)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input"
+                                       name="SelectedListIds"
+                                       value="@list.Id"
+                                @(Model.CurrentListIds.Contains(list.Id) ? "checked" : "") />
+                                <label class="form-check-label">@list.Name</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to Lists</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+                $(document).ready(function() {
+            // Auto-format website input
+            $('#Entry_Website').on('blur', function() {
+                var value = $(this).val().trim();
+                if (value && !value.match(/^https?:\/\//)) {
+                    $(this).val('https://' + value);
+                }
+            });
+
+            // Form submission handler - bypassing the validation check
+            $('form').on('submit', function(e) {
+                // Log form data to help debug
+                console.log('Form submitting with:');
+                console.log('Business Name:', $('#Entry_BusinessName').val());
+                console.log('Notes:', $('#Entry_Notes').val());
+
+                // Make sure notes textarea isn't disabled
+                $('#Entry_Notes').prop('disabled', false);
+
+                // Debug validation error messages
+                const errors = [];
+                $('.text-danger').each(function() {
+                    const errorText = $(this).text().trim();
+                    if (errorText) {
+                        const field = $(this).prev('input, select, textarea').attr('name');
+                        errors.push(`${field}: ${errorText}`);
+                    }
+                });
+
+                if (errors.length > 0) {
+                    console.log('Validation errors found:', errors);
+                    // Log but don't prevent submission
+                }
+
+                console.log('Form submission proceeding');
+                return true; // Allow the form to submit
+            });
+
+            // Debug any hidden validation errors on page load
+            console.log('Checking for validation errors on page load:');
+            $('.text-danger').each(function() {
+                const errorText = $(this).text().trim();
+                const fieldName = $(this).prev('input, select, textarea').attr('name') || 'unknown field';
+                if (errorText) {
+                    console.log('Field:', fieldName, 'Error:', errorText);
+                }
+            });
+        });
+    </script>
+}

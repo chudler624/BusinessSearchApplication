@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BusinessSearch.Models.ApplicationUser> SignInManager
+@inject UserManager<BusinessSearch.Models.ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    var userName = user?.TeamMember?.Name ?? User.Identity?.Name?.Split('@')[0];
+    var initials = !string.IsNullOrEmpty(userName) ? string.Join("", userName.Split(' ').Select(n => n[0])).ToUpper() : "U";
+
+    <div class="dropdown">
+        <a class="dropdown-toggle text-decoration-none d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="avatar-circle me-2">
+                <span class="initials">@initials</span>
+            </div>
+            <span class="d-none d-md-inline">@userName</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+            <li class="dropdown-item-text">
+                <div class="fw-bold">@userName</div>
+                <div class="small text-muted">@User.Identity?.Name</div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" asp-controller="Organization" asp-action="Settings"><i class="fas fa-cog me-2"></i>Organization Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <div class="d-flex">
+        <a asp-area="" asp-controller="Account" asp-action="Register" class="btn btn-outline-dark me-2">
+            <i class="fas fa-user-plus"></i> Register
+        </a>
+        <a asp-area="" asp-controller="Account" asp-action="Login" class="btn btn-dark">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+        </a>
+    </div>
+}

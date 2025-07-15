@@ -1,0 +1,49 @@
+﻿@model BusinessSearch.Models.CrmList
+@{
+    ViewData["Title"] = "Edit List";
+    var teamMembers = ViewBag.TeamMembers as List<BusinessSearch.Models.TeamMember>;
+}
+<div class="container">
+    <h2>Edit List</h2>
+    <form id="listEditForm" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="id" name="id" value="@Model.Id" />
+        <div class="form-group">
+            <label for="name">List Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="@Model.Name" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description">@Model.Description</textarea>
+        </div>
+        <div class="form-group">
+            <label for="industry">Industry</label>
+            <input type="text" class="form-control" id="industry" name="industry" value="@Model.Industry">
+        </div>
+        <div class="form-group">
+            <label for="assignedToId">Assigned To</label>
+            <select class="form-control" id="assignedToId" name="assignedToId">
+                <option value="">Unassigned</option>
+                @foreach (var member in teamMembers)
+                {
+                    if (member.Id.ToString() == Model.AssignedToId)
+                    {
+                        <option value="@member.Id" selected>@member.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@member.Id">@member.Name</option>
+                    }
+                }
+            </select>
+            <button type="button" id="assignListBtn" class="btn btn-info mt-2">Update Assignment Only</button>
+        </div>
+        <div class="form-group mt-3">
+            <button type="submit" class="btn btn-primary">Save All Changes</button>
+            <a href="@Url.Action("Index", "Crm")" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script src="~/js/assign-list.js"></script>
+}
