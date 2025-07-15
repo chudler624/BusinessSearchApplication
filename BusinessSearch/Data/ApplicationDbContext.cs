@@ -23,6 +23,8 @@ namespace BusinessSearch.Data
         public DbSet<OrganizationPermissions> OrganizationPermissions { get; set; }
         public DbSet<OrganizationInvite> OrganizationInvites { get; set; }
         public DbSet<OrganizationSearchUsage> OrganizationSearchUsage { get; set; }
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<CallScript> CallScripts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -216,6 +218,70 @@ namespace BusinessSearch.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasIndex(e => new { e.OrganizationId, e.Date });
+            });
+
+            // Configure EmailTemplate
+            modelBuilder.Entity<EmailTemplate>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Body).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.Category).HasMaxLength(50);
+                entity.Property(e => e.Tags).HasMaxLength(100);
+                entity.Property(e => e.CreatedById).HasMaxLength(450);
+                entity.Property(e => e.LastModifiedById).HasMaxLength(450);
+                entity.Property(e => e.OrganizationId).IsRequired(false);
+
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.LastModifiedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.LastModifiedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Organization)
+                    .WithMany()
+                    .HasForeignKey(e => e.OrganizationId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure CallScript
+            modelBuilder.Entity<CallScript>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.ScriptType).HasMaxLength(50);
+                entity.Property(e => e.Industry).HasMaxLength(50);
+                entity.Property(e => e.Tags).HasMaxLength(100);
+                entity.Property(e => e.CreatedById).HasMaxLength(450);
+                entity.Property(e => e.LastModifiedById).HasMaxLength(450);
+                entity.Property(e => e.OrganizationId).IsRequired(false);
+
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.LastModifiedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.LastModifiedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Organization)
+                    .WithMany()
+                    .HasForeignKey(e => e.OrganizationId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

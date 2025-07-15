@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BusinessSearch.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -78,6 +78,31 @@ namespace BusinessSearch.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CallScripts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ScriptType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Industry = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Tags = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    EstimatedDuration = table.Column<int>(type: "int", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedById = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    LastModifiedById = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CallScripts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CrmEntryLists",
                 columns: table => new
                 {
@@ -116,6 +141,30 @@ namespace BusinessSearch.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CrmLists", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmailTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Subject = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Tags = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedById = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    LastModifiedById = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmailTemplates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -433,6 +482,21 @@ namespace BusinessSearch.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_CallScripts_CreatedById",
+                table: "CallScripts",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CallScripts_LastModifiedById",
+                table: "CallScripts",
+                column: "LastModifiedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CallScripts_OrganizationId",
+                table: "CallScripts",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CrmEntryLists_CrmListId",
                 table: "CrmEntryLists",
                 column: "CrmListId");
@@ -461,6 +525,21 @@ namespace BusinessSearch.Migrations
                 name: "IX_CrmLists_TeamMemberId",
                 table: "CrmLists",
                 column: "TeamMemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailTemplates_CreatedById",
+                table: "EmailTemplates",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailTemplates_LastModifiedById",
+                table: "EmailTemplates",
+                column: "LastModifiedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailTemplates_OrganizationId",
+                table: "EmailTemplates",
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrganizationInvites_InviteCode",
@@ -572,6 +651,30 @@ namespace BusinessSearch.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_CallScripts_Organizations_OrganizationId",
+                table: "CallScripts",
+                column: "OrganizationId",
+                principalTable: "Organizations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_CallScripts_Users_CreatedById",
+                table: "CallScripts",
+                column: "CreatedById",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_CallScripts_Users_LastModifiedById",
+                table: "CallScripts",
+                column: "LastModifiedById",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_CrmEntryLists_CrmLists_CrmListId",
                 table: "CrmEntryLists",
                 column: "CrmListId",
@@ -613,6 +716,30 @@ namespace BusinessSearch.Migrations
             migrationBuilder.AddForeignKey(
                 name: "FK_CrmLists_Users_LastModifiedById",
                 table: "CrmLists",
+                column: "LastModifiedById",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailTemplates_Organizations_OrganizationId",
+                table: "EmailTemplates",
+                column: "OrganizationId",
+                principalTable: "Organizations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailTemplates_Users_CreatedById",
+                table: "EmailTemplates",
+                column: "CreatedById",
+                principalTable: "Users",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailTemplates_Users_LastModifiedById",
+                table: "EmailTemplates",
                 column: "LastModifiedById",
                 principalTable: "Users",
                 principalColumn: "Id",
@@ -671,7 +798,13 @@ namespace BusinessSearch.Migrations
                 table: "Users");
 
             migrationBuilder.DropTable(
+                name: "CallScripts");
+
+            migrationBuilder.DropTable(
                 name: "CrmEntryLists");
+
+            migrationBuilder.DropTable(
+                name: "EmailTemplates");
 
             migrationBuilder.DropTable(
                 name: "OrganizationInvites");

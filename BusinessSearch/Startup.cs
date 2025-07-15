@@ -104,6 +104,9 @@ namespace BusinessSearch
             services.AddScoped<IWebsiteOpportunitiesService, WebsiteOpportunitiesService>();
             services.AddScoped<BusinessDataService>();
 
+            //Scripts and Templates Services
+            services.AddScoped<TemplatesScriptsService>();
+
             // Register Business Services
             services.AddScoped<TeamService>();
             services.AddScoped<CrmService>();
