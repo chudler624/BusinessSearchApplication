@@ -326,5 +326,44 @@ namespace BusinessSearch.Controllers
                 return Json(new { success = false, message = "Error joining organization" });
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignUserToRole(string userId, string role)
+        {
+            try
+            {
+                var organization = await _orgFilter.GetCurrentOrganization();
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (organization == null || currentUserId == null)
+                {
+                    return Json(new { success = false, message = "Organization not found" });
+                }
+
+                // Only Admins can assign roles
+                if (!await _organizationService.CanManageRoles(currentUserId, organization.Id))
+                {
+                    return Json(new { success = false, message = "You don't have permission to assign roles" });
+                }
+
+                if (Enum.TryParse<OrganizationRole>(role, out var organizationRole))
+                {
+                    var success = await _organizationService.UpdateUserRoleAsync(currentUserId, userId, organization.Id, organizationRole);
+                    if (!success)
+                    {
+                        return Json(new { success = false, message = "Failed to update user role" });
+                    }
+                    return Json(new { success = true });
+                }
+
+                return Json(new { success = false, message = "Invalid role specified" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error assigning user role: {ex.Message}");
+                return Json(new { success = false, message = "Error assigning user role" });
+            }
+        }
     }
 }

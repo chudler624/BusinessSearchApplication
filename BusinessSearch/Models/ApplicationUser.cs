@@ -79,9 +79,35 @@ namespace BusinessSearch.Models
             return Permissions != null && permissionCheck(Permissions);
         }
 
-        public bool CanSearchBusiness => HasPermission(p => p.CanSearch);
-        public bool CanViewSearchHistory => HasPermission(p => p.CanViewHistory);
-        public bool CanManageCrmData => HasPermission(p => p.CanManageCrm);
+        [NotMapped]
+        public bool IsOrganizationCaller
+        {
+            get
+            {
+                if (!OrganizationRole.HasValue) return false;
+                return (int)OrganizationRole.Value == 2; // 2 is Caller in the enum
+            }
+        }
+
+        [NotMapped]
+        public bool IsOrganizationMember
+        {
+            get
+            {
+                if (!OrganizationRole.HasValue) return false;
+                return (int)OrganizationRole.Value == 1; // 1 is Member in the enum
+            }
+        }
+
+        // Update existing permission methods to handle Caller role
+        public bool CanSearchBusiness => IsOrganizationAdmin || IsOrganizationMember || HasPermission(p => p.CanSearch);
+        public bool CanViewSearchHistory => IsOrganizationAdmin || IsOrganizationMember || HasPermission(p => p.CanViewHistory);
+        public bool CanManageCrmData => IsOrganizationAdmin || IsOrganizationMember || HasPermission(p => p.CanManageCrm);
+
+        // New method for Callers - only see assigned lists
+        public bool CanOnlyViewAssignedLists => IsOrganizationCaller && !IsOrganizationAdmin && !IsOrganizationMember;
+
+        
     }
 }
 

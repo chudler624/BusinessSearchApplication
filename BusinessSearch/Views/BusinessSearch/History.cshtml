@@ -60,150 +60,145 @@
                 </div>
             </div>
 
-            <!-- Results Table -->
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <!-- Add a "Select All" checkbox in the header -->
-                                    <th class="px-3 py-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="selectAllSearches">
-                                            <label class="form-check-label" for="selectAllSearches">
-                                                Select
-                                            </label>
-                                        </div>
-                                    </th>
-                                    <th class="px-4 py-3">
-                                        <a href="@Url.Action("History", new { sortBy = "date", ascending = Model.CurrentSort == "date" ? !Model.IsAscending : false })" class="text-decoration-none text-dark d-flex align-items-center">
-                                            Date
-                                            @if (Model.CurrentSort == "date")
-                                            {
-                                                <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down") ms-2"></i>
-                                            }
-                                        </a>
-                                    </th>
-                                    <th class="py-3">
-                                        <a href="@Url.Action("History", new { sortBy = "industry", ascending = Model.CurrentSort == "industry" ? !Model.IsAscending : true })" class="text-decoration-none text-dark d-flex align-items-center">
-                                            Industry
-                                            @if (Model.CurrentSort == "industry")
-                                            {
-                                                <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down") ms-2"></i>
-                                            }
-                                        </a>
-                                    </th>
-                                    <th class="py-3">
-                                        <a href="@Url.Action("History", new { sortBy = "zipcode", ascending = Model.CurrentSort == "zipcode" ? !Model.IsAscending : true })" class="text-decoration-none text-dark d-flex align-items-center">
-                                            Zip Code
-                                            @if (Model.CurrentSort == "zipcode")
-                                            {
-                                                <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down") ms-2"></i>
-                                            }
-                                        </a>
-                                    </th>
-                                    <th class="py-3">
-                                        <a href="@Url.Action("History", new { sortBy = "results", ascending = Model.CurrentSort == "results" ? !Model.IsAscending : true })" class="text-decoration-none text-dark d-flex align-items-center">
-                                            Results
-                                            @if (Model.CurrentSort == "results")
-                                            {
-                                                <i class="fas fa-sort-@(Model.IsAscending ? "up" : "down") ms-2"></i>
-                                            }
-                                        </a>
-                                    </th>
-                                    <th class="py-3 text-end pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (!Model.Searches.Any())
-                                {
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5">
-                                            <div class="text-muted mb-3">
-                                                <i class="fas fa-history fa-3x opacity-50"></i>
-                                            </div>
-                                            <p class="mb-1">No search history found</p>
-                                            <small>Try running a new search to see results here</small>
-                                        </td>
-                                    </tr>
-                                }
-                                else
-                                {
-                                    @foreach (var search in Model.Searches)
-                                    {
-                                        <tr class="search-row @(search.TotalResults > 0 ? "" : "text-muted")">
-                                            <!-- Add checkbox to each row -->
-                                            <td class="px-3 py-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input search-checkbox"
-                                                           type="checkbox"
-                                                           id="search-@search.Id"
-                                                           data-search-id="@search.Id"
-                                                           data-has-results="@(search.TotalResults > 0 ? "true" : "false")"
-                                                    @(search.TotalResults > 0 ? "" : "disabled")>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-3">@search.SearchDate.ToString("MM/dd/yyyy HH:mm")</td>
-                                            <td class="py-3">@search.Industry</td>
-                                            <td class="py-3">@search.ZipCode</td>
-                                            <td class="py-3">
-                                                <span class="badge bg-light text-dark rounded-pill px-3">@search.TotalResults</span>
-                                            </td>
-                                            <td class="text-end pe-4 py-3">
-                                                @if (search.TotalResults > 0)
-                                                {
-                                                    <a href="@Url.Action("ViewHistoricalResults", new { id = search.Id })"
-                                                       class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2">
-                                                        <i class="fas fa-search me-1"></i> View
-                                                    </a>
-                                                }
-                                                else
-                                                {
-                                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2 disabled">
-                                                        <i class="fas fa-search me-1"></i> View
-                                                    </button>
-                                                }
-                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                                        onclick="confirmDelete(@search.Id)">
-                                                    <i class="fas fa-trash me-1"></i> Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                            </tbody>
-                        </table>
+            <!-- Results Cards (Enhanced with Rating and Social Media) -->
+            @if (!Model.Searches.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="text-muted mb-3">
+                        <i class="fas fa-history fa-3x opacity-50"></i>
                     </div>
-
-                    <!-- Pagination -->
-                    @if (Model.Pagination.TotalPages > 1)
+                    <p class="mb-1">No search history found</p>
+                    <small>Try running a new search to see results here</small>
+                </div>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var search in Model.Searches)
                     {
-                        <div class="card-footer bg-white border-0 py-3">
-                            <nav aria-label="Search history pagination">
-                                <ul class="pagination pagination-md justify-content-center mb-0">
-                                    <li class="page-item @(!Model.Pagination.HasPreviousPage ? "disabled" : "")">
-                                        <a class="page-link rounded-start-pill border-0" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage - 1 })">
-                                            <i class="fas fa-chevron-left small"></i>
-                                        </a>
-                                    </li>
-                                    @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm border-0 rounded-3 search-history-card @(search.TotalResults > 0 ? "" : "opacity-75")">
+                                <!-- Checkbox for batch selection -->
+                                <div class="position-absolute top-0 end-0 p-3" style="z-index: 2;">
+                                    <div class="form-check">
+                                        <input class="form-check-input search-checkbox"
+                                               type="checkbox"
+                                               id="search-@search.Id"
+                                               data-search-id="@search.Id"
+                                               data-has-results="@(search.TotalResults > 0 ? "true" : "false")"
+                                        @(search.TotalResults > 0 ? "" : "disabled")>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title mb-0 fw-bold">@search.Industry</h5>
+                                        <span class="badge bg-light text-dark rounded-pill px-3">@search.TotalResults results</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center text-muted mb-2">
+                                            <i class="fas fa-calendar me-2"></i>
+                                            <span class="small">@search.SearchDate.ToString("MM/dd/yyyy HH:mm")</span>
+                                        </div>
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            <span class="small">@search.ZipCode</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Enhanced Results Preview with Rating and Social Media -->
+                                    @if (search.TotalResults > 0)
                                     {
-                                        <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
-                                            <a class="page-link border-0" href="@Url.Action("History", new { page = i })">@i</a>
-                                        </li>
+                                        <div class="mb-3 flex-grow-1">
+                                            <div class="text-center text-muted">
+                                                <i class="fas fa-search fa-2x mb-2 opacity-50"></i>
+                                                <p class="small">@search.TotalResults business results available</p>
+                                                @if (search.TotalResults >= 5)
+                                                {
+                                                    <div class="d-flex justify-content-center gap-1 mb-2">
+                                                        <span class="badge bg-success rounded-circle" style="width: 16px; height: 16px; font-size: 8px;" title="High-rated businesses likely">
+                                                            <i class="fas fa-star"></i>
+                                                        </span>
+                                                        <span class="badge bg-primary rounded-circle" style="width: 16px; height: 16px; font-size: 8px;" title="Social media presence expected">
+                                                            <i class="fab fa-facebook-f"></i>
+                                                        </span>
+                                                        <span class="badge bg-danger rounded-circle" style="width: 16px; height: 16px; font-size: 8px;" title="Multiple contact methods">
+                                                            <i class="fas fa-phone"></i>
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
                                     }
-                                    <li class="page-item @(!Model.Pagination.HasNextPage ? "disabled" : "")">
-                                        <a class="page-link rounded-end-pill border-0" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage + 1 })">
-                                            <i class="fas fa-chevron-right small"></i>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </nav>
+                                    else if (search.TotalResults > 0)
+                                    {
+                                        <div class="text-center text-muted mb-3 flex-grow-1">
+                                            <i class="fas fa-search fa-2x mb-2 opacity-50"></i>
+                                            <p class="small">Results available to view</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center text-muted mb-3 flex-grow-1">
+                                            <i class="fas fa-exclamation-circle fa-2x mb-2 opacity-50"></i>
+                                            <p class="small">No results found</p>
+                                        </div>
+                                    }
+
+                                    <!-- Action Buttons -->
+                                    <div class="mt-auto d-flex gap-2">
+                                        @if (search.TotalResults > 0)
+                                        {
+                                            <a href="@Url.Action("ViewHistoricalResults", new { id = search.Id })"
+                                               class="btn btn-primary btn-sm rounded-pill px-3 flex-grow-1">
+                                                <i class="fas fa-search me-1"></i> View Results
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 flex-grow-1 disabled">
+                                                <i class="fas fa-search me-1"></i> No Results
+                                            </button>
+                                        }
+                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                onclick="confirmDelete(@search.Id)" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     }
                 </div>
-            </div>
+
+                <!-- Pagination -->
+                @if (Model.Pagination.TotalPages > 1)
+                {
+                    <div class="mt-4 d-flex justify-content-center">
+                        <nav aria-label="Search history pagination">
+                            <ul class="pagination pagination-md mb-0">
+                                <li class="page-item @(!Model.Pagination.HasPreviousPage ? "disabled" : "")">
+                                    <a class="page-link rounded-start-pill border-0" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage - 1 })">
+                                        <i class="fas fa-chevron-left small"></i>
+                                    </a>
+                                </li>
+                                @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                        <a class="page-link border-0" href="@Url.Action("History", new { page = i })">@i</a>
+                                    </li>
+                                }
+                                <li class="page-item @(!Model.Pagination.HasNextPage ? "disabled" : "")">
+                                    <a class="page-link rounded-end-pill border-0" href="@Url.Action("History", new { page = Model.Pagination.CurrentPage + 1 })">
+                                        <i class="fas fa-chevron-right small"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
         </div>
     </div>
 </div>
@@ -283,14 +278,86 @@
                 transform: translateY(0);
             }
 
-        /* Selected row styling */
-        .search-row.selected {
-            background-color: rgba(66, 133, 244, 0.1);
+        /* Selected card styling */
+        .search-history-card.selected {
+            border: 2px solid #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
         }
 
-        /* Disabled searches styling */
-        .search-row.text-muted {
-            opacity: 0.7;
+        /* Card hover effects */
+        .search-history-card {
+            transition: all 0.3s ease;
+        }
+
+            .search-history-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+
+        /* Sample business card styling */
+        .sample-business-card {
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+            .sample-business-card:hover {
+                background-color: #fff !important;
+                border-color: #007bff;
+            }
+
+        /* Star rating styling */
+        .stars {
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+
+            .stars .fa-star,
+            .stars .fa-star-half-alt {
+                color: #ffc107;
+            }
+
+        /* Badge styling for social media */
+        .badge.rounded-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Font Awesome icons */
+        .fa, .fas, .far, .fab {
+            font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+        }
+
+        .fas, .fa {
+            font-weight: 900 !important;
+        }
+
+        .far {
+            font-weight: 400 !important;
+        }
+
+        .fab {
+            font-family: "Font Awesome 5 Brands" !important;
+            font-weight: 400 !important;
+        }
+
+        /* Pagination styling */
+        .pagination .page-link {
+            color: #2563EB;
+            background-color: transparent;
+            border-color: transparent;
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+        }
+
+        .pagination .page-item.active .page-link {
+            color: #fff;
+            background-color: #2563EB;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            opacity: 0.5;
         }
     </style>
 }
@@ -312,47 +379,19 @@
         }
 
         function setupSearchCheckboxes() {
-            // Select All checkbox handler
-            const selectAllCheckbox = document.getElementById('selectAllSearches');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    const checkboxes = document.querySelectorAll('.search-checkbox:not([disabled])');
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = this.checked;
-
-                        // Update the selected searches set and UI
-                        const searchId = checkbox.dataset.searchId;
-                        const row = checkbox.closest('.search-row');
-
-                        if (this.checked) {
-                            selectedSearches.add(searchId);
-                            row.classList.add('selected');
-                        } else {
-                            selectedSearches.delete(searchId);
-                            row.classList.remove('selected');
-                        }
-                    });
-
-                    updateSelectionUI();
-                });
-            }
-
             // Individual checkboxes handler
             const checkboxes = document.querySelectorAll('.search-checkbox');
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const searchId = this.dataset.searchId;
-                    const row = this.closest('.search-row');
+                    const card = this.closest('.search-history-card');
 
                     if (this.checked) {
                         selectedSearches.add(searchId);
-                        row.classList.add('selected');
+                        card.classList.add('selected');
                     } else {
                         selectedSearches.delete(searchId);
-                        row.classList.remove('selected');
-
-                        // Update select all checkbox
-                        document.getElementById('selectAllSearches').checked = false;
+                        card.classList.remove('selected');
                     }
 
                     updateSelectionUI();
@@ -393,11 +432,8 @@
             // Uncheck all checkboxes
             document.querySelectorAll('.search-checkbox').forEach(checkbox => {
                 checkbox.checked = false;
-                checkbox.closest('.search-row').classList.remove('selected');
+                checkbox.closest('.search-history-card').classList.remove('selected');
             });
-
-            // Uncheck select all
-            document.getElementById('selectAllSearches').checked = false;
 
             // Update UI
             updateSelectionUI();

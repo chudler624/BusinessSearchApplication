@@ -1,5 +1,6 @@
 ﻿using BusinessSearch.Data;
 using BusinessSearch.Models;
+using BusinessSearch.Models.Organization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -25,15 +26,26 @@ namespace BusinessSearch.Services
 
         #region List Operations
 
-        public async Task<List<CrmList>> GetAllLists()
+        public async Task<List<CrmList>> GetAllLists(string userId = null)
         {
             try
             {
-                // Apply organization filter first
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user?.OrganizationRole == OrganizationRole.Caller)
+                    {
+                        // Callers only see their assigned lists
+                        return await GetAssignedLists(userId);
+                    }
+                }
+
+                // Admins and Members see all lists in the organization
                 var baseQuery = _context.CrmLists.AsQueryable();
                 baseQuery = _orgFilter.ApplyOrganizationFilter(baseQuery);
 
-                // Then apply includes and ordering
                 return await baseQuery
                     .Include(l => l.AssignedTo)
                     .Include(l => l.CrmEntryLists)
@@ -43,6 +55,59 @@ namespace BusinessSearch.Services
             catch (Exception ex)
             {
                 _logger.LogError($"Error getting all lists: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<List<CrmList>> GetAssignedLists(string userId)
+        {
+            try
+            {
+                var orgId = await _orgFilter.GetCurrentOrganizationId();
+                return await _context.CrmLists
+                    .Where(l => l.OrganizationId == orgId && l.AssignedToId == userId)
+                    .Include(l => l.CrmEntryLists)
+                        .ThenInclude(el => el.CrmEntry)
+                    .Include(l => l.CreatedBy)
+                    .Include(l => l.AssignedTo)
+                    .OrderBy(l => l.Name)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting assigned lists for user {userId}: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<bool> UserCanAccessList(string userId, int listId)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                // Admins and Members can access all lists in their organization
+                if (user.OrganizationRole == OrganizationRole.Admin ||
+                    user.OrganizationRole == OrganizationRole.Member)
+                {
+                    var list = await GetListById(listId);
+                    return list?.OrganizationId == user.OrganizationId;
+                }
+
+                // Callers can only access lists assigned to them
+                if (user.OrganizationRole == OrganizationRole.Caller)
+                {
+                    var assignedList = await _context.CrmLists
+                        .FirstOrDefaultAsync(l => l.Id == listId && l.AssignedToId == userId);
+                    return assignedList != null;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error checking user access to list: {ex.Message}");
                 throw;
             }
         }
@@ -493,7 +558,6 @@ namespace BusinessSearch.Services
                 throw;
             }
         }
-
 
         #endregion
 
